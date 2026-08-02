@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.recetasderaquel"
+    namespace = "com.rmm.recetasraquel"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -12,7 +12,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.recetasderaquel"
+        applicationId = "com.rmm.recetasraquel"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
