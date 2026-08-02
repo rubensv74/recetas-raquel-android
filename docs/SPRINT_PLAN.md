@@ -4,9 +4,9 @@
 
 Proyecto compilable, paquete definitivo, Compose/Material 3, Activity única, navegación básica Home–Ajustes, placeholders y documentación inicial. Sin persistencia ni CRUD.
 
-## Sprint 1 — Dominio y persistencia
+## Sprint 1 — Dominio y persistencia (implementado)
 
-Definir modelos y validaciones, diseñar el esquema Room, DAO, migración inicial, repositorio local e inyección manual. Añadir pruebas de datos y dominio.
+Modelos y validaciones, esquema Room v1, DAO transaccional, repositorio local, mappers e inyección manual. Incluye pruebas unitarias e instrumentadas; no existe migración porque esta es la versión inicial.
 
 ## Sprint 2 — Catálogo y edición
 

@@ -6,7 +6,7 @@
 
 ## ADR-002 — Room para persistencia
 
-**Estado:** aceptada para una fase futura. Room aportará consultas observables, integridad y migraciones sobre SQLite, y será la fuente de verdad local. No se añade la dependencia hasta implementar persistencia.
+**Estado:** implementada en Sprint 1. Room 2.8.4 proporciona la fuente de verdad local, consultas con Flow, integridad referencial y transacciones. El esquema inicial es v1 y se exporta; todavía no existen migraciones.
 
 ## ADR-003 — Aplicación offline
 
@@ -31,3 +31,15 @@
 ## ADR-008 — Navegación mínima sin dependencia adicional
 
 **Estado:** aceptada para Sprint 0. Dos destinos activos se coordinan con estado guardable y `BackHandler`. Navigation Compose se evaluará cuando existan rutas con argumentos o una pila real.
+
+## ADR-009 — KSP y exportación de esquemas
+
+**Estado:** aceptada. Room Compiler se ejecuta con KSP2 y el plugin oficial de Room exporta esquemas reproducibles a `app/schemas`. Se evita kapt y se conserva sin cambios el toolchain global.
+
+## ADR-010 — UUID y timestamps UTC
+
+**Estado:** aceptada. Los IDs son UUID almacenados como `String`; `createdAt` y `updatedAt` son milisegundos Unix UTC. `IdGenerator` y `TimeProvider` hacen ambas decisiones deterministas en pruebas.
+
+## ADR-011 — Agregado de receta transaccional
+
+**Estado:** aceptada. Receta, ingredientes y pasos se guardan como una unidad: los hijos se reemplazan dentro de la misma transacción y se eliminan en cascada con la receta. El coste de reemplazar listas completas es aceptable para el tamaño previsto y evita estados parciales.

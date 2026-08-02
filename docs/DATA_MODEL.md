@@ -1,39 +1,57 @@
-# Modelo de datos conceptual
+# Modelo de datos — esquema 1
 
-Este documento orienta el diseño futuro. No define todavía entidades Room ni un esquema físico.
+Los modelos de dominio son independientes de Room. Las entidades persistentes viven en `data.local.entity` y usan UUID como `String`. Los timestamps son `Long` con milisegundos Unix UTC.
 
-## Recipe
+## Recipe / RecipeEntity (`recipes`)
 
-Agregado principal de una receta. Tendrá identificador estable generado localmente, título obligatorio, descripción opcional, raciones, tiempos opcionales, notas y marcas de creación/modificación. Es propietaria del orden de ingredientes y pasos. Podrá referenciar etiquetas y fotos. La estrategia de borrado y posibles marcas de sincronización se decidirán antes de implementar persistencia.
+- `id: String`, clave primaria
+- `name: String`
+- `description: String?`
+- `category: String?`
+- `servings: Int?`
+- `preparationMinutes: Int?`
+- `cookingMinutes: Int?`
+- `notes: String?`
+- `isFavorite: Boolean`, inicialmente `false`
+- `coverPhotoPath: String?`, solo almacenamiento de referencia en este sprint
+- `ingredients: List<Ingredient>`, solo en dominio/agregado
+- `steps: List<RecipeStep>`, solo en dominio/agregado
+- `createdAt: Long`
+- `updatedAt: Long`
 
-## Ingredient
+## Ingredient / IngredientEntity (`ingredients`)
 
-Elemento perteneciente a una receta: texto o nombre obligatorio, cantidad y unidad opcionales, notas y posición. La cantidad debe admitir valores prácticos de cocina sin forzar una precisión engañosa. Su ciclo de vida depende de `Recipe`.
+- `id: String`, clave primaria
+- `recipeId: String`, clave foránea a `recipes.id` con borrado en cascada
+- `quantity: String?`, admite `1/2`, `al gusto` y otras cantidades no numéricas
+- `unit: String?`
+- `name: String`
+- `notes: String?`
+- `sortOrder: Int`
 
-## RecipeStep
+Existe un índice `(recipeId, sortOrder)`.
 
-Instrucción ordenada perteneciente a una receta, con texto obligatorio, posición y duración opcional. El orden será explícito y estable para edición y modo cocina.
+## RecipeStep / RecipeStepEntity (`recipe_steps`)
 
-## Tag
+- `id: String`, clave primaria
+- `recipeId: String`, clave foránea a `recipes.id` con borrado en cascada
+- `instruction: String`
+- `timerMinutes: Int?`, sin temporizador funcional todavía
+- `photoPath: String?`, sin selector de imágenes todavía
+- `sortOrder: Int`
 
-Etiqueta reutilizable con identificador y nombre normalizado único. Sirve para organizar y filtrar recetas sin imponer una jerarquía inicial.
+Existe un índice `(recipeId, sortOrder)`.
 
-## RecipeTag
+## Relación agregada
 
-Relación muchos-a-muchos entre `Recipe` y `Tag`, identificada conceptualmente por ambos IDs. No contiene contenido duplicado y debe preservar integridad referencial.
+`RecipeWithDetails` combina una receta mediante `@Embedded` y sus ingredientes y pasos mediante dos `@Relation`. El mapper ordena ambas colecciones explícitamente por `sortOrder`.
 
-## Photo
+## Escritura
 
-Referencia a una imagen local asociada a una receta, con identificador, URI o ruta gestionada, tipo MIME, posición, texto alternativo opcional y metadatos mínimos. Se deberá definir propiedad, copia, eliminación y comportamiento en backup antes de implementarla; no se guardarán bitmaps grandes dentro de Room.
+La creación parte de `RecipeDraft`, `IngredientDraft` y `RecipeStepDraft`. El repositorio normaliza texto y orden, genera IDs y timestamps, y entrega todas las entidades al DAO. La actualización conserva IDs y `createdAt`, renueva `updatedAt` y reemplaza los hijos dentro de una transacción.
 
-## SyncQueue (futura)
+## Elementos futuros no implementados
 
-Registro persistente de una operación pendiente para una sincronización opcional futura: identificador, tipo de agregado, ID local, operación, versión o instante, número de intentos y último error. No forma parte del MVP ni se implementará hasta definir protocolo, conflictos, privacidad y destino. Room seguirá siendo la fuente de verdad.
+`Tag`, `RecipeTag`, la gestión funcional de `Photo` y `SyncQueue` quedan fuera del esquema 1. Un cambio posterior exigirá una nueva versión y una migración real; no se permite `fallbackToDestructiveMigration()`.
 
-## Reglas transversales pendientes
-
-- IDs locales estables y aptos para exportación.
-- Fechas almacenadas de forma inequívoca y convertidas solo en presentación.
-- Orden mediante posiciones explícitas.
-- Validación de campos obligatorios en dominio y restricciones equivalentes en almacenamiento.
-- Migraciones versionadas y backups con versión de formato.
+El esquema JSON exportado está en `app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/1.json`.
