@@ -6,6 +6,9 @@ import com.rmm.recetasraquel.data.local.dao.RecipeDao
 import com.rmm.recetasraquel.data.mapper.RecipeMapper.toDomain
 import com.rmm.recetasraquel.data.mapper.RecipeMapper.toNewRecipe
 import com.rmm.recetasraquel.data.mapper.RecipeMapper.toPersisted
+import com.rmm.recetasraquel.data.mapper.RecipeMapper.toSummary
+import com.rmm.recetasraquel.domain.model.RecipeCatalogFilter
+import com.rmm.recetasraquel.domain.model.RecipeSummary
 import com.rmm.recetasraquel.domain.model.Recipe
 import com.rmm.recetasraquel.domain.model.RecipeDraft
 import com.rmm.recetasraquel.domain.repository.RecipeRepository
@@ -25,6 +28,17 @@ class LocalRecipeRepository(
 ) : RecipeRepository {
     override fun observeRecipes(): Flow<List<Recipe>> =
         dao.observeRecipes().map { recipes -> recipes.map { it.toDomain() } }
+
+    override fun observeCatalog(filter: RecipeCatalogFilter): Flow<List<RecipeSummary>> {
+        val normalized = filter.normalized()
+        return dao.observeCatalog(
+            query = normalized.query,
+            favoritesOnly = normalized.favoritesOnly,
+            category = normalized.category,
+        ).map { recipes -> recipes.map { it.toSummary() } }
+    }
+
+    override fun observeCategories(): Flow<List<String>> = dao.observeCategories()
 
     override fun observeRecipe(recipeId: String): Flow<Recipe?> =
         dao.observeRecipeWithDetails(recipeId).map { it?.toDomain() }

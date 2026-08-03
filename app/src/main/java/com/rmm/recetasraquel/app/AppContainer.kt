@@ -4,6 +4,7 @@ import android.content.Context
 import com.rmm.recetasraquel.data.local.RecipeDatabase
 import com.rmm.recetasraquel.data.repository.LocalRecipeRepository
 import com.rmm.recetasraquel.domain.repository.RecipeRepository
+import com.rmm.recetasraquel.domain.repository.DemoDataController
 import com.rmm.recetasraquel.util.IdGenerator
 import com.rmm.recetasraquel.util.SystemTimeProvider
 import com.rmm.recetasraquel.util.TimeProvider
@@ -18,4 +19,5 @@ class AppContainer(context: Context) {
         idGenerator = idGenerator,
         timeProvider = timeProvider,
     )
+    val demoDataController: DemoDataController? = DemoDataControllerFactory.create(recipeRepository)
 }

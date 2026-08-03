@@ -2,39 +2,35 @@
 
 ## Enfoque local-first
 
-Room es la fuente de verdad de la aplicación. Todas las operaciones esenciales se ejecutan en el dispositivo y no dependen de conectividad. La base `recipes.db` conserva los datos entre ejecuciones y expone cambios mediante `Flow`.
+Room es la fuente de verdad. Todas las operaciones esenciales se ejecutan en el dispositivo y no dependen de conectividad. `recipes.db` conserva datos entre ejecuciones y expone cambios mediante `Flow`.
 
-## Capas
+## Capas y flujo
 
-- **UI (`ui`, `app`)**: Compose representa estado y emite eventos. En Sprint 1 no consume aún el catálogo.
-- **Dominio (`domain`)**: modelos, borradores, contrato `RecipeRepository` y validaciones sin anotaciones ni dependencias de Room.
-- **Datos (`data`)**: entidades, relaciones, DAO, mappers e implementación `LocalRecipeRepository`.
-- **Backup (`backup`)**: límite reservado para una fase futura; no está implementado.
+- **UI (`ui`, `app`)**: Compose representa estados inmutables y emite eventos a ViewModels.
+- **Dominio (`domain`)**: modelos, read models, filtros y contratos sin dependencias de Room.
+- **Datos (`data`)**: entidades, relaciones, DAO, mappers y `LocalRecipeRepository`.
+- **Backup (`backup`)**: límite futuro no implementado.
 
-El flujo previsto es UI → repositorio → DAO → Room/SQLite. La UI no recibe entidades ni accede al DAO. Los mappers concentran todas las conversiones entre persistencia y dominio.
+El flujo es UI → ViewModel → Repository → DAO → Room/SQLite → Flow → ViewModel → UI. La UI no accede al DAO ni recibe entidades.
 
-## Flujo de datos
+## Navegación y estados
 
-Las lecturas observables usan `Flow`; las operaciones se expresan como funciones `suspend`. Room planifica el acceso fuera del hilo principal y no se habilita `allowMainThreadQueries()`. Los fallos de validación y SQLite se devuelven como `Result` en las escrituras del repositorio.
+Navigation Compose centraliza `catalog`, `recipe/{recipeId}` y `settings`; el inicio es `catalog`. El detalle obtiene `recipeId` mediante `SavedStateHandle` y no recibe objetos completos. El ViewModel del catálogo permanece en su entrada del back stack, conservando búsqueda y filtros al volver.
 
-## Persistencia y transacciones
+`RecipeCatalogViewModel` y `RecipeDetailViewModel` usan `StateFlow`, `viewModelScope`, `SharingStarted.WhileSubscribed` y factories manuales. Compose recoge estado con `collectAsStateWithLifecycle`. Catálogo distingue carga, base vacía, sin resultados, contenido y error; detalle distingue carga, contenido, no encontrado y error.
 
-`RecipeDatabase` tiene esquema versión 1 con `exportSchema = true`; el plugin de Room exporta el JSON versionado a `app/schemas`. `saveRecipeWithDetails` guarda la receta y sustituye ingredientes y pasos en una única transacción. Las claves foráneas eliminan hijos en cascada. No hay migraciones en la versión inicial y no se usa migración destructiva.
+## Persistencia y catálogo
 
-Los ingredientes y pasos poseen índice `(recipeId, sortOrder)`. Como `@Relation` no garantiza orden, los mappers ordenan explícitamente por `sortOrder` antes de exponer el dominio.
+`RecipeDatabase` continúa en esquema 1 con `exportSchema = true`. No hay migraciones ni migración destructiva. La transacción `saveRecipeWithDetails` y las cascadas del Sprint 1 no cambian.
 
-## Identidad y tiempo
+`RecipeSummary` evita representar recetas incompletas y cargar ingredientes/pasos para cada tarjeta. SQL parametrizado combina consulta, favoritas y categoría. `EXISTS` busca ingredientes sin duplicar recetas; Room ordena por `updatedAt DESC`. Las categorías usan `DISTINCT`, excluyen nulos/vacíos y se ordenan sin distinguir mayúsculas cuando SQLite lo permite. Los índices existentes `(recipeId, sortOrder)` siguen cubriendo relaciones y subconsulta.
 
-Los IDs se generan como UUID y se almacenan como `String`, facilitando futuros backups e importaciones. `IdGenerator` permite sustituir la generación en pruebas. `createdAt` y `updatedAt` son milisegundos Unix UTC obtenidos mediante `TimeProvider`; una actualización conserva `createdAt` y renueva `updatedAt`.
+## Identidad, tiempo e inyección
 
-## Inyección manual y ciclo de vida
+Los IDs siguen siendo UUID `String`; fechas en milisegundos Unix UTC. `IdGenerator` y `TimeProvider` son testeables. `RecetasRaquelApplication` crea un único `AppContainer`, una única `RecipeDatabase` y el repositorio. Las factories de ViewModel reciben dependencias explícitas; no existe framework de DI.
 
-`RecetasRaquelApplication` crea un único `AppContainer` por proceso. El contenedor mantiene una sola instancia de `RecipeDatabase` y expone `RecipeRepository`, `IdGenerator` y `TimeProvider`. No hay contenedor global mutable ni framework de inyección.
+El source set `debug` aporta un controlador demo que reutiliza `RecipeRepository`. `release` aporta una factory nula, por lo que no se muestra la sección de desarrollo. No hay red, backend, sincronización ni backup.
 
 ## Un solo módulo
 
-El proyecto mantiene únicamente `app`. Los paquetes expresan los límites sin añadir coste de módulos Gradle; se reconsiderará solo ante una necesidad demostrable.
-
-## Backup y sincronización futura
-
-Un futuro backup será manual, versionado y validado. GitHub solo podría ser un destino opcional de copias, nunca la base de datos. No hay red, backend, cola de sincronización ni backup en Sprint 1.
+Se mantiene únicamente `app`; los paquetes expresan los límites internos.
