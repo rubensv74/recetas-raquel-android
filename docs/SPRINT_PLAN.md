@@ -1,23 +1,23 @@
 # Plan de sprints
 
-## Sprint 0 — Fundación
+## Sprint 0 — Fundación (implementado)
 
-Proyecto compilable, paquete definitivo, Compose/Material 3, Activity única, navegación básica Home–Ajustes, placeholders y documentación inicial. Sin persistencia ni CRUD.
+Proyecto Compose/Material 3, Activity única, navegación provisional, placeholders y documentación.
 
 ## Sprint 1 — Dominio y persistencia (implementado)
 
-Modelos y validaciones, esquema Room v1, DAO transaccional, repositorio local, mappers e inyección manual. Incluye pruebas unitarias e instrumentadas; no existe migración porque esta es la versión inicial.
+Modelos, validaciones, Room v1, DAO transaccional, repositorio, mappers, inyección manual y pruebas.
 
-## Sprint 2 — Catálogo y edición
+## Sprint 2 — Catálogo y consulta (implementado)
 
-Implementar catálogo, estados vacío/error, creación y edición de recetas, ingredientes y pasos. Incorporar navegación con argumentos cuando sea necesaria.
+Catálogo, búsqueda por receta/categoría/ingrediente, filtros combinables, detalle, favoritos, Navigation Compose, ViewModels y datos demo exclusivos de debug. Sin creación, edición ni cambios de esquema.
 
-## Sprint 3 — Consulta y modo cocina
+## Sprint 3 — Edición y modo cocina
 
-Detalle de receta, búsqueda y filtros básicos, etiquetas, modo cocina accesible y comportamiento de pantalla adecuado al servicio.
+Editor de recetas y evolución de consulta/modo cocina según un encargo específico. No se anticipa en Sprint 2.
 
 ## Sprint 4 — Fotos, backup y robustez
 
-Gestión segura de fotos locales, exportación/importación manual versionada, restauración, pruebas de migración y endurecimiento de accesibilidad y rendimiento.
+Gestión segura de fotos, exportación/importación manual, migraciones necesarias, accesibilidad y rendimiento.
 
-La sincronización con GitHub queda fuera de estos sprints hasta contar con un diseño específico de seguridad, conflictos y consentimiento.
+GitHub Sync permanece fuera de alcance hasta contar con un diseño propio de seguridad y conflictos.

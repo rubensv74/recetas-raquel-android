@@ -17,6 +17,39 @@ interface RecipeDao {
     @Query("SELECT * FROM recipes ORDER BY updatedAt DESC")
     fun observeRecipes(): Flow<List<RecipeEntity>>
 
+    @Query(
+        """
+        SELECT r.* FROM recipes AS r
+        WHERE (:favoritesOnly = 0 OR r.isFavorite = 1)
+          AND (:category IS NULL OR TRIM(r.category) = :category COLLATE NOCASE)
+          AND (
+            :query = ''
+            OR r.name LIKE '%' || :query || '%' COLLATE NOCASE
+            OR r.category LIKE '%' || :query || '%' COLLATE NOCASE
+            OR EXISTS (
+                SELECT 1 FROM ingredients AS i
+                WHERE i.recipeId = r.id
+                  AND i.name LIKE '%' || :query || '%' COLLATE NOCASE
+            )
+          )
+        ORDER BY r.updatedAt DESC
+        """,
+    )
+    fun observeCatalog(
+        query: String,
+        favoritesOnly: Boolean,
+        category: String?,
+    ): Flow<List<RecipeEntity>>
+
+    @Query(
+        """
+        SELECT DISTINCT TRIM(category) FROM recipes
+        WHERE category IS NOT NULL AND TRIM(category) != ''
+        ORDER BY TRIM(category) COLLATE NOCASE ASC
+        """,
+    )
+    fun observeCategories(): Flow<List<String>>
+
     @Transaction
     @Query("SELECT * FROM recipes WHERE id = :recipeId")
     fun observeRecipeWithDetails(recipeId: String): Flow<RecipeWithDetails?>

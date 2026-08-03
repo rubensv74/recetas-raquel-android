@@ -1,57 +1,29 @@
 # Modelo de datos — esquema 1
 
-Los modelos de dominio son independientes de Room. Las entidades persistentes viven en `data.local.entity` y usan UUID como `String`. Los timestamps son `Long` con milisegundos Unix UTC.
+Los modelos de dominio son independientes de Room. Entidades persistentes usan IDs `String` y timestamps `Long` UTC.
 
-## Recipe / RecipeEntity (`recipes`)
+## Recipe / `recipes`
 
-- `id: String`, clave primaria
-- `name: String`
-- `description: String?`
-- `category: String?`
-- `servings: Int?`
-- `preparationMinutes: Int?`
-- `cookingMinutes: Int?`
-- `notes: String?`
-- `isFavorite: Boolean`, inicialmente `false`
-- `coverPhotoPath: String?`, solo almacenamiento de referencia en este sprint
-- `ingredients: List<Ingredient>`, solo en dominio/agregado
-- `steps: List<RecipeStep>`, solo en dominio/agregado
-- `createdAt: Long`
-- `updatedAt: Long`
+`id`, `name`, `description`, `category`, `servings`, `preparationMinutes`, `cookingMinutes`, `notes`, `isFavorite`, `coverPhotoPath`, `createdAt` y `updatedAt`. El dominio añade las listas `ingredients` y `steps`.
 
-## Ingredient / IngredientEntity (`ingredients`)
+## Ingredient / `ingredients`
 
-- `id: String`, clave primaria
-- `recipeId: String`, clave foránea a `recipes.id` con borrado en cascada
-- `quantity: String?`, admite `1/2`, `al gusto` y otras cantidades no numéricas
-- `unit: String?`
-- `name: String`
-- `notes: String?`
-- `sortOrder: Int`
+`id`, `recipeId`, `quantity: String?`, `unit`, `name`, `notes` y `sortOrder`. `recipeId` referencia la receta con borrado en cascada. El índice `(recipeId, sortOrder)` permanece intacto. La cantidad admite valores como `1/2`, `una pizca` o `al gusto`.
 
-Existe un índice `(recipeId, sortOrder)`.
+## RecipeStep / `recipe_steps`
 
-## RecipeStep / RecipeStepEntity (`recipe_steps`)
-
-- `id: String`, clave primaria
-- `recipeId: String`, clave foránea a `recipes.id` con borrado en cascada
-- `instruction: String`
-- `timerMinutes: Int?`, sin temporizador funcional todavía
-- `photoPath: String?`, sin selector de imágenes todavía
-- `sortOrder: Int`
-
-Existe un índice `(recipeId, sortOrder)`.
+`id`, `recipeId`, `instruction`, `timerMinutes`, `photoPath` y `sortOrder`. La clave foránea usa cascada y existe el índice `(recipeId, sortOrder)`. Temporizadores y fotos funcionales siguen fuera de alcance.
 
 ## Relación agregada
 
-`RecipeWithDetails` combina una receta mediante `@Embedded` y sus ingredientes y pasos mediante dos `@Relation`. El mapper ordena ambas colecciones explícitamente por `sortOrder`.
+`RecipeWithDetails` combina receta, ingredientes y pasos. El mapper ordena hijos explícitamente por `sortOrder`.
 
-## Escritura
+## Read model del catálogo
 
-La creación parte de `RecipeDraft`, `IngredientDraft` y `RecipeStepDraft`. El repositorio normaliza texto y orden, genera IDs y timestamps, y entrega todas las entidades al DAO. La actualización conserva IDs y `createdAt`, renueva `updatedAt` y reemplaza los hijos dentro de una transacción.
+`RecipeSummary` contiene `id`, `name`, `category`, `servings`, tiempos, favorito, referencia opcional de portada y `updatedAt`; nunca contiene listas vacías artificiales. `RecipeCatalogFilter` agrupa consulta, favoritas y categoría, recorta textos y convierte categorías vacías en `null`.
 
-## Elementos futuros no implementados
+## Escritura y evolución
 
-`Tag`, `RecipeTag`, la gestión funcional de `Photo` y `SyncQueue` quedan fuera del esquema 1. Un cambio posterior exigirá una nueva versión y una migración real; no se permite `fallbackToDestructiveMigration()`.
+Creación y actualización conservan la normalización, UUID, timestamps y transacción del Sprint 1, aunque no se exponen en UI. `Tag`, `RecipeTag`, fotos funcionales y `SyncQueue` siguen futuros.
 
-El esquema JSON exportado está en `app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/1.json`.
+Sprint 2 no cambia entidades, tablas, columnas, tipos, claves, índices ni relaciones. `RecipeDatabase` continúa en versión 1. El único esquema es `app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/1.json`; no existe `2.json` ni migración.

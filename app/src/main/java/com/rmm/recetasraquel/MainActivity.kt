@@ -11,9 +11,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val container = (application as RecetasRaquelApplication).container
         setContent {
             RecetasRaquelTheme {
-                RecetasRaquelApp()
+                RecetasRaquelApp(
+                    repository = container.recipeRepository,
+                    demoDataController = container.demoDataController,
+                )
             }
         }
     }

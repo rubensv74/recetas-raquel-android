@@ -9,6 +9,7 @@ import com.rmm.recetasraquel.data.local.entity.RecipeEntity
 import com.rmm.recetasraquel.data.local.entity.RecipeStepEntity
 import com.rmm.recetasraquel.data.mapper.RecipeMapper.toDomain
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -157,7 +158,67 @@ class RecipeDatabaseTest {
         }
     }
 
+    @Test
+    fun catalogSearchesNameCategoryAndIngredientWithoutDuplicates() = runBlocking {
+        val dao = database.recipeDao()
+        dao.saveRecipeWithDetails(
+            recipeEntity(id = "tortilla", name = "Tortilla de patatas", category = "Principal", updatedAt = 300),
+            listOf(
+                ingredientEntity("potato-1", name = "Patata roja", recipeId = "tortilla"),
+                ingredientEntity("potato-2", name = "Patata blanca", recipeId = "tortilla", sortOrder = 1),
+            ),
+            emptyList(),
+        )
+        dao.saveRecipeWithDetails(
+            recipeEntity(id = "cream", name = "Crema", category = "Sopas", updatedAt = 200),
+            listOf(ingredientEntity("pumpkin", name = "Calabaza", recipeId = "cream")),
+            emptyList(),
+        )
+
+        assertEquals(listOf("tortilla"), dao.observeCatalog("tilla", false, null).first().map { it.id })
+        assertEquals(listOf("cream"), dao.observeCatalog("calabaza", false, null).first().map { it.id })
+        assertEquals(listOf("cream"), dao.observeCatalog("sop", false, null).first().map { it.id })
+        assertEquals(listOf("tortilla"), dao.observeCatalog("patata", false, null).first().map { it.id })
+    }
+
+    @Test
+    fun catalogCombinesFavoritesCategoryAndQueryAndOrdersByUpdatedAt() = runBlocking {
+        val dao = database.recipeDao()
+        dao.saveRecipeWithDetails(
+            recipeEntity(id = "older", name = "Arroz antiguo", category = "Principal", isFavorite = true, updatedAt = 100),
+            emptyList(), emptyList(),
+        )
+        dao.saveRecipeWithDetails(
+            recipeEntity(id = "newer", name = "Arroz nuevo", category = "Principal", isFavorite = true, updatedAt = 300),
+            emptyList(), emptyList(),
+        )
+        dao.saveRecipeWithDetails(
+            recipeEntity(id = "other", name = "Arroz dulce", category = "Postres", isFavorite = true, updatedAt = 400),
+            emptyList(), emptyList(),
+        )
+        dao.saveRecipeWithDetails(
+            recipeEntity(id = "not-favorite", name = "Arroz blanco", category = "Principal", updatedAt = 500),
+            emptyList(), emptyList(),
+        )
+
+        val result = dao.observeCatalog("arroz", true, "Principal").first()
+        assertEquals(listOf("newer", "older"), result.map { it.id })
+    }
+
+    @Test
+    fun categoriesExcludeNullBlankAndDuplicatesAndAreSorted() = runBlocking {
+        val dao = database.recipeDao()
+        listOf(null, " ", "Sopas", "Postres", "Sopas").forEachIndexed { index, category ->
+            dao.saveRecipeWithDetails(
+                recipeEntity(id = "r$index", category = category), emptyList(), emptyList(),
+            )
+        }
+
+        assertEquals(listOf("Postres", "Sopas"), dao.observeCategories().first())
+    }
+
     private fun recipeEntity(
+        id: String = RECIPE_ID,
         name: String = "Receta",
         description: String? = null,
         category: String? = null,
@@ -166,10 +227,11 @@ class RecipeDatabaseTest {
         cookingMinutes: Int? = null,
         notes: String? = null,
         coverPhotoPath: String? = null,
+        isFavorite: Boolean = false,
         updatedAt: Long = 100L,
     ) = RecipeEntity(
-        RECIPE_ID, name, description, category, servings, preparationMinutes, cookingMinutes,
-        notes, false, coverPhotoPath, 100L, updatedAt,
+        id, name, description, category, servings, preparationMinutes, cookingMinutes,
+        notes, isFavorite, coverPhotoPath, 100L, updatedAt,
     )
 
     private fun ingredientEntity(
@@ -179,7 +241,8 @@ class RecipeDatabaseTest {
         name: String = "Ingrediente",
         notes: String? = null,
         sortOrder: Int = 0,
-    ) = IngredientEntity(id, RECIPE_ID, quantity, unit, name, notes, sortOrder)
+        recipeId: String = RECIPE_ID,
+    ) = IngredientEntity(id, recipeId, quantity, unit, name, notes, sortOrder)
 
     private fun stepEntity(
         id: String,

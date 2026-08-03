@@ -8,6 +8,7 @@ import com.rmm.recetasraquel.domain.model.Ingredient
 import com.rmm.recetasraquel.domain.model.Recipe
 import com.rmm.recetasraquel.domain.model.RecipeDraft
 import com.rmm.recetasraquel.domain.model.RecipeStep
+import com.rmm.recetasraquel.domain.model.RecipeSummary
 import com.rmm.recetasraquel.domain.validation.RecipeValidator
 import com.rmm.recetasraquel.util.IdGenerator
 import com.rmm.recetasraquel.util.TimeProvider
@@ -19,6 +20,18 @@ data class PersistedRecipe(
 )
 
 object RecipeMapper {
+    fun RecipeEntity.toSummary(): RecipeSummary = RecipeSummary(
+        id = id,
+        name = name,
+        category = category,
+        servings = servings,
+        preparationMinutes = preparationMinutes,
+        cookingMinutes = cookingMinutes,
+        isFavorite = isFavorite,
+        coverPhotoPath = coverPhotoPath,
+        updatedAt = updatedAt,
+    )
+
     fun RecipeEntity.toDomain(): Recipe = Recipe(
         id = id,
         name = name,
