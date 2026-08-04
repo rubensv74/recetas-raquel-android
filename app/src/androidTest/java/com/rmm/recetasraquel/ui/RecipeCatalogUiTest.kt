@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.rmm.recetasraquel.app.RecetasRaquelApp
+import com.rmm.recetasraquel.util.UuidIdGenerator
 import com.rmm.recetasraquel.domain.model.Ingredient
 import com.rmm.recetasraquel.domain.model.Recipe
 import com.rmm.recetasraquel.domain.model.RecipeCatalogFilter
@@ -108,7 +109,7 @@ class RecipeCatalogUiTest {
 
     private fun setApp(repository: RecipeRepository) {
         composeRule.setContent {
-            RecetasRaquelTheme { RecetasRaquelApp(repository, demoDataController = null) }
+            RecetasRaquelTheme { RecetasRaquelApp(repository, idGenerator = UuidIdGenerator(), demoDataController = null) }
         }
     }
 
@@ -153,6 +154,7 @@ private class UiFakeRepository(initial: List<Recipe> = emptyList()) : RecipeRepo
     override suspend fun createRecipe(input: RecipeDraft): Result<String> = Result.failure(UnsupportedOperationException())
     override suspend fun updateRecipe(recipe: Recipe): Result<Unit> = Result.failure(UnsupportedOperationException())
     override suspend fun deleteRecipe(recipeId: String): Result<Unit> = Result.failure(UnsupportedOperationException())
+    override suspend fun updateRecipeFromDraft(recipeId: String, draft: RecipeDraft): Result<Unit> = Result.failure(UnsupportedOperationException())
 
     override suspend fun setFavorite(recipeId: String, isFavorite: Boolean): Result<Unit> {
         recipes.value = recipes.value.map { if (it.id == recipeId) it.copy(isFavorite = isFavorite) else it }

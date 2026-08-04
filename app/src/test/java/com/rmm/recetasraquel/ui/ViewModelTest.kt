@@ -188,6 +188,7 @@ private class FakeRecipeRepository(
     override suspend fun createRecipe(input: RecipeDraft): Result<String> = Result.failure(UnsupportedOperationException())
     override suspend fun updateRecipe(recipe: Recipe): Result<Unit> = Result.failure(UnsupportedOperationException())
     override suspend fun deleteRecipe(recipeId: String): Result<Unit> = Result.failure(UnsupportedOperationException())
+    override suspend fun updateRecipeFromDraft(recipeId: String, draft: RecipeDraft): Result<Unit> = Result.failure(UnsupportedOperationException())
 
     override suspend fun setFavorite(recipeId: String, isFavorite: Boolean): Result<Unit> {
         if (failFavorites) return Result.failure(IllegalStateException("test"))

@@ -14,6 +14,7 @@ interface RecipeRepository {
     suspend fun getRecipe(recipeId: String): Recipe?
     suspend fun createRecipe(input: RecipeDraft): Result<String>
     suspend fun updateRecipe(recipe: Recipe): Result<Unit>
+    suspend fun updateRecipeFromDraft(recipeId: String, draft: RecipeDraft): Result<Unit>
     suspend fun deleteRecipe(recipeId: String): Result<Unit>
     suspend fun setFavorite(recipeId: String, isFavorite: Boolean): Result<Unit>
 }

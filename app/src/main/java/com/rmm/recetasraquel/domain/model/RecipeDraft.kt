@@ -14,6 +14,7 @@ data class RecipeDraft(
 )
 
 data class IngredientDraft(
+    val id: String? = null,
     val quantity: String? = null,
     val unit: String? = null,
     val name: String,
@@ -21,6 +22,7 @@ data class IngredientDraft(
 )
 
 data class RecipeStepDraft(
+    val id: String? = null,
     val instruction: String,
     val timerMinutes: Int? = null,
     val photoPath: String? = null,

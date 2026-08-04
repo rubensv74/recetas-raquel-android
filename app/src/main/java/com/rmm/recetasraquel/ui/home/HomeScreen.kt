@@ -16,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -46,6 +47,7 @@ fun HomeScreen(
     onToggleFavorite: (RecipeSummary) -> Unit,
     onOpenRecipe: (String) -> Unit,
     onOpenSettings: () -> Unit,
+    onCreateRecipe: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -58,6 +60,12 @@ fun HomeScreen(
                     ) { Text("Ajustes") }
                 },
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onCreateRecipe,
+                modifier = Modifier.semantics { contentDescription = "Nueva receta" },
+            ) { Text("+") }
         },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp)) {

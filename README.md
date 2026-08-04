@@ -10,7 +10,7 @@ Aplicación Android privada y local-first para guardar y consultar recetas sin c
 
 ## Estado
 
-El Sprint 2 incorpora un catálogo consultable con búsqueda por receta, categoría e ingrediente, filtros de favoritas y categoría, detalle completo y cambio de favorito. Navigation Compose coordina catálogo, detalle y ajustes; la UI consume Room exclusivamente mediante ViewModels y `RecipeRepository`. Todavía no existe editor funcional.
+El Sprint 3 incorpora editor de recetas con creación, edición y eliminación. La pantalla única del editor permite campos obligatorios, ingredientes y pasos con reordenamiento, validación en línea, detección de cambios sin guardar y eliminación con confirmación. La UI consume Room exclusivamente mediante ViewModels y `RecipeRepository`.
 
 La base de producción se llama `recipes.db`. El esquema continúa en versión 1 y se exporta a `app/schemas`. Los IDs son UUID almacenados como `String` y los timestamps son milisegundos Unix UTC (`Long`).
 

@@ -24,6 +24,6 @@ Los modelos de dominio son independientes de Room. Entidades persistentes usan I
 
 ## Escritura y evolución
 
-Creación y actualización conservan la normalización, UUID, timestamps y transacción del Sprint 1, aunque no se exponen en UI. `Tag`, `RecipeTag`, fotos funcionales y `SyncQueue` siguen futuros.
+Creación usa `RecipeDraft.toNewRecipe()` que genera nuevo `id`, `createdAt` e `updatedAt` con `IdGenerator` y `TimeProvider`, y `isFavorite = false`. Actualización usa `RecipeDraft.toUpdatedRecipe()` que preserva `id`, `createdAt` e `isFavorite` del existente, genera nuevos IDs solo para hijos nuevos (`id ?: idGenerator.newId()`), y actualiza `updatedAt`. Ambas rutas pasan por `RecipeMapper.normalizeDraft()` → `RecipeValidator.normalize()` y se persisten con `saveRecipeWithDetails` (transacción `@Transaction`).
 
-Sprint 2 no cambia entidades, tablas, columnas, tipos, claves, índices ni relaciones. `RecipeDatabase` continúa en versión 1. El único esquema es `app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/1.json`; no existe `2.json` ni migración.
+Sprint 3 no cambia entidades, tablas, columnas, tipos, claves, índices ni relaciones. `RecipeDatabase` continúa en versión 1. El único esquema es `app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/1.json`; no existe `2.json` ni migración.

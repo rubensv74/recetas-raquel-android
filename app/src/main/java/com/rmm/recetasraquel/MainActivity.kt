@@ -16,6 +16,7 @@ class MainActivity : ComponentActivity() {
             RecetasRaquelTheme {
                 RecetasRaquelApp(
                     repository = container.recipeRepository,
+                    idGenerator = container.idGenerator,
                     demoDataController = container.demoDataController,
                 )
             }
