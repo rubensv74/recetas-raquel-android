@@ -15,13 +15,15 @@ El flujo es UI → ViewModel → Repository → DAO → Room/SQLite → Flow →
 
 ## Navegación y estados
 
-Navigation Compose centraliza `catalog`, `recipe/{recipeId}` y `settings`; el inicio es `catalog`. El detalle obtiene `recipeId` mediante `SavedStateHandle` y no recibe objetos completos. El ViewModel del catálogo permanece en su entrada del back stack, conservando búsqueda y filtros al volver.
+Navigation Compose centraliza `catalog`, `recipe/{recipeId}`, `recipe/new`, `recipe/{recipeId}/edit` y `settings`; el inicio es `catalog`. El detalle obtiene `recipeId` mediante `SavedStateHandle` y no recibe objetos completos. El editor usa `RecipeEditorViewModel` con `SavedStateHandle` para determinar modo creación (`new`) o edición (`{recipeId}`).
 
-`RecipeCatalogViewModel` y `RecipeDetailViewModel` usan `StateFlow`, `viewModelScope`, `SharingStarted.WhileSubscribed` y factories manuales. Compose recoge estado con `collectAsStateWithLifecycle`. Catálogo distingue carga, base vacía, sin resultados, contenido y error; detalle distingue carga, contenido, no encontrado y error.
+`RecipeCatalogViewModel`, `RecipeDetailViewModel` y `RecipeEditorViewModel` usan `StateFlow`, `viewModelScope` y factories manuales. Compose recoge estado con `collectAsStateWithLifecycle`. Catálogo distingue carga, base vacía, sin resultados, contenido y error; detalle distingue carga, contenido, no encontrado y error; editor distingue carga, no encontrado, error y contenido con validación.
+
+El editor usa `MutableSharedFlow<EditorNavigationEvent>` para navegación de un solo uso (creado, actualizado, eliminado). Los cambios sin guardar se detectan comparando `NormalizedEditorState` actual con el estado inicial normalizado. El doble guardado se previene con flags `isSaving`/`isDeleting`.
 
 ## Persistencia y catálogo
 
-`RecipeDatabase` continúa en esquema 1 con `exportSchema = true`. No hay migraciones ni migración destructiva. La transacción `saveRecipeWithDetails` y las cascadas del Sprint 1 no cambian.
+`RecipeDatabase` continúa en esquema 1 con `exportSchema = true`. No hay migraciones ni migración destructiva. La transacción `saveRecipeWithDetails` y las cascadas del Sprint 1 no cambian. El editor reutiliza la misma transacción para creación y actualización, preservando `createdAt`, `isFavorite` e IDs existentes de ingredientes/pasos. Los IDs nuevos se generan con `IdGenerator` en el mapper.
 
 `RecipeSummary` evita representar recetas incompletas y cargar ingredientes/pasos para cada tarjeta. SQL parametrizado combina consulta, favoritas y categoría. `EXISTS` busca ingredientes sin duplicar recetas; Room ordena por `updatedAt DESC`. Las categorías usan `DISTINCT`, excluyen nulos/vacíos y se ordenan sin distinguir mayúsculas cuando SQLite lo permite. Los índices existentes `(recipeId, sortOrder)` siguen cubriendo relaciones y subconsulta.
 

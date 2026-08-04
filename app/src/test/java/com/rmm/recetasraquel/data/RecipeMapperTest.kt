@@ -24,7 +24,7 @@ class RecipeMapperTest {
         val recipe = RecipeDraft(
             name = " Tortilla ",
             ingredients = listOf(IngredientDraft(quantity = "1/2", name = " Cebolla ")),
-            steps = listOf(RecipeStepDraft(" Cocinar ")),
+            steps = listOf(RecipeStepDraft(instruction = " Cocinar ")),
         ).toNewRecipe(IdGenerator { ids.removeFirst() }, TimeProvider { 1234L })
 
         assertEquals("recipe-id", recipe.id)

@@ -20,6 +20,14 @@ data class PersistedRecipe(
 )
 
 object RecipeMapper {
+    fun normalizeDraft(draft: RecipeDraft): RecipeDraft {
+        val filtered = draft.copy(
+            ingredients = draft.ingredients.filter { it.name.isNotBlank() },
+            steps = draft.steps.filter { it.instruction.isNotBlank() || it.timerMinutes != null },
+        )
+        return RecipeValidator.normalize(filtered)
+    }
+
     fun RecipeEntity.toSummary(): RecipeSummary = RecipeSummary(
         id = id,
         name = name,
@@ -72,7 +80,7 @@ object RecipeMapper {
     }
 
     fun RecipeDraft.toNewRecipe(idGenerator: IdGenerator, timeProvider: TimeProvider): Recipe {
-        val normalized = RecipeValidator.normalize(this)
+        val normalized = normalizeDraft(this)
         val recipeId = idGenerator.newId()
         val now = timeProvider.nowEpochMillis()
         return Recipe(
@@ -88,7 +96,7 @@ object RecipeMapper {
             coverPhotoPath = normalized.coverPhotoPath,
             ingredients = normalized.ingredients.mapIndexed { index, ingredient ->
                 Ingredient(
-                    id = idGenerator.newId(),
+                    id = ingredient.id ?: idGenerator.newId(),
                     recipeId = recipeId,
                     quantity = ingredient.quantity,
                     unit = ingredient.unit,
@@ -99,7 +107,7 @@ object RecipeMapper {
             },
             steps = normalized.steps.mapIndexed { index, step ->
                 RecipeStep(
-                    id = idGenerator.newId(),
+                    id = step.id ?: idGenerator.newId(),
                     recipeId = recipeId,
                     instruction = step.instruction,
                     timerMinutes = step.timerMinutes,
@@ -108,6 +116,50 @@ object RecipeMapper {
                 )
             },
             createdAt = now,
+            updatedAt = now,
+        )
+    }
+
+    fun RecipeDraft.toUpdatedRecipe(
+        existingRecipe: Recipe,
+        idGenerator: IdGenerator,
+        timeProvider: TimeProvider,
+    ): Recipe {
+        val normalized = normalizeDraft(this)
+        val now = timeProvider.nowEpochMillis()
+        return Recipe(
+            id = existingRecipe.id,
+            name = normalized.name,
+            description = normalized.description,
+            category = normalized.category,
+            servings = normalized.servings,
+            preparationMinutes = normalized.preparationMinutes,
+            cookingMinutes = normalized.cookingMinutes,
+            notes = normalized.notes,
+            isFavorite = existingRecipe.isFavorite,
+            coverPhotoPath = normalized.coverPhotoPath,
+            ingredients = normalized.ingredients.mapIndexed { index, ingredient ->
+                Ingredient(
+                    id = ingredient.id ?: idGenerator.newId(),
+                    recipeId = existingRecipe.id,
+                    quantity = ingredient.quantity,
+                    unit = ingredient.unit,
+                    name = ingredient.name,
+                    notes = ingredient.notes,
+                    sortOrder = index,
+                )
+            },
+            steps = normalized.steps.mapIndexed { index, step ->
+                RecipeStep(
+                    id = step.id ?: idGenerator.newId(),
+                    recipeId = existingRecipe.id,
+                    instruction = step.instruction,
+                    timerMinutes = step.timerMinutes,
+                    photoPath = step.photoPath,
+                    sortOrder = index,
+                )
+            },
+            createdAt = existingRecipe.createdAt,
             updatedAt = now,
         )
     }

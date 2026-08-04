@@ -35,6 +35,7 @@ fun RecipeDetailScreen(
     state: DetailUiState,
     onNavigateBack: () -> Unit,
     onToggleFavorite: () -> Unit,
+    onEditRecipe: (String) -> Unit = {},
 ) {
     val recipe = (state as? DetailUiState.Content)?.recipe
     Scaffold(
@@ -49,6 +50,10 @@ fun RecipeDetailScreen(
                 },
                 actions = {
                     recipe?.let {
+                        TextButton(
+                            onClick = { onEditRecipe(it.id) },
+                            modifier = Modifier.semantics { contentDescription = "Editar receta" },
+                        ) { Text("Editar") }
                         IconButton(
                             onClick = onToggleFavorite,
                             modifier = Modifier.semantics {

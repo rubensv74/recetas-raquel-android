@@ -46,7 +46,7 @@
 
 ## ADR-012 — Navigation Compose y ViewModels
 
-**Aceptada.** Rutas `catalog`, `recipe/{recipeId}` y `settings`; estados `StateFlow`; ID desde `SavedStateHandle`.
+**Aceptada.** Rutas `catalog`, `recipe/{recipeId}`, `recipe/new`, `recipe/{recipeId}/edit` y `settings`; estados `StateFlow`; ID desde `SavedStateHandle`. Navegación de un solo uso con `SharedFlow`.
 
 ## ADR-013 — Read model y consulta SQL
 
@@ -55,3 +55,7 @@
 ## ADR-014 — Datos demo por source set
 
 **Aceptada.** Cinco recetas deterministas viven solo en debug, bajo acción explícita e idempotente. Release devuelve controlador nulo.
+
+## ADR-015 — Editor de recetas sin esquema nuevo
+
+**Aceptada en Sprint 3.** El editor funciona con el esquema v1 existente. `RecipeMapper.toUpdatedRecipe` preserva IDs de recetas hijas para actualizaciones in-place, y `LocalRecipeRepository.updateRecipeFromDraft` usa la estrategia de reemplazo transaccional del DAO. No se añaden dependencias ni migraciones.

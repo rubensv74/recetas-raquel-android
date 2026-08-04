@@ -12,9 +12,9 @@ Modelos, validaciones, Room v1, DAO transaccional, repositorio, mappers, inyecci
 
 Catálogo, búsqueda por receta/categoría/ingrediente, filtros combinables, detalle, favoritos, Navigation Compose, ViewModels y datos demo exclusivos de debug. Sin creación, edición ni cambios de esquema.
 
-## Sprint 3 — Edición y modo cocina
+## Sprint 3 — Edición de recetas (implementado)
 
-Editor de recetas y evolución de consulta/modo cocina según un encargo específico. No se anticipa en Sprint 2.
+Editor de recetas con creación, edición y eliminación. Pantalla única con scroll, validación de campos obligatorios, detección de cambios sin guardar, reordenamiento de ingredientes/pasos, navegación con eventos de SharedFlow y pruebas unitarias del ViewModel.
 
 ## Sprint 4 — Fotos, backup y robustez
 

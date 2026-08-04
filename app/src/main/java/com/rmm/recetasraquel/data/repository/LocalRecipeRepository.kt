@@ -7,6 +7,7 @@ import com.rmm.recetasraquel.data.mapper.RecipeMapper.toDomain
 import com.rmm.recetasraquel.data.mapper.RecipeMapper.toNewRecipe
 import com.rmm.recetasraquel.data.mapper.RecipeMapper.toPersisted
 import com.rmm.recetasraquel.data.mapper.RecipeMapper.toSummary
+import com.rmm.recetasraquel.data.mapper.RecipeMapper.toUpdatedRecipe
 import com.rmm.recetasraquel.domain.model.RecipeCatalogFilter
 import com.rmm.recetasraquel.domain.model.RecipeSummary
 import com.rmm.recetasraquel.domain.model.Recipe
@@ -66,6 +67,25 @@ class LocalRecipeRepository(
             val persisted = recipe.toPersisted(updatedAt = timeProvider.nowEpochMillis())
             dao.saveRecipeWithDetails(persisted.recipe, persisted.ingredients, persisted.steps)
             Result.success(Unit)
+        } catch (error: RecipeValidationException) {
+            Result.failure(error)
+        } catch (error: SQLiteException) {
+            Result.failure(error)
+        } catch (error: AndroidXSQLiteException) {
+            Result.failure(error)
+        }
+    }
+
+    override suspend fun updateRecipeFromDraft(recipeId: String, draft: RecipeDraft): Result<Unit> {
+        return try {
+            val existing = dao.getRecipeWithDetails(recipeId)?.toDomain()
+                ?: throw RecipeNotFoundException(recipeId)
+            val recipe = draft.toUpdatedRecipe(existing, idGenerator, timeProvider)
+            val persisted = recipe.toPersisted(updatedAt = timeProvider.nowEpochMillis())
+            dao.saveRecipeWithDetails(persisted.recipe, persisted.ingredients, persisted.steps)
+            Result.success(Unit)
+        } catch (error: RecipeNotFoundException) {
+            Result.failure(error)
         } catch (error: RecipeValidationException) {
             Result.failure(error)
         } catch (error: SQLiteException) {
