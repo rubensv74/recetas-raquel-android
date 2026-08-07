@@ -10,7 +10,7 @@ Modelos, validaciones, Room v1, DAO transaccional, repositorio, mappers, inyecci
 
 ## Sprint 2 — Catálogo y consulta (implementado)
 
-Catálogo, búsqueda por receta/categoría/ingrediente, filtros combinables, detalle, favoritos, Navigation Compose, ViewModels y datos demo exclusivos de debug. Sin creación, edición ni cambios de esquema.
+Catálogo de recetas, búsqueda por receta/categoría/ingrediente, filtros combinables, detalle, favoritos, Navigation Compose, ViewModels y datos demo exclusivos de debug. Sin creación, edición ni cambios de esquema.
 
 ## Sprint 3 — Edición de recetas (implementado)
 
@@ -21,13 +21,12 @@ Editor de recetas con creación, edición y eliminación. Pantalla única con sc
 Soporte para fotos de portada y fotos por paso dentro del editor y la consulta.
 
 - **Domain**: `RecipePhotoStorage`, `PhotoDestination` (sealed), `StagedPhoto` en `domain/photos/`.
-- **Data**: `LocalRecipePhotoStorage` con fix EXIF, JPEG quality 85, max 2048px, staging/promote, almacenamiento privado en `recipe_photos/`.
-- **UI**: `EditorPhotoState` para estado del editor; `CoverPhotoSection`, `StepPhotoSection` con `PickVisualMedia` en `RecipeEditorScreen`; portada con Coil `AsyncImage` en `HomeScreen` y `RecipeDetailScreen`.
-- **Guardado**: `SaveRecipeUseCase` promueve las fotos antes de la escritura Room, persiste únicamente rutas permanentes y compensa eliminando archivos recién promovidos si Room falla. Fotos sustituidas se eliminan solo tras éxito.
-- **Infraestructura**: Coil 2.7.0 y ExifInterface 1.4.1; `String` URI en domain (ADR-016); `unitTests.isReturnDefaultValues = true`.
-- **Validación de cierre**: 91 pruebas unitarias y 28 instrumentadas, build debug/release y lint superados antes del merge del PR #5.
+- **Data**: `LocalRecipePhotoStorage` con corrección EXIF, JPEG quality 85, max 2048px, staging/promote y almacenamiento privado en `recipe_photos/`.
+- **UI**: `EditorPhotoState` para estado del editor; Photo Picker en editor; portada/pasos con Coil `AsyncImage`.
+- **Guardado**: `SaveRecipeUseCase` promueve fotos, persiste rutas permanentes y compensa si Room falla.
+- **Validación de cierre**: build debug/release, lint, pruebas unitarias/instrumentadas y aceptación manual superadas antes del merge.
 
-## Sprint 5 — Modo cocina (implementado en rama; validación pendiente)
+## Sprint 5 — Modo cocina (completado)
 
 Experiencia guiada para ejecutar una receta mientras se cocina.
 
@@ -35,15 +34,58 @@ Experiencia guiada para ejecutar una receta mientras se cocina.
 - Ruta `recipe/{recipeId}/cook` y `CookingModeViewModel` con `SavedStateHandle`.
 - Un paso cada vez, contador y progreso.
 - Navegación anterior/siguiente y finalización desde el último paso.
-- Foto del paso en tamaño grande cuando exista.
+- Foto del paso cuando existe.
 - Tiempo configurado mostrado como referencia, sin temporizador ejecutable.
 - Ingredientes en hoja inferior sin abandonar el paso actual.
 - Pantalla mantenida activa exclusivamente durante modo cocina.
 - Sin cambios en Room v1, permisos, backend o almacenamiento.
-- Pruebas unitarias e instrumentadas específicas añadidas; falta ejecutar la suite completa y aceptación manual antes de merge.
+- Validación automatizada y aceptación manual superadas; PR #6 fusionado en `master`.
 
 Ver `SPRINT_05_COOKING_MODE.md` para el contrato de alcance y validación.
 
-### Fases futuras
+## Programa prioritario — Biblioteca maestra de ingredientes y seguridad alimentaria (ACTIVO)
 
-Temporizadores ejecutables, backup exportación/importación, migraciones cuando sean necesarias, accesibilidad y rendimiento. GitHub Sync fuera de alcance hasta diseño propio de seguridad y conflictos.
+Esta línea de trabajo tiene prioridad sobre los sprints de UX/polish previamente previstos.
+
+Objetivos principales:
+
+- biblioteca maestra amplia de ingredientes;
+- separación entre ingrediente de catálogo, uso en receta e ingrediente personalizado;
+- taxonomía de seguridad alimentaria extensible;
+- trazabilidad de fuentes/evidencia;
+- alertas no absolutas sobre alérgenos, derivados, PAL, reactividad cruzada e información desconocida;
+- migración conservadora desde Room v1 con pérdida de datos = 0;
+- catálogo versionado independiente del esquema Room;
+- funcionamiento completamente offline.
+
+Documentación de control:
+
+```text
+docs/ingredient-library/
+docs/food-safety/
+```
+
+Estado actual:
+
+```text
+Fase 0 — auditoría                    CERRADA
+Fase 1 — investigación               CERRADA para pasar a diseño
+Fase 2 — diseño                      PREPARADO
+Generación masiva de catálogo        BLOQUEADA hasta gate específico
+Migración Room / implementación      PENDIENTE
+```
+
+## Sprints futuros congelados
+
+Quedan expresamente pospuestos hasta nueva decisión de producto:
+
+- mejora UX del editor;
+- selector premium de unidades;
+- pickers/steppers de tiempos;
+- rediseño visual y nueva paleta premium;
+- temporizadores ejecutables;
+- otras mejoras visuales detectadas durante Sprint 5.
+
+## Fases futuras generales
+
+Backup exportación/importación, accesibilidad y rendimiento seguirán evaluándose cuando corresponda. GitHub Sync continúa fuera de alcance hasta disponer de un diseño específico de seguridad y resolución de conflictos.
