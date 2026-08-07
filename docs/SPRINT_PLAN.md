@@ -73,7 +73,7 @@ Fase 1 — investigación               CERRADA para pasar a diseño
 Fase 2 — diseño                      CERRADA como base de implementación
 Fase 3 — Room v1 -> v2               CERRADA — 34/34 instrumented PASS
 Fase 4 — infraestructura catálogo    CERRADA — 36/36 instrumented PASS
-Población controlada del catálogo    EN CURSO — catálogo v2 legal escrito; gate local pendiente
+Población controlada del catálogo    SEED v2 VALIDADO — siguiente lote autorizado a preparar
 Mapeo masivo no revisado             NO AUTORIZADO
 Merge a master                       NO AUTORIZADO todavía
 ```
@@ -98,9 +98,9 @@ Ver `docs/ingredient-library/09_PHASE_04_CATALOG_INFRASTRUCTURE.md`.
 
 ### Población controlada — catálogo regulatorio v2
 
-Se ha creado `app/src/main/assets/ingredient-catalog/v2/` como nueva versión inmutable del catálogo. El lector activo apunta ahora a v2, lo que permite detectar una actualización real desde una instalación que ya hubiera importado v1.
+`app/src/main/assets/ingredient-catalog/v2/` es la primera versión poblada e inmutable del catálogo. El lector activo apunta a v2, permitiendo una actualización real desde instalaciones que ya hubieran importado v1.
 
-El manifiesto v2 está en estado `DRAFT` y contiene un primer lote deliberadamente pequeño y trazable:
+El manifiesto v2 continúa en estado `DRAFT` y contiene:
 
 ```text
 20 categorías
@@ -114,6 +114,10 @@ El manifiesto v2 está en estado `DRAFT` y contiene un primer lote deliberadamen
 El lote se limita a términos directamente respaldados por el Anexo II y evita expandir por inferencia especies de crustáceos, pescados o moluscos, derivados, preparados comerciales o ingredientes compuestos.
 
 El tratamiento de sulfitos conserva explícitamente el umbral de 10 mg/kg o 10 mg/l de SO2 total; la mostaza conserva la excepción específica del Reglamento Delegado (UE) 2024/2512.
+
+El gate local del seed v2 ha quedado superado: `assembleDebug`, unit tests, lint, compilación instrumentada y `assembleRelease` PASS; `connectedDebugAndroidTest` PASS 36/36; Room mantiene únicamente `1.json` y `2.json`; working tree limpio.
+
+El siguiente lote controlado puede prepararse con ingredientes culinarios comunes y alias, manteniendo separada la existencia de un ingrediente de la existencia de una relación de seguridad verificada. La ausencia de relación no puede interpretarse como ausencia de riesgo.
 
 Ver `docs/ingredient-library/10_CONTROLLED_CATALOG_SEED.md` y `docs/food-safety/INGREDIENT_COVERAGE_MATRIX.md`.
 
