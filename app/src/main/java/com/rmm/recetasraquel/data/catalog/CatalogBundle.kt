@@ -14,8 +14,10 @@ data class CatalogManifest(
 
 data class CatalogFiles(
     val categories: String,
-    val ingredients: String,
-    val aliases: String,
+    val ingredients: String? = null,
+    val aliases: String? = null,
+    val ingredientShards: List<String>? = null,
+    val aliasShards: List<String>? = null,
     val safetyGroups: String,
     val safetySources: String,
     val safetyRelations: String,
