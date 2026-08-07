@@ -72,8 +72,9 @@ Fase 0 — auditoría                    CERRADA
 Fase 1 — investigación               CERRADA para pasar a diseño
 Fase 2 — diseño                      CERRADA como base de implementación
 Fase 3 — Room v1 -> v2               CERRADA — 34/34 instrumented PASS
-Fase 4 — infraestructura catálogo    EN CURSO — implementación escrita, gate local pendiente
-Generación masiva de catálogo        BLOQUEADA hasta gate específico
+Fase 4 — infraestructura catálogo    CERRADA — 36/36 instrumented PASS
+Población controlada del catálogo    SIGUIENTE
+Mapeo masivo no revisado             NO AUTORIZADO
 Merge a master                       NO AUTORIZADO todavía
 ```
 
@@ -85,9 +86,13 @@ La migración conserva los datos legacy y asigna a cada ingrediente antiguo un o
 
 Queda como requisito transitorio para fases posteriores asegurar que todo ingrediente nuevo creado por el flujo de biblioteca/personalizado persista exactamente un origen (`catalogIngredientId XOR customIngredientId`) antes de autorizar el merge completo del programa a `master`.
 
-### Fase 4 en curso
+### Gate Fase 4 superado
 
-Se ha creado la infraestructura del catálogo versionado bajo `app/src/main/assets/ingredient-catalog/v1/`, con manifiesto, 20 categorías estructurales, parser JSON, normalización determinista, validador integral, DAO/importador transaccional, repositorio separado y pruebas. El bundle permanece en estado `INFRASTRUCTURE` y contiene cero ingredientes canónicos y cero relaciones de seguridad hasta superar los gates de calidad y evidencia.
+La infraestructura del catálogo versionado bajo `app/src/main/assets/ingredient-catalog/v1/` está validada. Incluye manifiesto, 20 categorías estructurales, parser JSON, normalización determinista, validador integral, DAO/importador transaccional, repositorio separado y pruebas de importación/idempotencia/rollback.
+
+Validación de cierre: `assembleDebug`, unit tests, lint, compilación instrumentada y `assembleRelease` PASS; `connectedDebugAndroidTest` PASS 36/36; working tree limpio.
+
+El bundle permanece en estado `INFRASTRUCTURE` y contiene cero ingredientes canónicos y cero relaciones de seguridad. La infraestructura está autorizada para comenzar población controlada; esto no autoriza inferencias ni generación masiva no revisada de relaciones de seguridad alimentaria.
 
 Ver `docs/ingredient-library/09_PHASE_04_CATALOG_INFRASTRUCTURE.md`.
 
