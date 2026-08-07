@@ -119,13 +119,15 @@ catalogVersion           3
 releaseStatus            DRAFT
 categorías               20
 ingredientes canónicos  127
-alias                    151
+alias                    122
 grupos de seguridad      14
 fuentes de seguridad      3
 relaciones de seguridad  27
 ```
 
-Batch 01 añade 100 ingredientes culinarios de verduras, frutas, hierbas, especias, cereales y legumbres, junto con 129 alias de búsqueda. Los 27 anclajes regulatorios y sus relaciones permanecen intactos.
+Batch 01 añade 100 ingredientes culinarios de verduras, frutas, hierbas, especias, cereales y legumbres, junto con 100 alias nuevos de búsqueda. Los 27 anclajes regulatorios, sus 22 alias y sus relaciones permanecen intactos.
+
+Durante la revisión del lote se descartaron alias que introducían calificadores de presentación/preparación, para no colapsar silenciosamente identidades distintas solo con el objetivo de aumentar cobertura.
 
 Los 100 ingredientes nuevos están marcados `REVIEW_REQUIRED` y no reciben relaciones de seguridad por inferencia. La existencia de un ingrediente en la biblioteca y la existencia de evidencia de seguridad siguen siendo conceptos separados.
 
