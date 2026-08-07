@@ -23,11 +23,20 @@ interface IngredientCatalogDao {
     @Query("SELECT * FROM ingredient_categories WHERE isActive = 1 ORDER BY sortOrder ASC, name COLLATE NOCASE ASC")
     fun observeActiveCategories(): Flow<List<IngredientCategoryEntity>>
 
+    @Query("SELECT COUNT(*) FROM ingredient_categories WHERE isActive = 1")
+    suspend fun countActiveCategories(): Int
+
     @Query("SELECT COUNT(*) FROM catalog_ingredients WHERE isActive = 1")
     suspend fun countActiveIngredients(): Int
 
     @Query("SELECT COUNT(*) FROM ingredient_aliases")
     suspend fun countAliases(): Int
+
+    @Query("SELECT COUNT(*) FROM food_safety_groups WHERE isActive = 1")
+    suspend fun countActiveSafetyGroups(): Int
+
+    @Query("SELECT COUNT(*) FROM ingredient_safety_relations")
+    suspend fun countSafetyRelations(): Int
 
     @Upsert
     suspend fun upsertCategories(items: List<IngredientCategoryEntity>)
