@@ -24,12 +24,33 @@ class IngredientCatalogAssetReader(
         return IngredientCatalogBundle(
             manifest = manifest,
             categories = readList(versionDirectory, manifest.files.categories),
-            ingredients = readList(versionDirectory, manifest.files.ingredients),
-            aliases = readList(versionDirectory, manifest.files.aliases),
+            ingredients = readFileSet(
+                versionDirectory = versionDirectory,
+                singleFile = manifest.files.ingredients,
+                shards = manifest.files.ingredientShards,
+            ),
+            aliases = readFileSet(
+                versionDirectory = versionDirectory,
+                singleFile = manifest.files.aliases,
+                shards = manifest.files.aliasShards,
+            ),
             safetyGroups = readList(versionDirectory, manifest.files.safetyGroups),
             safetySources = readList(versionDirectory, manifest.files.safetySources),
             safetyRelations = readList(versionDirectory, manifest.files.safetyRelations),
         )
+    }
+
+    private inline fun <reified T> readFileSet(
+        versionDirectory: String,
+        singleFile: String?,
+        shards: List<String>?,
+    ): List<T> {
+        val files = when {
+            !shards.isNullOrEmpty() -> shards
+            !singleFile.isNullOrBlank() -> listOf(singleFile)
+            else -> emptyList()
+        }
+        return files.flatMap { readList<T>(versionDirectory, it) }
     }
 
     private inline fun <reified T> readList(versionDirectory: String, fileName: String): List<T> {
@@ -38,6 +59,6 @@ class IngredientCatalogAssetReader(
     }
 
     companion object {
-        const val DEFAULT_VERSION_DIRECTORY = "ingredient-catalog/v2"
+        const val DEFAULT_VERSION_DIRECTORY = "ingredient-catalog/v3"
     }
 }
