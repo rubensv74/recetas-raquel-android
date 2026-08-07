@@ -25,6 +25,8 @@ data class Ingredient(
     val name: String,
     val notes: String?,
     val sortOrder: Int,
+    val catalogIngredientId: String? = null,
+    val customIngredientId: String? = null,
 )
 
 data class RecipeStep(
