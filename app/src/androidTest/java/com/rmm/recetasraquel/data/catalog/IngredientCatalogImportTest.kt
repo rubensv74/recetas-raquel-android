@@ -35,6 +35,7 @@ class IngredientCatalogImportTest {
         val reader = IngredientCatalogAssetReader(AndroidAssetCatalogTextSource(context.assets))
         val bundle = reader.read()
 
+        assertEquals(2, bundle.manifest.catalogVersion)
         assertEquals("DRAFT", bundle.manifest.releaseStatus)
         assertEquals(20, bundle.categories.size)
         assertEquals(27, bundle.ingredients.size)
@@ -81,7 +82,7 @@ class IngredientCatalogImportTest {
         assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
 
         val metadata = requireNotNull(database.ingredientCatalogDao().getMetadata(CatalogImporter.METADATA_KEY))
-        assertEquals(1, metadata.catalogVersion)
+        assertEquals(2, metadata.catalogVersion)
         assertEquals("es-ES", metadata.locale)
         assertEquals("EU-ES", metadata.jurisdiction)
         assertEquals(1234L, metadata.importedAt)
@@ -102,7 +103,7 @@ class IngredientCatalogImportTest {
         realImporter.ensureImported()
 
         val brokenImporter = CatalogImporter(
-            reader = IngredientCatalogAssetReader(BrokenVersionTwoSource()),
+            reader = IngredientCatalogAssetReader(BrokenVersionThreeSource()),
             dao = database.ingredientCatalogDao(),
             timeProvider = TimeProvider { 200L },
         )
@@ -112,16 +113,16 @@ class IngredientCatalogImportTest {
         assertEquals(20, database.ingredientCatalogDao().countActiveCategories())
         assertEquals(27, database.ingredientCatalogDao().countActiveIngredients())
         assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
-        assertEquals(1, database.ingredientCatalogDao().getMetadata(CatalogImporter.METADATA_KEY)?.catalogVersion)
+        assertEquals(2, database.ingredientCatalogDao().getMetadata(CatalogImporter.METADATA_KEY)?.catalogVersion)
     }
 
-    private class BrokenVersionTwoSource : CatalogTextSource {
+    private class BrokenVersionThreeSource : CatalogTextSource {
         private val values = mapOf(
-            "ingredient-catalog/v1/manifest.json" to """
+            "ingredient-catalog/v2/manifest.json" to """
                 {
                   "catalogId":"broken",
                   "schemaVersion":1,
-                  "catalogVersion":2,
+                  "catalogVersion":3,
                   "releaseStatus":"INFRASTRUCTURE",
                   "locale":"es-ES",
                   "jurisdiction":"EU-ES",
@@ -144,12 +145,12 @@ class IngredientCatalogImportTest {
                   }
                 }
             """.trimIndent(),
-            "ingredient-catalog/v1/categories.json" to "[]",
-            "ingredient-catalog/v1/ingredients.json" to "[]",
-            "ingredient-catalog/v1/aliases.json" to "[]",
-            "ingredient-catalog/v1/safety-groups.json" to "[]",
-            "ingredient-catalog/v1/safety-sources.json" to "[]",
-            "ingredient-catalog/v1/safety-relations.json" to "[]",
+            "ingredient-catalog/v2/categories.json" to "[]",
+            "ingredient-catalog/v2/ingredients.json" to "[]",
+            "ingredient-catalog/v2/aliases.json" to "[]",
+            "ingredient-catalog/v2/safety-groups.json" to "[]",
+            "ingredient-catalog/v2/safety-sources.json" to "[]",
+            "ingredient-catalog/v2/safety-relations.json" to "[]",
         )
 
         override fun read(path: String): String = values[path] ?: error("Missing broken test asset: $path")
