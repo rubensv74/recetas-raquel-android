@@ -73,7 +73,7 @@ Fase 1 — investigación               CERRADA para pasar a diseño
 Fase 2 — diseño                      CERRADA como base de implementación
 Fase 3 — Room v1 -> v2               CERRADA — 34/34 instrumented PASS
 Fase 4 — infraestructura catálogo    CERRADA — 36/36 instrumented PASS
-Población controlada del catálogo    EN CURSO — seed legal v1 escrito; gate local pendiente
+Población controlada del catálogo    EN CURSO — catálogo v2 legal escrito; gate local pendiente
 Mapeo masivo no revisado             NO AUTORIZADO
 Merge a master                       NO AUTORIZADO todavía
 ```
@@ -92,11 +92,15 @@ La infraestructura del catálogo versionado bajo `app/src/main/assets/ingredient
 
 Validación de cierre: `assembleDebug`, unit tests, lint, compilación instrumentada y `assembleRelease` PASS; `connectedDebugAndroidTest` PASS 36/36; working tree limpio.
 
+`ingredient-catalog/v1/` se conserva como bundle histórico e inmutable de infraestructura.
+
 Ver `docs/ingredient-library/09_PHASE_04_CATALOG_INFRASTRUCTURE.md`.
 
-### Población controlada — seed regulatorio v1
+### Población controlada — catálogo regulatorio v2
 
-El bundle ha pasado de `INFRASTRUCTURE` a `DRAFT` y contiene un primer lote deliberadamente pequeño y trazable:
+Se ha creado `app/src/main/assets/ingredient-catalog/v2/` como nueva versión inmutable del catálogo. El lector activo apunta ahora a v2, lo que permite detectar una actualización real desde una instalación que ya hubiera importado v1.
+
+El manifiesto v2 está en estado `DRAFT` y contiene un primer lote deliberadamente pequeño y trazable:
 
 ```text
 20 categorías
