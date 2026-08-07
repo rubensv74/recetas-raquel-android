@@ -42,9 +42,6 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
-    sourceSets {
-        getByName("androidTest").assets.srcDir("$projectDir/schemas")
-    }
     room {
         schemaDirectory("$projectDir/schemas")
     }
@@ -73,7 +70,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    androidTestImplementation(libs.androidx.room.testing)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
