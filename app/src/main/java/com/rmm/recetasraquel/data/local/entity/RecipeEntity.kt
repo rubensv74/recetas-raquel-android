@@ -30,8 +30,24 @@ data class RecipeEntity(
             childColumns = ["recipeId"],
             onDelete = ForeignKey.CASCADE,
         ),
+        ForeignKey(
+            entity = CatalogIngredientEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["catalogIngredientId"],
+            onDelete = ForeignKey.NO_ACTION,
+        ),
+        ForeignKey(
+            entity = CustomIngredientEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["customIngredientId"],
+            onDelete = ForeignKey.NO_ACTION,
+        ),
     ],
-    indices = [Index(value = ["recipeId", "sortOrder"])],
+    indices = [
+        Index(value = ["recipeId", "sortOrder"]),
+        Index(value = ["catalogIngredientId"]),
+        Index(value = ["customIngredientId"]),
+    ],
 )
 data class IngredientEntity(
     @PrimaryKey val id: String,
@@ -41,6 +57,8 @@ data class IngredientEntity(
     val name: String,
     val notes: String?,
     val sortOrder: Int,
+    val catalogIngredientId: String? = null,
+    val customIngredientId: String? = null,
 )
 
 @Entity(
