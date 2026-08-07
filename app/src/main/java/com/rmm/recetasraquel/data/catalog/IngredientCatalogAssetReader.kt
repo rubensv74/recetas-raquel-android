@@ -38,6 +38,6 @@ class IngredientCatalogAssetReader(
     }
 
     companion object {
-        const val DEFAULT_VERSION_DIRECTORY = "ingredient-catalog/v1"
+        const val DEFAULT_VERSION_DIRECTORY = "ingredient-catalog/v2"
     }
 }
