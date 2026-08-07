@@ -57,7 +57,7 @@ aliases-pantry.json
 ```text
 categories              20
 canonical ingredients   127
-aliases                 151
+aliases                 122
 EU safety groups         14
 safety sources            3
 safety relations         27
@@ -65,7 +65,7 @@ safety relations         27
 
 The 27 previously validated regulatory anchor ingredients and their 27 safety relations are preserved unchanged.
 
-Batch 01 adds **100 culinary ingredients** and **129 search aliases**.
+Batch 01 adds **100 culinary ingredients** and **100 new search aliases**, in addition to the 22 aliases inherited from the regulatory v2 seed.
 
 ## New culinary coverage
 
@@ -83,7 +83,7 @@ Examples include tomato, onion, garlic, potato, courgette, peppers, spinach, bro
 
 ## Search aliases
 
-Aliases include conservative plural, presentation and regional search forms such as:
+Aliases are deliberately identity-conservative. They include plural and regional forms such as:
 
 - `papa` / `papas` → `Patata`;
 - `batata` / `camote` → `Boniato`;
@@ -98,6 +98,8 @@ Aliases include conservative plural, presentation and regional search forms such
 - `palta` → `Aguacate`;
 - `alforfón` → `Trigo sarraceno`;
 - regional `frijol ...` forms → the corresponding alubia entry.
+
+During review, qualifying/presentation strings such as `jengibre fresco`, `arroz blanco`, `maíz en grano` or `pimienta negra molida` were removed from the alias set. Those expressions can carry preparation or presentation semantics and should not be silently collapsed into the canonical identity merely to increase alias counts.
 
 Aliases are search/navigation aids only. They do not create food-safety relations.
 
