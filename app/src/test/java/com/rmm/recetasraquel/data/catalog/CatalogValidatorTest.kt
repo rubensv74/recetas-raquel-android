@@ -13,6 +13,44 @@ class CatalogValidatorTest {
     }
 
     @Test
+    fun schemaTwoCanUseShardedIngredientAndAliasFiles() {
+        val base = validBundle()
+        val bundle = base.copy(
+            manifest = base.manifest.copy(
+                schemaVersion = 2,
+                files = base.manifest.files.copy(
+                    ingredients = null,
+                    aliases = null,
+                    ingredientShards = listOf("ingredients-a.json", "ingredients-b.json"),
+                    aliasShards = listOf("aliases-a.json"),
+                ),
+            ),
+        )
+
+        val result = CatalogValidator.validate(bundle)
+        assertTrue(result.errors.joinToString(), result.isValid)
+    }
+
+    @Test
+    fun rejectsAmbiguousSingleAndShardedFileModes() {
+        val base = validBundle()
+        val bundle = base.copy(
+            manifest = base.manifest.copy(
+                schemaVersion = 2,
+                files = base.manifest.files.copy(
+                    ingredientShards = listOf("ingredients-a.json"),
+                    aliasShards = listOf("aliases-a.json"),
+                ),
+            ),
+        )
+
+        val result = CatalogValidator.validate(bundle)
+        assertFalse(result.isValid)
+        assertTrue(result.errors.any { it.contains("exactly one ingredient file mode") })
+        assertTrue(result.errors.any { it.contains("exactly one alias file mode") })
+    }
+
+    @Test
     fun detectsManifestCountMismatchAndBrokenAliasReference() {
         val base = validBundle()
         val bundle = base.copy(
