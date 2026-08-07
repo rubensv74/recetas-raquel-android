@@ -34,7 +34,7 @@ Current active draft totals (`ingredient-catalog/v3`):
 
 ```text
 127 canonical ingredients
-151 aliases
+122 aliases
 14 EU Annex II regulatory groups
 3 authoritative EU sources
 27 reviewed safety relations
@@ -47,10 +47,19 @@ Composition of those 127 canonical entries:
 100 culinary identity entries marked REVIEW_REQUIRED
 ```
 
+Alias composition:
+
+```text
+22 aliases inherited from the regulatory v2 seed
+100 new identity-conservative aliases in Batch 01
+```
+
 `ingredient-catalog/v1` remains the immutable infrastructure-only bundle. `ingredient-catalog/v2` remains the immutable validated regulatory seed. Catalog v3 adds culinary identity/search coverage without changing the 27 reviewed safety relations.
 
 A zero in the relations column means no relation has yet been approved for that area. It does not mean absence of risk.
 
 The 100 Batch 01 culinary ingredients deliberately receive no safety relation by inference. In particular, the presence of buckwheat, fruit, vegetables, herbs, spices, rice, maize, quinoa, chickpea or other legumes in the catalog is not used as evidence for or against an allergy/restriction.
+
+The alias set is also conservative: qualifying presentation/preparation strings are not treated as automatic identity synonyms when doing so could erase meaningful distinctions.
 
 Generic entries for crustaceans, fish and molluscs remain intentional: species expansion is deferred until identity/taxonomy and safety mapping can be reviewed explicitly rather than inferred from model knowledge.
