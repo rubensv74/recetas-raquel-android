@@ -40,6 +40,7 @@ fun RecipeDetailScreen(
     onNavigateBack: () -> Unit,
     onToggleFavorite: () -> Unit,
     onEditRecipe: (String) -> Unit = {},
+    onStartCooking: (String) -> Unit = {},
 ) {
     val recipe = (state as? DetailUiState.Content)?.recipe
     Scaffold(
@@ -82,13 +83,23 @@ fun RecipeDetailScreen(
             is DetailUiState.Error -> DetailMessage(
                 state.message, "Volver al catálogo", onNavigateBack, Modifier.padding(padding),
             )
-            is DetailUiState.Content -> RecipeContent(state.recipe, state.actionMessage, Modifier.padding(padding))
+            is DetailUiState.Content -> RecipeContent(
+                recipe = state.recipe,
+                actionMessage = state.actionMessage,
+                onStartCooking = onStartCooking,
+                modifier = Modifier.padding(padding),
+            )
         }
     }
 }
 
 @Composable
-private fun RecipeContent(recipe: Recipe, actionMessage: String?, modifier: Modifier) {
+private fun RecipeContent(
+    recipe: Recipe,
+    actionMessage: String?,
+    onStartCooking: (String) -> Unit,
+    modifier: Modifier,
+) {
     LazyColumn(
         modifier = modifier.fillMaxSize().padding(horizontal = 20.dp).testTag("recipe_detail"),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -116,6 +127,19 @@ private fun RecipeContent(recipe: Recipe, actionMessage: String?, modifier: Modi
                 )
                 metadata.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
                 actionMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            }
+        }
+        if (recipe.steps.isNotEmpty()) {
+            item {
+                Button(
+                    onClick = { onStartCooking(recipe.id) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("detail_start_cooking")
+                        .semantics { contentDescription = "Empezar modo cocina" },
+                ) {
+                    Text("Cocinar")
+                }
             }
         }
         if (recipe.ingredients.isNotEmpty()) {

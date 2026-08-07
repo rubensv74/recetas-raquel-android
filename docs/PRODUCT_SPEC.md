@@ -10,7 +10,8 @@ Las recetas personales pueden quedar dispersas o ser difíciles de localizar dur
 - Editar recetas existentes preservando favorito, fecha de creación y fotografías previas.
 - Eliminar recetas con confirmación y cascada de ingredientes, pasos y fotografías.
 - Encontrar recetas por texto, ingrediente, categoría o favorito.
-- Consultar detalle, ingredientes, pasos y fotografías durante la cocina.
+- Consultar detalle, ingredientes, pasos y fotografías.
+- Ejecutar una receta en modo cocina, un paso cada vez, con progreso y acceso rápido a ingredientes.
 - Conservar y restaurar el archivo mediante backup futuro.
 
 ## Alcance del MVP
@@ -23,23 +24,22 @@ El catálogo busca parcialmente por nombre, categoría e ingrediente; combina fa
 
 ## Editor implementado en Sprint 3
 
-El editor permite crear y editar recetas en una pantalla única con scroll. Incluye: campos obligatorios (nombre), ingredientes con cantidad/unidad/nombre/observaciones, pasos con instrucción y temporizador, reordenamiento con ↑/↓, validación de nombre e ingrediente parcial, detección de cambios sin guardar con confirmación al retroceder, eliminación con doble confirmación, y prevención de doble guardado. La navegación tras crear/editar/eliminar se gestiona con `SharedFlow` de un solo uso. Los IDs de ingredientes/pasos existentes se conservan; los nuevos se generan con `IdGenerator`.
+El editor permite crear y editar recetas en una pantalla única con scroll. Incluye campos obligatorios, ingredientes, pasos, reordenamiento, validación, detección de cambios sin guardar, eliminación y prevención de doble guardado. Los IDs persistentes se preservan.
 
 ## Fotografías implementadas en Sprint 4
 
-Las recetas soportan una foto de portada y una foto por paso.
+Las recetas soportan una foto de portada y una foto por paso mediante Android Photo Picker. Las imágenes se corrigen según EXIF, se redimensionan a un máximo de 2048 px, se comprimen a JPEG calidad 85 y se guardan en almacenamiento privado. Room conserva únicamente rutas relativas permanentes. `SaveRecipeUseCase` coordina promoción, persistencia y compensación ante errores.
 
-- **Selección**: Android Photo Picker (`PickVisualMedia`) sin permisos de cámara ni galería. Solo imágenes (`ImageOnly`).
-- **Procesamiento**: Orientación EXIF corregida, redimensionado (máx. 2048px lado mayor, proporción conservada), compresión JPEG (calidad 85), eliminación de metadatos EXIF.
-- **Almacenamiento**: Archivos JPEG privados en `filesDir/recipe_photos/{recipeId}/`. Rutas relativas en Room.
-- **Ciclo de vida**: Staging en `cacheDir` → promoción tras guardado exitoso → limpieza de temporales. Fallos de limpieza silenciosos.
-- **Editor**: Previsualización con Coil (`AsyncImage`), selección, cambio, eliminación con confirmación de estado anterior, indicador de procesamiento.
-- **Catálogo y detalle**: Portadas mostradas con Coil desde archivos locales.
+## Modo cocina implementado en Sprint 5
+
+Desde el detalle de una receta con pasos se puede iniciar **Cocinar**. La experiencia muestra un único paso por pantalla, contador `Paso X de N`, progreso, fotografía del paso cuando exista y el tiempo configurado como referencia. Los ingredientes se consultan en una hoja inferior sin abandonar el paso. El último paso ofrece **Terminar** y vuelve al detalle.
+
+El paso actual se conserva mediante `SavedStateHandle` y la pantalla permanece encendida únicamente mientras el modo cocina está visible. El modo cocina es de solo lectura: no modifica Room, no edita recetas y no crea temporizadores ni notificaciones.
 
 ## Fuera de alcance
 
-Cuentas, autenticación, perfiles, colaboración, backend, servicios web, analítica, catálogo público, sincronización, lista de compra y cálculo nutricional. Cámaras, filtros de imagen, edición de fotos, múltiples fotos por portada.
+Cuentas, autenticación, perfiles, colaboración, backend, servicios web, analítica, catálogo público, sincronización, lista de compra y cálculo nutricional. Cámara, filtros de imagen, edición de fotos, múltiples fotos por portada, temporizadores ejecutables, alarmas y control por voz.
 
 ## Principios de experiencia
 
-Consulta inmediata, legibilidad, seguridad ante pérdida, simplicidad, navegación previsible y privacidad local.
+Consulta inmediata, legibilidad, seguridad ante pérdida, simplicidad, navegación previsible y privacidad local. Durante la cocina se priorizan controles grandes, información esencial y mínimo cambio de contexto.

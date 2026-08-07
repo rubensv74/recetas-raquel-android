@@ -7,7 +7,9 @@ object AppRoute {
     const val RECIPE = "recipe/{$RECIPE_ID}"
     const val NEW_RECIPE = "recipe/new"
     const val EDIT_RECIPE = "recipe/{$RECIPE_ID}/edit"
+    const val COOK_RECIPE = "recipe/{$RECIPE_ID}/cook"
 
     fun recipe(recipeId: String): String = "recipe/$recipeId"
     fun editRecipe(recipeId: String): String = "recipe/$recipeId/edit"
+    fun cookRecipe(recipeId: String): String = "recipe/$recipeId/cook"
 }
