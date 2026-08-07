@@ -18,6 +18,7 @@ data class CatalogValidationResult(
 }
 
 object CatalogValidator {
+    private val supportedSchemaVersions = setOf(1, 2)
     private val releaseStatuses = setOf("INFRASTRUCTURE", "DRAFT", "PRODUCTION_CANDIDATE")
     private val verificationStatuses = setOf("VERIFIED", "REVIEW_REQUIRED", "UNVERIFIED")
     private val compositionVariability = setOf("STABLE", "VARIABLE_BY_BRAND", "VARIABLE_BY_PREPARATION", "UNKNOWN")
@@ -68,12 +69,15 @@ object CatalogValidator {
         val manifest = bundle.manifest
 
         requireNonBlank(errors, "manifest.catalogId", manifest.catalogId)
-        requirePositive(errors, "manifest.schemaVersion", manifest.schemaVersion)
+        if (manifest.schemaVersion !in supportedSchemaVersions) {
+            errors += "Unsupported schemaVersion: ${manifest.schemaVersion}"
+        }
         requirePositive(errors, "manifest.catalogVersion", manifest.catalogVersion)
         if (manifest.releaseStatus !in releaseStatuses) errors += "Unsupported releaseStatus: ${manifest.releaseStatus}"
         requireNonBlank(errors, "manifest.locale", manifest.locale)
         requireNonBlank(errors, "manifest.jurisdiction", manifest.jurisdiction)
         requireDate(errors, "manifest.reviewedAt", manifest.reviewedAt)
+        validateFileLayout(manifest.files, manifest.schemaVersion, errors)
         validateCounts(bundle, errors)
 
         validateUnique(errors, "category id", bundle.categories.map { it.id })
@@ -153,6 +157,33 @@ object CatalogValidator {
         if (manifest.releaseStatus == "PRODUCTION_CANDIDATE") validateProductionCandidate(bundle, errors)
 
         return CatalogValidationResult(errors.distinct())
+    }
+
+    private fun validateFileLayout(files: CatalogFiles, schemaVersion: Int, errors: MutableList<String>) {
+        requireNonBlank(errors, "manifest.files.categories", files.categories)
+        requireNonBlank(errors, "manifest.files.safetyGroups", files.safetyGroups)
+        requireNonBlank(errors, "manifest.files.safetySources", files.safetySources)
+        requireNonBlank(errors, "manifest.files.safetyRelations", files.safetyRelations)
+
+        val ingredientShards = files.ingredientShards.orEmpty()
+        val aliasShards = files.aliasShards.orEmpty()
+        val hasIngredientSingle = !files.ingredients.isNullOrBlank()
+        val hasAliasSingle = !files.aliases.isNullOrBlank()
+
+        if (hasIngredientSingle == ingredientShards.isNotEmpty()) {
+            errors += "Manifest must declare exactly one ingredient file mode: ingredients or ingredientShards"
+        }
+        if (hasAliasSingle == aliasShards.isNotEmpty()) {
+            errors += "Manifest must declare exactly one alias file mode: aliases or aliasShards"
+        }
+        if (schemaVersion == 1 && (ingredientShards.isNotEmpty() || aliasShards.isNotEmpty())) {
+            errors += "Catalog schemaVersion 1 does not support sharded ingredient/alias files"
+        }
+
+        ingredientShards.forEach { requireNonBlank(errors, "manifest.files.ingredientShards", it) }
+        aliasShards.forEach { requireNonBlank(errors, "manifest.files.aliasShards", it) }
+        validateUnique(errors, "ingredient shard file", ingredientShards)
+        validateUnique(errors, "alias shard file", aliasShards)
     }
 
     private fun validateCounts(bundle: IngredientCatalogBundle, errors: MutableList<String>) {
