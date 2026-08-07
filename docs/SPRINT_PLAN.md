@@ -72,7 +72,7 @@ Fase 0 — auditoría                    CERRADA
 Fase 1 — investigación               CERRADA para pasar a diseño
 Fase 2 — diseño                      CERRADA como base de implementación
 Fase 3 — Room v1 -> v2               CERRADA — 34/34 instrumented PASS
-Fase 4 — infraestructura catálogo    SIGUIENTE
+Fase 4 — infraestructura catálogo    EN CURSO — implementación escrita, gate local pendiente
 Generación masiva de catálogo        BLOQUEADA hasta gate específico
 Merge a master                       NO AUTORIZADO todavía
 ```
@@ -84,6 +84,12 @@ La rama `program/ingredient-library-food-safety` contiene Room v2, migración ex
 La migración conserva los datos legacy y asigna a cada ingrediente antiguo un origen personalizado `legacy:<ingredientId>` sin fuzzy matching ni asociación automática al catálogo.
 
 Queda como requisito transitorio para fases posteriores asegurar que todo ingrediente nuevo creado por el flujo de biblioteca/personalizado persista exactamente un origen (`catalogIngredientId XOR customIngredientId`) antes de autorizar el merge completo del programa a `master`.
+
+### Fase 4 en curso
+
+Se ha creado la infraestructura del catálogo versionado bajo `app/src/main/assets/ingredient-catalog/v1/`, con manifiesto, 20 categorías estructurales, parser JSON, normalización determinista, validador integral, DAO/importador transaccional, repositorio separado y pruebas. El bundle permanece en estado `INFRASTRUCTURE` y contiene cero ingredientes canónicos y cero relaciones de seguridad hasta superar los gates de calidad y evidencia.
+
+Ver `docs/ingredient-library/09_PHASE_04_CATALOG_INFRASTRUCTURE.md`.
 
 ## Sprints futuros congelados
 
