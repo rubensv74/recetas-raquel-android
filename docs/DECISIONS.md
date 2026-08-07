@@ -87,3 +87,7 @@
 ## ADR-022 — Infraestructura no equivale a cobertura de catálogo
 
 **Aceptada.** `releaseStatus = INFRASTRUCTURE` permite validar parser, manifest, importador y transacciones con cero ingredientes canónicos y cero relaciones de seguridad. Solo `PRODUCTION_CANDIDATE` activa los mínimos de cobertura y los gates regulatorios definidos por el validador.
+
+## ADR-023 — Las versiones del catálogo son inmutables
+
+**Aceptada.** Una vez creado un directorio `ingredient-catalog/vN/`, su contenido no se reutiliza para representar una versión funcionalmente distinta. El bundle de infraestructura permanece como v1 y el primer seed regulatorio se publica como v2. El lector apunta a la versión activa más reciente y `catalogVersion` debe coincidir con esa evolución, de modo que Room pueda detectar actualizaciones reales e impedir que contenido nuevo sea tratado erróneamente como `AlreadyCurrent`.
