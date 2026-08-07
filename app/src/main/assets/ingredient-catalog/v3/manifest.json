@@ -1,0 +1,35 @@
+{
+  "catalogId": "rmm-es-eu",
+  "schemaVersion": 2,
+  "catalogVersion": 3,
+  "releaseStatus": "DRAFT",
+  "locale": "es-ES",
+  "jurisdiction": "EU-ES",
+  "reviewedAt": "2026-08-08",
+  "files": {
+    "categories": "categories.json",
+    "ingredientShards": [
+      "ingredients-regulatory.json",
+      "ingredients-vegetables.json",
+      "ingredients-fruits.json",
+      "ingredients-herbs-spices.json",
+      "ingredients-cereals-legumes.json"
+    ],
+    "aliasShards": [
+      "aliases-regulatory.json",
+      "aliases-produce.json",
+      "aliases-pantry.json"
+    ],
+    "safetyGroups": "safety-groups.json",
+    "safetySources": "safety-sources.json",
+    "safetyRelations": "safety-relations.json"
+  },
+  "counts": {
+    "categories": 20,
+    "ingredients": 127,
+    "aliases": 151,
+    "safetyGroups": 14,
+    "safetySources": 3,
+    "safetyRelations": 27
+  }
+}
