@@ -91,3 +91,7 @@
 ## ADR-023 — Las versiones del catálogo son inmutables
 
 **Aceptada.** Una vez creado un directorio `ingredient-catalog/vN/`, su contenido no se reutiliza para representar una versión funcionalmente distinta. El bundle de infraestructura permanece como v1 y el primer seed regulatorio se publica como v2. El lector apunta a la versión activa más reciente y `catalogVersion` debe coincidir con esa evolución, de modo que Room pueda detectar actualizaciones reales e impedir que contenido nuevo sea tratado erróneamente como `AlreadyCurrent`.
+
+## ADR-024 — El catálogo escalable admite shards manteniendo compatibilidad
+
+**Aceptada.** Desde `catalog schemaVersion = 2`, ingredientes y alias pueden declararse como listas ordenadas de shards en el manifiesto. El lector conserva compatibilidad explícita con los catálogos schema-v1 de fichero único. Los shards son una unidad de revisión y organización del contenido, no una relajación de las reglas de validación: una vez concatenados, el bundle completo sigue pasando los mismos controles de IDs, nombres normalizados, referencias, recuentos y evidencia antes de importarse transaccionalmente.
