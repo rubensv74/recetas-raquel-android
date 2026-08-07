@@ -6,7 +6,7 @@
 
 ## ADR-002 — Room como fuente local
 
-**Implementada.** Room 2.8.4, esquema v1 exportado, Flow, integridad y transacciones.
+**Implementada.** Room 2.8.4, esquema v2 exportado, Flow, integridad y transacciones. La evolución v1 -> v2 se realiza mediante migración explícita no destructiva.
 
 ## ADR-003 — Aplicación offline
 
@@ -58,7 +58,7 @@
 
 ## ADR-015 — Editor de recetas sin esquema nuevo
 
-**Aceptada en Sprint 3.** El editor funciona con el esquema v1 existente. `RecipeMapper.toUpdatedRecipe` preserva IDs de recetas hijas para actualizaciones in-place y `LocalRecipeRepository.updateRecipeFromDraft` usa la estrategia transaccional del DAO.
+**Aceptada en Sprint 3.** El editor funcionó inicialmente con el esquema v1. La evolución posterior a Room v2 conserva compatibilidad con ese editor durante la transición al flujo de biblioteca.
 
 ## ADR-016 — Strings URI en el domain layer
 
@@ -67,3 +67,23 @@
 ## ADR-017 — Modo cocina como estado efímero de UI
 
 **Aceptada en Sprint 5.** El modo cocina no crea entidades ni cambia Room. La receta se observa mediante `RecipeRepository`, el paso actual se conserva en `SavedStateHandle` y los ingredientes se muestran sin abandonar la ruta. Mantener la pantalla encendida se resuelve en Compose con `LocalView.keepScreenOn` y `DisposableEffect`, restaurando el valor anterior al salir. Los temporizadores ejecutables quedan para una fase posterior.
+
+## ADR-018 — Catálogo de ingredientes versionado independiente de Room
+
+**Aceptada en el programa de biblioteca de ingredientes.** El catálogo distribuido vive bajo `app/src/main/assets/ingredient-catalog/vN/` y dispone de `catalogVersion` propio. Room conserva una copia indexable para ejecución offline, pero `catalogVersion` no se confunde con la versión del esquema de base de datos.
+
+## ADR-019 — Validar antes de importar y no degradar datos
+
+**Aceptada.** El importer lee el bundle completo, ejecuta validación estructural y solo entonces inicia la sustitución lógica dentro de una transacción Room. Un bundle inválido no modifica el catálogo previamente importado. Si la base contiene una versión de catálogo superior a la del APK, no se fuerza un downgrade.
+
+## ADR-020 — Datos maestros referenciados se desactivan, no se destruyen
+
+**Aceptada.** Categorías, grupos de seguridad e ingredientes de catálogo pueden estar referenciados por ingredientes personalizados o recetas. Las actualizaciones de catálogo desactivan registros ausentes en lugar de eliminarlos físicamente cuando una eliminación podría romper trazabilidad o integridad referencial.
+
+## ADR-021 — Gson como parser del catálogo v1
+
+**Aceptada.** Se usa Gson como dependencia focalizada para JSON estructurado. Evita parsing manual y no introduce el plugin/runtime de Kotlin Serialization en esta fase, especialmente después de la incompatibilidad binaria observada en el tooling de pruebas de migración de Room. La elección puede revisarse si cambian las restricciones técnicas.
+
+## ADR-022 — Infraestructura no equivale a cobertura de catálogo
+
+**Aceptada.** `releaseStatus = INFRASTRUCTURE` permite validar parser, manifest, importador y transacciones con cero ingredientes canónicos y cero relaciones de seguridad. Solo `PRODUCTION_CANDIDATE` activa los mínimos de cobertura y los gates regulatorios definidos por el validador.
