@@ -31,9 +31,43 @@ class IngredientCatalogImportTest {
     }
 
     @Test
-    fun importsVersionedInfrastructureBundleAndIsIdempotent() = runBlocking {
+    fun importsVersionedDraftSeedAndIsIdempotent() = runBlocking {
+        val reader = IngredientCatalogAssetReader(AndroidAssetCatalogTextSource(context.assets))
+        val bundle = reader.read()
+
+        assertEquals("DRAFT", bundle.manifest.releaseStatus)
+        assertEquals(20, bundle.categories.size)
+        assertEquals(27, bundle.ingredients.size)
+        assertEquals(22, bundle.aliases.size)
+        assertEquals(14, bundle.safetyGroups.size)
+        assertEquals(3, bundle.safetySources.size)
+        assertEquals(27, bundle.safetyRelations.size)
+
+        val expectedEuCodes = setOf(
+            "CEREALS_CONTAINING_GLUTEN",
+            "CRUSTACEANS",
+            "EGGS",
+            "FISH",
+            "PEANUTS",
+            "SOYBEANS",
+            "MILK",
+            "NUTS",
+            "CELERY",
+            "MUSTARD",
+            "SESAME",
+            "SULPHUR_DIOXIDE_AND_SULPHITES",
+            "LUPIN",
+            "MOLLUSCS",
+        )
+        assertEquals(expectedEuCodes, bundle.safetyGroups.map { it.code }.toSet())
+
+        val sulphiteRelation = bundle.safetyRelations.single { it.ingredientId == "ing-sulphites" }
+        assertEquals("REGULATED_COMPONENT", sulphiteRelation.relationType)
+        assertEquals("EU_LEGAL", sulphiteRelation.evidenceLevel)
+        assertTrue(sulphiteRelation.notes.orEmpty().contains("10 mg/kg"))
+
         val importer = CatalogImporter(
-            reader = IngredientCatalogAssetReader(AndroidAssetCatalogTextSource(context.assets)),
+            reader = reader,
             dao = database.ingredientCatalogDao(),
             timeProvider = TimeProvider { 1234L },
         )
@@ -41,10 +75,10 @@ class IngredientCatalogImportTest {
         val first = importer.ensureImported()
         assertTrue(first is CatalogImportResult.Imported)
         assertEquals(20, database.ingredientCatalogDao().countActiveCategories())
-        assertEquals(0, database.ingredientCatalogDao().countActiveIngredients())
-        assertEquals(0, database.ingredientCatalogDao().countAliases())
-        assertEquals(0, database.ingredientCatalogDao().countActiveSafetyGroups())
-        assertEquals(0, database.ingredientCatalogDao().countSafetyRelations())
+        assertEquals(27, database.ingredientCatalogDao().countActiveIngredients())
+        assertEquals(22, database.ingredientCatalogDao().countAliases())
+        assertEquals(14, database.ingredientCatalogDao().countActiveSafetyGroups())
+        assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
 
         val metadata = requireNotNull(database.ingredientCatalogDao().getMetadata(CatalogImporter.METADATA_KEY))
         assertEquals(1, metadata.catalogVersion)
@@ -54,7 +88,8 @@ class IngredientCatalogImportTest {
 
         val second = importer.ensureImported()
         assertTrue(second is CatalogImportResult.AlreadyCurrent)
-        assertEquals(20, database.ingredientCatalogDao().countActiveCategories())
+        assertEquals(27, database.ingredientCatalogDao().countActiveIngredients())
+        assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
     }
 
     @Test
@@ -75,6 +110,8 @@ class IngredientCatalogImportTest {
         val failure = runCatching { brokenImporter.ensureImported() }.exceptionOrNull()
         assertTrue(failure is CatalogValidationException)
         assertEquals(20, database.ingredientCatalogDao().countActiveCategories())
+        assertEquals(27, database.ingredientCatalogDao().countActiveIngredients())
+        assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
         assertEquals(1, database.ingredientCatalogDao().getMetadata(CatalogImporter.METADATA_KEY)?.catalogVersion)
     }
 
