@@ -73,7 +73,7 @@ Fase 1 — investigación               CERRADA para pasar a diseño
 Fase 2 — diseño                      CERRADA como base de implementación
 Fase 3 — Room v1 -> v2               CERRADA — 34/34 instrumented PASS
 Fase 4 — infraestructura catálogo    CERRADA — 36/36 instrumented PASS
-Población controlada del catálogo    SEED v2 VALIDADO — siguiente lote autorizado a preparar
+Población controlada del catálogo    EN CURSO — Batch 01 v3 escrito; gate local pendiente
 Mapeo masivo no revisado             NO AUTORIZADO
 Merge a master                       NO AUTORIZADO todavía
 ```
@@ -98,28 +98,38 @@ Ver `docs/ingredient-library/09_PHASE_04_CATALOG_INFRASTRUCTURE.md`.
 
 ### Población controlada — catálogo regulatorio v2
 
-`app/src/main/assets/ingredient-catalog/v2/` es la primera versión poblada e inmutable del catálogo. El lector activo apunta a v2, permitiendo una actualización real desde instalaciones que ya hubieran importado v1.
+`app/src/main/assets/ingredient-catalog/v2/` es la primera versión poblada e inmutable del catálogo.
 
-El manifiesto v2 continúa en estado `DRAFT` y contiene:
+Su seed validado contiene 27 ingredientes regulatoriamente anclados, 22 alias, los 14 grupos del Anexo II, 3 fuentes oficiales UE y 27 relaciones de seguridad con evidencia `EU_LEGAL`.
+
+El gate local del seed v2 quedó superado con builds debug/release, unit/lint, compilación instrumentada y `connectedDebugAndroidTest` 36/36 PASS. Room mantuvo únicamente `1.json` y `2.json`.
+
+Ver `docs/ingredient-library/10_CONTROLLED_CATALOG_SEED.md`.
+
+### Población controlada — Batch 01 culinario v3
+
+Se ha creado `app/src/main/assets/ingredient-catalog/v3/` como nueva versión inmutable del catálogo.
+
+El manifiesto usa `schemaVersion = 2` para soportar ficheros fragmentados por lotes, manteniendo compatibilidad de lectura con los catálogos v1/v2 de fichero único.
+
+Estado del catálogo v3:
 
 ```text
-20 categorías
-27 ingredientes canónicos
-22 alias
-14 grupos regulados del Anexo II
-3 fuentes oficiales UE
-27 relaciones de seguridad con evidencia EU_LEGAL
+catalogVersion           3
+releaseStatus            DRAFT
+categorías               20
+ingredientes canónicos  127
+alias                    151
+grupos de seguridad      14
+fuentes de seguridad      3
+relaciones de seguridad  27
 ```
 
-El lote se limita a términos directamente respaldados por el Anexo II y evita expandir por inferencia especies de crustáceos, pescados o moluscos, derivados, preparados comerciales o ingredientes compuestos.
+Batch 01 añade 100 ingredientes culinarios de verduras, frutas, hierbas, especias, cereales y legumbres, junto con 129 alias de búsqueda. Los 27 anclajes regulatorios y sus relaciones permanecen intactos.
 
-El tratamiento de sulfitos conserva explícitamente el umbral de 10 mg/kg o 10 mg/l de SO2 total; la mostaza conserva la excepción específica del Reglamento Delegado (UE) 2024/2512.
+Los 100 ingredientes nuevos están marcados `REVIEW_REQUIRED` y no reciben relaciones de seguridad por inferencia. La existencia de un ingrediente en la biblioteca y la existencia de evidencia de seguridad siguen siendo conceptos separados.
 
-El gate local del seed v2 ha quedado superado: `assembleDebug`, unit tests, lint, compilación instrumentada y `assembleRelease` PASS; `connectedDebugAndroidTest` PASS 36/36; Room mantiene únicamente `1.json` y `2.json`; working tree limpio.
-
-El siguiente lote controlado puede prepararse con ingredientes culinarios comunes y alias, manteniendo separada la existencia de un ingrediente de la existencia de una relación de seguridad verificada. La ausencia de relación no puede interpretarse como ausencia de riesgo.
-
-Ver `docs/ingredient-library/10_CONTROLLED_CATALOG_SEED.md` y `docs/food-safety/INGREDIENT_COVERAGE_MATRIX.md`.
+El gate local de v3 está pendiente. Ver `docs/ingredient-library/11_CULINARY_CATALOG_BATCH_01.md`.
 
 ## Sprints futuros congelados
 
