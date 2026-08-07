@@ -8,7 +8,7 @@ class IngredientCatalogAssetReaderTest {
     fun readsManifestAndReferencedFilesFromVersionDirectory() {
         val source = MapCatalogTextSource(
             mapOf(
-                "ingredient-catalog/v1/manifest.json" to """
+                "ingredient-catalog/v2/manifest.json" to """
                     {
                       "catalogId":"test",
                       "schemaVersion":1,
@@ -35,12 +35,12 @@ class IngredientCatalogAssetReaderTest {
                       }
                     }
                 """.trimIndent(),
-                "ingredient-catalog/v1/categories.json" to """[{"id":"cat-1","code":"C1","name":"Categoría","sortOrder":1}]""",
-                "ingredient-catalog/v1/ingredients.json" to "[]",
-                "ingredient-catalog/v1/aliases.json" to "[]",
-                "ingredient-catalog/v1/safety-groups.json" to "[]",
-                "ingredient-catalog/v1/safety-sources.json" to "[]",
-                "ingredient-catalog/v1/safety-relations.json" to "[]",
+                "ingredient-catalog/v2/categories.json" to """[{"id":"cat-1","code":"C1","name":"Categoría","sortOrder":1}]""",
+                "ingredient-catalog/v2/ingredients.json" to "[]",
+                "ingredient-catalog/v2/aliases.json" to "[]",
+                "ingredient-catalog/v2/safety-groups.json" to "[]",
+                "ingredient-catalog/v2/safety-sources.json" to "[]",
+                "ingredient-catalog/v2/safety-relations.json" to "[]",
             ),
         )
 
