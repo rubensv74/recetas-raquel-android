@@ -149,6 +149,9 @@ object RecipeMapper {
             isFavorite = existingRecipe.isFavorite,
             coverPhotoPath = normalized.coverPhotoPath,
             ingredients = normalized.ingredients.mapIndexed { index, ingredient ->
+                val existingIngredient = ingredient.id?.let { ingredientId ->
+                    existingRecipe.ingredients.firstOrNull { it.id == ingredientId }
+                }
                 Ingredient(
                     id = ingredient.id ?: idGenerator.newId(),
                     recipeId = existingRecipe.id,
@@ -157,8 +160,8 @@ object RecipeMapper {
                     name = ingredient.name,
                     notes = ingredient.notes,
                     sortOrder = index,
-                    catalogIngredientId = ingredient.catalogIngredientId,
-                    customIngredientId = ingredient.customIngredientId,
+                    catalogIngredientId = ingredient.catalogIngredientId ?: existingIngredient?.catalogIngredientId,
+                    customIngredientId = ingredient.customIngredientId ?: existingIngredient?.customIngredientId,
                 )
             },
             steps = normalized.steps.mapIndexed { index, step ->
