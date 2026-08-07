@@ -16,8 +16,17 @@ Catálogo, búsqueda por receta/categoría/ingrediente, filtros combinables, det
 
 Editor de recetas con creación, edición y eliminación. Pantalla única con scroll, validación de campos obligatorios, detección de cambios sin guardar, reordenamiento de ingredientes/pasos, navegación con eventos de SharedFlow y pruebas unitarias del ViewModel.
 
-## Sprint 4 — Fotos, backup y robustez
+## Sprint 4 — Fotos de recetas (completado)
 
-Gestión segura de fotos, exportación/importación manual, migraciones necesarias, accesibilidad y rendimiento.
+Soporte para fotos de portada y fotos por paso dentro del editor y la consulta.
 
-GitHub Sync permanece fuera de alcance hasta contar con un diseño propio de seguridad y conflictos.
+- **Domain**: `RecipePhotoStorage`, `PhotoDestination` (sealed), `StagedPhoto` en `domain/photos/`.
+- **Data**: `LocalRecipePhotoStorage` con fix EXIF, JPEG quality 85, max 2048px, staging/promote, almacenamiento privado en `recipe_photos/`.
+- **UI**: `EditorPhotoState` para estado del editor; `CoverPhotoSection`, `StepPhotoSection` con `PickVisualMedia` en `RecipeEditorScreen`; portada con Coil `AsyncImage` en `HomeScreen` y `RecipeDetailScreen`.
+- **ViewModel**: Selección, eliminación, staging, promoción, limpieza y detección de cambios sin guardar en `RecipeEditorViewModel`.
+- **Infraestructura**: Coil 2.7.0 y ExifInterface 1.4.1; `String` URI en domain (ADR-016); `unitTests.isReturnDefaultValues = true`.
+- **Tests**: 58 pruebas unitarias (42 ViewModel + 16 existentes), 16 pruebas instrumentadas de catálogo + 10 de almacenamiento + 2 Compose UI de fotos. Validación completa: `assembleDebug`, `assembleRelease`, `testDebugUnitTest`, `lintDebug`, `compileDebugAndroidTestKotlin`, `connectedDebugAndroidTest`.
+
+### Fase futura
+
+Backup exportación/importación, migraciones necesarias, accesibilidad y rendimiento. GitHub Sync fuera de alcance hasta diseño propio de seguridad y conflictos.

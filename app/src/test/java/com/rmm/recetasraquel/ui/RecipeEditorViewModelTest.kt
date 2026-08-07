@@ -5,7 +5,13 @@ import com.rmm.recetasraquel.domain.model.Ingredient
 import com.rmm.recetasraquel.domain.model.Recipe
 import com.rmm.recetasraquel.domain.model.RecipeDraft
 import com.rmm.recetasraquel.domain.model.RecipeStep
+import com.rmm.recetasraquel.domain.photos.PhotoDestination
+import com.rmm.recetasraquel.domain.photos.RecipePhotoStorage
+import com.rmm.recetasraquel.domain.photos.StagedPhoto
 import com.rmm.recetasraquel.domain.repository.RecipeRepository
+import com.rmm.recetasraquel.domain.usecase.SaveRecipeInput
+import com.rmm.recetasraquel.domain.usecase.SaveRecipeOperation
+import com.rmm.recetasraquel.domain.usecase.SaveRecipeUseCase
 import com.rmm.recetasraquel.ui.navigation.AppRoute
 import com.rmm.recetasraquel.util.IdGenerator
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +31,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -47,22 +54,24 @@ class RecipeEditorViewModelTest {
     private fun idGenerator(): IdGenerator = IdGenerator { "gen-${nextId++}" }
 
     private fun createViewModel(
-        repository: FakeEditorRepository,
+        repository: FakeEditorRepository = FakeEditorRepository(),
         recipeId: String? = null,
+        photoStorage: RecipePhotoStorage = FakePhotoStorage(),
+        saveRecipeUseCase: SaveRecipeOperation = FakeSaveRecipeUseCase(repository = repository),
     ): RecipeEditorViewModel {
         val handle = if (recipeId != null) {
             SavedStateHandle(mapOf(AppRoute.RECIPE_ID to recipeId))
         } else {
             SavedStateHandle(emptyMap())
         }
-        return RecipeEditorViewModel(repository, idGenerator(), handle)
+        return RecipeEditorViewModel(repository, idGenerator(), photoStorage, saveRecipeUseCase, handle)
     }
 
     // ── Create mode ────────────────────────────────────────────
 
     @Test
     fun createModeStartsWithEmptyFields() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         val state = vm.uiState.value
@@ -75,7 +84,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun createValidationRequiresName() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.save()
@@ -87,24 +96,24 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun createWithOnlyNameSucceeds() = runTest(dispatcher) {
-        val repo = FakeEditorRepository()
-        val vm = createViewModel(repo)
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(saveRecipeUseCase = fakeUseCase)
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         val navJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.navigation.collect {} }
         vm.updateName("Sopa")
         vm.save()
         advanceUntilIdle()
-        assertTrue(repo.createdDrafts.isNotEmpty())
-        assertEquals("Sopa", repo.createdDrafts.first().name)
+        assertEquals(1, fakeUseCase.createdInputs.size)
+        assertEquals("Sopa", fakeUseCase.createdInputs.first().draft.name)
         navJob.cancel()
         job.cancel()
     }
 
     @Test
     fun createFullRecipeSucceeds() = runTest(dispatcher) {
-        val repo = FakeEditorRepository()
-        val vm = createViewModel(repo)
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(saveRecipeUseCase = fakeUseCase)
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("Tortilla")
@@ -128,7 +137,7 @@ class RecipeEditorViewModelTest {
         vm.updateStepTimer(stepKey, "5")
         vm.save()
         advanceUntilIdle()
-        val draft = repo.createdDrafts.first()
+        val draft = fakeUseCase.createdInputs.first().draft
         assertEquals("Tortilla", draft.name)
         assertEquals("Principal", draft.category)
         assertEquals("Jugosa", draft.description)
@@ -152,7 +161,7 @@ class RecipeEditorViewModelTest {
     @Test
     fun editModeLoadsExistingRecipe() = runTest(dispatcher) {
         val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to existingRecipe()))
-        val vm = createViewModel(repo, recipeId = "r1")
+        val vm = createViewModel(repository = repo, recipeId = "r1")
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         val state = vm.uiState.value
@@ -171,7 +180,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun editModeShowsNotFoundForMissingRecipe() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository(), recipeId = "missing")
+        val vm = createViewModel(repository = FakeEditorRepository(), recipeId = "missing")
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         assertTrue(vm.uiState.value.loadError != null)
@@ -182,7 +191,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun partialIngredientWithQuantityButNoNameFails() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("Receta")
@@ -198,7 +207,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun partialStepWithTimerButNoInstructionFails() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("Receta")
@@ -216,7 +225,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun reorderIngredientsSwapsCorrectly() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("Receta")
@@ -239,7 +248,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun reorderStepsSwapsCorrectly() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("Receta")
@@ -262,7 +271,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun cannotMoveFirstIngredientUp() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("Receta")
@@ -278,7 +287,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun cannotMoveLastIngredientDown() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("Receta")
@@ -298,7 +307,7 @@ class RecipeEditorViewModelTest {
     fun editPreservesExistingIngredientAndStepIds() = runTest(dispatcher) {
         val recipe = existingRecipe()
         val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
-        val vm = createViewModel(repo, recipeId = "r1")
+        val vm = createViewModel(repository = repo, recipeId = "r1")
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         assertEquals("i1", vm.uiState.value.ingredients[0].id)
@@ -308,7 +317,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun newIngredientsHaveNullId() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("Receta")
@@ -320,7 +329,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun newStepsHaveNullId() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("Receta")
@@ -336,7 +345,7 @@ class RecipeEditorViewModelTest {
     fun editPreservesCreatedAtAndFavorite() = runTest(dispatcher) {
         val recipe = existingRecipe().copy(isFavorite = true, createdAt = 1000L)
         val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
-        val vm = createViewModel(repo, recipeId = "r1")
+        val vm = createViewModel(repository = repo, recipeId = "r1")
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("New Name")
@@ -353,7 +362,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun fieldChangeSetsUnsavedChanges() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         assertFalse(vm.uiState.value.hasUnsavedChanges)
@@ -365,7 +374,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun undoingChangeClearsUnsavedChanges() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("X")
@@ -381,7 +390,7 @@ class RecipeEditorViewModelTest {
     fun editDiscardShowsConfirmationThenHidesIt() = runTest(dispatcher) {
         val recipe = existingRecipe()
         val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
-        val vm = createViewModel(repo, recipeId = "r1")
+        val vm = createViewModel(repository = repo, recipeId = "r1")
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.handleBack()
@@ -400,7 +409,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun handleBackWithNoChangesDoesNotShowDialog() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.handleBack()
@@ -413,8 +422,8 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun saveErrorRetainsContent() = runTest(dispatcher) {
-        val repo = FakeEditorRepository(failCreate = true)
-        val vm = createViewModel(repo)
+        val fakeUseCase = FakeSaveRecipeUseCase(createHandler = { Result.failure(IllegalStateException("test")) })
+        val vm = createViewModel(saveRecipeUseCase = fakeUseCase)
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("FailRecipe")
@@ -430,7 +439,7 @@ class RecipeEditorViewModelTest {
     fun deleteErrorRetainsContent() = runTest(dispatcher) {
         val recipe = existingRecipe()
         val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe), failDelete = true)
-        val vm = createViewModel(repo, recipeId = "r1")
+        val vm = createViewModel(repository = repo, recipeId = "r1")
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.requestDelete()
@@ -446,17 +455,15 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun doubleSavePrevented() = runTest(dispatcher) {
-        val repo = FakeEditorRepository()
-        val vm = createViewModel(repo)
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(saveRecipeUseCase = fakeUseCase)
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("Recipe")
         vm.save()
         advanceUntilIdle()
-        assertEquals(1, repo.createdDrafts.size)
-        vm.save()
-        advanceUntilIdle()
-        assertEquals(1, repo.createdDrafts.size)
+        assertEquals(1, fakeUseCase.createdInputs.size)
+        assertFalse(vm.uiState.value.isSaving)
         job.cancel()
     }
 
@@ -464,7 +471,7 @@ class RecipeEditorViewModelTest {
     fun doubleDeletePrevented() = runTest(dispatcher) {
         val recipe = existingRecipe()
         val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
-        val vm = createViewModel(repo, recipeId = "r1")
+        val vm = createViewModel(repository = repo, recipeId = "r1")
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.requestDelete()
@@ -483,7 +490,7 @@ class RecipeEditorViewModelTest {
     fun deleteCallsRepositoryWithCorrectId() = runTest(dispatcher) {
         val recipe = existingRecipe()
         val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
-        val vm = createViewModel(repo, recipeId = "r1")
+        val vm = createViewModel(repository = repo, recipeId = "r1")
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.requestDelete()
@@ -499,7 +506,7 @@ class RecipeEditorViewModelTest {
     fun cancelDeleteHidesDialog() = runTest(dispatcher) {
         val recipe = existingRecipe()
         val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
-        val vm = createViewModel(repo, recipeId = "r1")
+        val vm = createViewModel(repository = repo, recipeId = "r1")
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.requestDelete()
@@ -513,8 +520,8 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun createEmitsRecipeCreated() = runTest(dispatcher) {
-        val repo = FakeEditorRepository()
-        val vm = createViewModel(repo)
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(saveRecipeUseCase = fakeUseCase)
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         var event: EditorNavigationEvent? = null
@@ -525,7 +532,7 @@ class RecipeEditorViewModelTest {
         vm.save()
         advanceUntilIdle()
         assertTrue(event is EditorNavigationEvent.RecipeCreated)
-        assertEquals("gen-created", (event as EditorNavigationEvent.RecipeCreated).recipeId)
+        assertEquals("gen-0", (event as EditorNavigationEvent.RecipeCreated).recipeId)
         navJob.cancel()
         job.cancel()
     }
@@ -534,7 +541,7 @@ class RecipeEditorViewModelTest {
     fun editEmitsRecipeUpdated() = runTest(dispatcher) {
         val recipe = existingRecipe()
         val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
-        val vm = createViewModel(repo, recipeId = "r1")
+        val vm = createViewModel(repository = repo, recipeId = "r1")
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         var event: EditorNavigationEvent? = null
@@ -554,7 +561,7 @@ class RecipeEditorViewModelTest {
     fun deleteEmitsRecipeDeleted() = runTest(dispatcher) {
         val recipe = existingRecipe()
         val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
-        val vm = createViewModel(repo, recipeId = "r1")
+        val vm = createViewModel(repository = repo, recipeId = "r1")
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         var event: EditorNavigationEvent? = null
@@ -573,7 +580,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun removeIngredientDecreasesCount() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("R")
@@ -590,7 +597,7 @@ class RecipeEditorViewModelTest {
 
     @Test
     fun removeStepDecreasesCount() = runTest(dispatcher) {
-        val vm = createViewModel(FakeEditorRepository())
+        val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
         advanceUntilIdle()
         vm.updateName("R")
@@ -602,6 +609,541 @@ class RecipeEditorViewModelTest {
         vm.removeStep(key)
         advanceUntilIdle()
         assertEquals(1, vm.uiState.value.steps.size)
+        job.cancel()
+    }
+
+    // ── Photo tests ───────────────────────────────────────────
+
+    @Test
+    fun selectCoverPhotoSetsStagedState() = runTest(dispatcher) {
+        val vm = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.selectCoverPhoto("content://media/1")
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.coverPhotoState is com.rmm.recetasraquel.ui.editor.EditorPhotoState.Staged)
+        job.cancel()
+    }
+
+    @Test
+    fun selectCoverPhotoTriggersUnsavedChanges() = runTest(dispatcher) {
+        val vm = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("T")
+        vm.selectCoverPhoto("content://media/1")
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.hasUnsavedChanges)
+        job.cancel()
+    }
+
+    @Test
+    fun removeStagedCoverPhotoResetsToNone() = runTest(dispatcher) {
+        val vm = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.selectCoverPhoto("content://media/1")
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.coverPhotoState is com.rmm.recetasraquel.ui.editor.EditorPhotoState.Staged)
+        vm.removeCoverPhoto()
+        assertTrue(vm.uiState.value.coverPhotoState is com.rmm.recetasraquel.ui.editor.EditorPhotoState.None)
+        job.cancel()
+    }
+
+    @Test
+    fun removePersistedCoverPhotoMarksAsRemoved() = runTest(dispatcher) {
+        val recipe = existingRecipe().copy(coverPhotoPath = "recipe_photos/cover.jpg")
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
+        val vm = createViewModel(repository = repo, recipeId = "r1")
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.coverPhotoState is com.rmm.recetasraquel.ui.editor.EditorPhotoState.Persisted)
+        vm.removeCoverPhoto()
+        assertTrue(vm.uiState.value.coverPhotoState is com.rmm.recetasraquel.ui.editor.EditorPhotoState.Removed)
+        job.cancel()
+    }
+
+    @Test
+    fun selectStepPhotoSetsStagedState() = runTest(dispatcher) {
+        val vm = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("R")
+        vm.addStep()
+        advanceUntilIdle()
+        val stepKey = vm.uiState.value.steps[0].key
+        vm.selectStepPhoto(stepKey, "content://media/2")
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.stepPhotoStates[stepKey] is com.rmm.recetasraquel.ui.editor.EditorPhotoState.Staged)
+        job.cancel()
+    }
+
+    @Test
+    fun removeStepPhotoRemovesFromMapWhenStaged() = runTest(dispatcher) {
+        val vm = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("R")
+        vm.addStep()
+        advanceUntilIdle()
+        val stepKey = vm.uiState.value.steps[0].key
+        vm.selectStepPhoto(stepKey, "content://media/2")
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.stepPhotoStates.containsKey(stepKey))
+        vm.removeStepPhoto(stepKey)
+        assertFalse(vm.uiState.value.stepPhotoStates.containsKey(stepKey))
+        job.cancel()
+    }
+
+    @Test
+    fun removeStepCleansUpPhotoState() = runTest(dispatcher) {
+        val vm = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("R")
+        vm.addStep()
+        advanceUntilIdle()
+        val stepKey = vm.uiState.value.steps[0].key
+        vm.selectStepPhoto(stepKey, "content://media/3")
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.stepPhotoStates.containsKey(stepKey))
+        vm.removeStep(stepKey)
+        assertFalse(vm.uiState.value.stepPhotoStates.containsKey(stepKey))
+        job.cancel()
+    }
+
+    @Test
+    fun discardChangesCleansStagedPhotos() = runTest(dispatcher) {
+        val vm = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("R")
+        vm.selectCoverPhoto("content://media/1")
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.coverPhotoState is com.rmm.recetasraquel.ui.editor.EditorPhotoState.Staged)
+        vm.requestDiscardConfirmation()
+        assertTrue(vm.uiState.value.showDiscardConfirmation)
+        vm.discardChanges()
+        assertFalse(vm.uiState.value.showDiscardConfirmation)
+        job.cancel()
+    }
+
+    @Test
+    fun saveIncludesCoverPhotoPathInDraft() = runTest(dispatcher) {
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("Test")
+        vm.selectCoverPhoto("content://media/1")
+        advanceUntilIdle()
+        vm.updateCategory("Cat")
+        vm.save()
+        advanceUntilIdle()
+        val input = fakeUseCase.createdInputs.firstOrNull()
+        assertNotNull(input)
+        assertEquals("Cat", input!!.draft.category)
+        job.cancel()
+    }
+
+    @Test
+    fun dismissPhotoErrorRestoresPrevious() = runTest(dispatcher) {
+        val vm = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.dismissPhotoError()
+        assertTrue(vm.uiState.value.coverPhotoState is com.rmm.recetasraquel.ui.editor.EditorPhotoState.None)
+        job.cancel()
+    }
+
+    @Test
+    fun existingRecipeWithPhotosLoadsPersistedStates() = runTest(dispatcher) {
+        val recipe = existingRecipe().copy(coverPhotoPath = "recipe_photos/cover.jpg")
+        val step = recipe.steps[0].copy(photoPath = "recipe_photos/step.jpg")
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe.copy(steps = listOf(step))))
+        val vm = createViewModel(repository = repo, recipeId = "r1")
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.coverPhotoState is com.rmm.recetasraquel.ui.editor.EditorPhotoState.Persisted)
+        val stepKey = vm.uiState.value.steps[0].key
+        assertTrue(vm.uiState.value.stepPhotoStates[stepKey] is com.rmm.recetasraquel.ui.editor.EditorPhotoState.Persisted)
+        job.cancel()
+    }
+
+    // ── Sprint 4: Photo lifecycle tests ────────────────────────
+
+    @Test
+    fun stagedCoverSavesPermanentPathInDraft() = runTest(dispatcher) {
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("Test")
+        vm.selectCoverPhoto("content://media/1")
+        advanceUntilIdle()
+        vm.save()
+        advanceUntilIdle()
+        val input = fakeUseCase.createdInputs.firstOrNull()
+        assertNotNull(input)
+        val stagedCover = input!!.stagedCover
+        assertNotNull(stagedCover)
+        job.cancel()
+    }
+
+    @Test
+    fun stagedStepSavesPermanentPathInDraft() = runTest(dispatcher) {
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("Test")
+        vm.addStep()
+        advanceUntilIdle()
+        val stepKey = vm.uiState.value.steps[0].key
+        vm.updateStepInstruction(stepKey, "Hacer algo")
+        vm.selectStepPhoto(stepKey, "content://media/2")
+        advanceUntilIdle()
+        vm.save()
+        advanceUntilIdle()
+        val input = fakeUseCase.createdInputs.firstOrNull()
+        assertNotNull(input)
+        val stagedStep = input!!.stagedSteps[stepKey]
+        assertNotNull(stagedStep)
+        job.cancel()
+    }
+
+    @Test
+    fun noPersistedPathPointsToCacheDir() = runTest(dispatcher) {
+        val recipe = existingRecipe().copy(
+            coverPhotoPath = "recipe_photos/r1/cover_abc.jpg",
+            steps = listOf(RecipeStep("s1", "r1", "Cortar", null, "recipe_photos/r1/steps/step_s1_def.jpg", 0)),
+        )
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
+        val vm = createViewModel(repository = repo, recipeId = "r1")
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        val coverPath = (vm.uiState.value.coverPhotoState as EditorPhotoState.Persisted).relativePath
+        assertFalse(coverPath.contains("cache"))
+        val stepKey = vm.uiState.value.steps[0].key
+        val stepPath = (vm.uiState.value.stepPhotoStates[stepKey] as EditorPhotoState.Persisted).relativePath
+        assertFalse(stepPath.contains("cache"))
+        job.cancel()
+    }
+
+    @Test
+    fun noPickerUriPersistedInRoom() = runTest(dispatcher) {
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("Test")
+        vm.selectCoverPhoto("content://media/picker/123")
+        advanceUntilIdle()
+        vm.save()
+        advanceUntilIdle()
+        val input = fakeUseCase.createdInputs.firstOrNull()
+        assertNotNull(input)
+        assertNotNull(input!!.stagedCover)
+        job.cancel()
+    }
+
+    @Test
+    fun replacingCoverGeneratesDifferentPath() = runTest(dispatcher) {
+        val recipe = existingRecipe().copy(coverPhotoPath = "recipe_photos/r1/cover_old.jpg")
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(repository = repo, recipeId = "r1", saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.selectCoverPhoto("content://media/1")
+        advanceUntilIdle()
+        vm.save()
+        advanceUntilIdle()
+        val input = fakeUseCase.updatedInputs["r1"]
+        assertNotNull(input)
+        assertNotEquals("recipe_photos/r1/cover_old.jpg", input!!.draft.coverPhotoPath)
+        job.cancel()
+    }
+
+    @Test
+    fun replacingStepPhotoGeneratesDifferentPath() = runTest(dispatcher) {
+        val recipe = existingRecipe().copy(
+            steps = listOf(RecipeStep("s1", "r1", "Cortar", null, "recipe_photos/r1/steps/step_s1_old.jpg", 0)),
+        )
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(repository = repo, recipeId = "r1", saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        val stepKey = vm.uiState.value.steps[0].key
+        vm.selectStepPhoto(stepKey, "content://media/2")
+        advanceUntilIdle()
+        vm.save()
+        advanceUntilIdle()
+        val input = fakeUseCase.updatedInputs["r1"]
+        assertNotNull(input)
+        job.cancel()
+    }
+
+    @Test
+    fun reorderStepsKeepsPhotoAssociatedWithSameStepId() = runTest(dispatcher) {
+        val recipe = existingRecipe().copy(
+            steps = listOf(
+                RecipeStep("s1", "r1", "Paso 1", null, "recipe_photos/r1/steps/step_s1_photo.jpg", 0),
+                RecipeStep("s2", "r1", "Paso 2", null, null, 1),
+            ),
+        )
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
+        val vm = createViewModel(repository = repo, recipeId = "r1")
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        val keys = vm.uiState.value.steps.map { it.key }
+        vm.moveStepDown(keys[0])
+        advanceUntilIdle()
+        val reorderedKeys = vm.uiState.value.steps.map { it.key }
+        val photoState = vm.uiState.value.stepPhotoStates[reorderedKeys[1]]
+        assertTrue(photoState is EditorPhotoState.Persisted)
+        assertEquals("recipe_photos/r1/steps/step_s1_photo.jpg", (photoState as EditorPhotoState.Persisted).relativePath)
+        job.cancel()
+    }
+
+    @Test
+    fun oldFileNotDeletedBeforeRoomSave() = runTest(dispatcher) {
+        val recipe = existingRecipe().copy(coverPhotoPath = "recipe_photos/r1/cover_old.jpg")
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
+        val photoStorage = FakePhotoStorage()
+        val useCase = SaveRecipeUseCase(repo, photoStorage)
+        val vm = createViewModel(repository = repo, recipeId = "r1", photoStorage = photoStorage, saveRecipeUseCase = useCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.selectCoverPhoto("content://media/1")
+        advanceUntilIdle()
+        vm.save()
+        advanceUntilIdle()
+        assertTrue(photoStorage.deleted.contains("recipe_photos/r1/cover_old.jpg"))
+        job.cancel()
+    }
+
+    @Test
+    fun onRoomSuccessOnlyOldFileDeleted() = runTest(dispatcher) {
+        val recipe = existingRecipe().copy(coverPhotoPath = "recipe_photos/r1/cover_old.jpg")
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
+        val photoStorage = FakePhotoStorage()
+        val useCase = SaveRecipeUseCase(repo, photoStorage)
+        val vm = createViewModel(repository = repo, recipeId = "r1", photoStorage = photoStorage, saveRecipeUseCase = useCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.selectCoverPhoto("content://media/1")
+        advanceUntilIdle()
+        vm.save()
+        advanceUntilIdle()
+        assertTrue(photoStorage.deleted.contains("recipe_photos/r1/cover_old.jpg"))
+        assertFalse(photoStorage.deleted.any { it.contains("faked") })
+        job.cancel()
+    }
+
+    @Test
+    fun onRoomFailureOldFilePreservedNewFileDeleted() = runTest(dispatcher) {
+        val recipe = existingRecipe().copy(coverPhotoPath = "recipe_photos/r1/cover_old.jpg")
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe), failUpdate = true)
+        val photoStorage = FakePhotoStorage()
+        val useCase = SaveRecipeUseCase(repo, photoStorage)
+        val vm = createViewModel(repository = repo, recipeId = "r1", photoStorage = photoStorage, saveRecipeUseCase = useCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.selectCoverPhoto("content://media/1")
+        advanceUntilIdle()
+        vm.save()
+        advanceUntilIdle()
+        assertFalse(photoStorage.deleted.contains("recipe_photos/r1/cover_old.jpg"))
+        assertNotNull(vm.uiState.value.saveError)
+        job.cancel()
+    }
+
+    @Test
+    fun unmodifiedPhotoKeepsExactPath() = runTest(dispatcher) {
+        val recipe = existingRecipe().copy(coverPhotoPath = "recipe_photos/r1/cover_unchanged.jpg")
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(repository = repo, recipeId = "r1", saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("Updated")
+        vm.save()
+        advanceUntilIdle()
+        val input = fakeUseCase.updatedInputs["r1"]
+        assertNotNull(input)
+        assertEquals("recipe_photos/r1/cover_unchanged.jpg", input!!.draft.coverPhotoPath)
+        job.cancel()
+    }
+
+    @Test
+    fun removingPhotoPersistsNull() = runTest(dispatcher) {
+        val recipe = existingRecipe().copy(coverPhotoPath = "recipe_photos/r1/cover_old.jpg")
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(repository = repo, recipeId = "r1", saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.removeCoverPhoto()
+        vm.save()
+        advanceUntilIdle()
+        val input = fakeUseCase.updatedInputs["r1"]
+        assertNotNull(input)
+        assertNull(input!!.draft.coverPhotoPath)
+        job.cancel()
+    }
+
+    @Test
+    fun removingStepCleansPhotoAfterSave() = runTest(dispatcher) {
+        val recipe = existingRecipe().copy(
+            steps = listOf(
+                RecipeStep("s1", "r1", "Paso 1", null, "recipe_photos/r1/steps/step_s1_photo.jpg", 0),
+                RecipeStep("s2", "r1", "Paso 2", null, null, 1),
+            ),
+        )
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(repository = repo, recipeId = "r1", saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        val keys = vm.uiState.value.steps.map { it.key }
+        vm.removeStep(keys[0])
+        vm.save()
+        advanceUntilIdle()
+        val input = fakeUseCase.updatedInputs["r1"]
+        assertNotNull(input)
+        job.cancel()
+    }
+
+    @Test
+    fun deletingRecipeDoesNotAffectOther() = runTest(dispatcher) {
+        val recipe1 = existingRecipe()
+        val recipe2 = Recipe(
+            id = "r2", name = "Otra", description = null, category = null,
+            servings = null, preparationMinutes = null, cookingMinutes = null,
+            notes = null, isFavorite = false, coverPhotoPath = "recipe_photos/r2/cover.jpg",
+            ingredients = emptyList(), steps = emptyList(),
+            createdAt = 100L, updatedAt = 200L,
+        )
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe1, "r2" to recipe2))
+        val photoStorage = FakePhotoStorage()
+        val vm = createViewModel(repository = repo, recipeId = "r1", photoStorage = photoStorage)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.requestDelete()
+        vm.confirmDelete()
+        advanceUntilIdle()
+        assertTrue(repo.deletedIds.contains("r1"))
+        assertFalse(photoStorage.deleted.contains("recipe_photos/r2/cover.jpg"))
+        job.cancel()
+    }
+
+    @Test
+    fun deleteCleanupIsIdempotent() = runTest(dispatcher) {
+        val recipe = existingRecipe().copy(coverPhotoPath = "recipe_photos/r1/cover.jpg")
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
+        val photoStorage = FakePhotoStorage()
+        val vm = createViewModel(repository = repo, recipeId = "r1", photoStorage = photoStorage)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.requestDelete()
+        vm.confirmDelete()
+        advanceUntilIdle()
+        vm.requestDelete()
+        vm.confirmDelete()
+        advanceUntilIdle()
+        assertEquals(1, repo.deletedIds.size)
+        job.cancel()
+    }
+
+    @Test
+    fun twoConsecutivePromotionsGenerateDifferentNames() = runTest(dispatcher) {
+        val recipe = existingRecipe().copy(coverPhotoPath = "recipe_photos/r1/cover_old.jpg")
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
+        val photoStorage = FakePhotoStorage()
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(repository = repo, recipeId = "r1", photoStorage = photoStorage, saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.selectCoverPhoto("content://media/1")
+        advanceUntilIdle()
+        vm.save()
+        advanceUntilIdle()
+        val firstInput = fakeUseCase.updatedInputs["r1"]
+        vm.selectCoverPhoto("content://media/2")
+        advanceUntilIdle()
+        vm.save()
+        advanceUntilIdle()
+        val secondInput = fakeUseCase.updatedInputs["r1"]
+        assertNotNull(firstInput)
+        assertNotNull(secondInput)
+        job.cancel()
+    }
+
+    // ── Retry prevention ──────────────────────────────────────
+
+    @Test
+    fun retryAfterCreateFailureUsesExistingRecipeId() = runTest(dispatcher) {
+        var callCount = 0
+        val fakeUseCase = FakeSaveRecipeUseCase(
+            createHandler = { Result.failure(IllegalStateException("first fail")) },
+        )
+        val vm = createViewModel(saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("Recipe")
+        vm.save()
+        advanceUntilIdle()
+        assertNotNull(vm.uiState.value.saveError)
+        assertFalse(vm.uiState.value.isSaving)
+        job.cancel()
+    }
+
+    @Test
+    fun retryAfterSuccessCreatesNewRecipe() = runTest(dispatcher) {
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        var event: EditorNavigationEvent? = null
+        val navJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            vm.navigation.collect { event = it }
+        }
+        vm.updateName("Recipe1")
+        vm.save()
+        advanceUntilIdle()
+        assertEquals("gen-0", (event as EditorNavigationEvent.RecipeCreated).recipeId)
+        assertEquals(1, fakeUseCase.createdInputs.size)
+        navJob.cancel()
+        job.cancel()
+    }
+
+    @Test
+    fun pendingRecipeIdClearedAfterUpdate() = runTest(dispatcher) {
+        val recipe = existingRecipe()
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to recipe))
+        val vm = createViewModel(repository = repo, recipeId = "r1")
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("Updated")
+        vm.save()
+        advanceUntilIdle()
+        assertNull(vm.uiState.value.pendingRecipeId)
+        job.cancel()
+    }
+
+    @Test
+    fun createDraftHasPreGeneratedRecipeId() = runTest(dispatcher) {
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("Test")
+        vm.save()
+        advanceUntilIdle()
+        val input = fakeUseCase.createdInputs.first()
+        assertEquals("gen-0", input.draft.id)
         job.cancel()
     }
 
@@ -649,7 +1191,24 @@ private class FakeEditorRepository(
     override suspend fun createRecipe(input: RecipeDraft): Result<String> {
         if (failCreate) return Result.failure(IllegalStateException("test"))
         createdDrafts.add(input)
-        return Result.success("gen-created")
+        val id = "gen-${createdDrafts.size}"
+        recipes[id] = Recipe(
+            id = id,
+            name = input.name,
+            description = input.description,
+            category = input.category,
+            servings = input.servings,
+            preparationMinutes = input.preparationMinutes,
+            cookingMinutes = input.cookingMinutes,
+            notes = input.notes,
+            isFavorite = false,
+            coverPhotoPath = input.coverPhotoPath,
+            ingredients = emptyList(),
+            steps = emptyList(),
+            createdAt = 0L,
+            updatedAt = 0L,
+        )
+        return Result.success(id)
     }
 
     override suspend fun updateRecipe(recipe: Recipe): Result<Unit> {
@@ -660,7 +1219,10 @@ private class FakeEditorRepository(
     override suspend fun updateRecipeFromDraft(recipeId: String, draft: RecipeDraft): Result<Unit> {
         if (failUpdate) return Result.failure(IllegalStateException("test"))
         val existing = recipes[recipeId] ?: return Result.failure(IllegalStateException("not found"))
-        updatedRecipes[recipeId] = existing.copy(name = draft.name)
+        updatedRecipes[recipeId] = existing.copy(
+            name = draft.name,
+            coverPhotoPath = draft.coverPhotoPath,
+        )
         return Result.success(Unit)
     }
 
@@ -669,4 +1231,68 @@ private class FakeEditorRepository(
         deletedIds.add(recipeId)
         return Result.success(Unit)
     }
+}
+
+private class FakeSaveRecipeUseCase(
+    private val repository: RecipeRepository? = null,
+    private val createHandler: suspend (SaveRecipeInput) -> Result<String> = { Result.success("gen-0") },
+    private val updateHandler: suspend (String, SaveRecipeInput) -> Result<Unit> = { _, _ -> Result.success(Unit) },
+) : SaveRecipeOperation {
+    val createdInputs = mutableListOf<SaveRecipeInput>()
+    val updatedInputs = mutableMapOf<String, SaveRecipeInput>()
+
+    override suspend fun create(input: SaveRecipeInput): Result<String> {
+        createdInputs.add(input)
+        return createHandler(input)
+    }
+
+    override suspend fun update(recipeId: String, input: SaveRecipeInput): Result<Unit> {
+        updatedInputs[recipeId] = input
+        if (repository != null) {
+            return repository.updateRecipeFromDraft(recipeId, input.draft)
+        }
+        return updateHandler(recipeId, input)
+    }
+}
+
+private class FakePhotoStorage(
+    private val failPromote: Boolean = false,
+) : RecipePhotoStorage {
+    val staged = mutableListOf<StagedPhoto>()
+    val promoted = mutableListOf<Pair<StagedPhoto, PhotoDestination>>()
+    val deleted = mutableListOf<String>()
+    var promoteCounter = 0
+
+    override suspend fun stagePhoto(sourceUriString: String): Result<StagedPhoto> {
+        val staged = StagedPhoto(
+            stagedFile = java.io.File("fake_staging/photo.jpg"),
+            relativePath = "recipe_photos/staging_photo.jpg",
+        )
+        this.staged.add(staged)
+        return Result.success(staged)
+    }
+
+    override suspend fun promotePhoto(stagedPhoto: StagedPhoto, destination: PhotoDestination): Result<String> {
+        if (failPromote) return Result.failure(IllegalStateException("promote failed"))
+        promoteCounter++
+        promoted.add(stagedPhoto to destination)
+        val path = when (destination) {
+            is PhotoDestination.Cover -> "recipe_photos/${destination.recipeId}/cover_faked_$promoteCounter.jpg"
+            is PhotoDestination.Step -> "recipe_photos/${destination.recipeId}/steps/step_${destination.stepId}_faked_$promoteCounter.jpg"
+        }
+        return Result.success(path)
+    }
+
+    override suspend fun delete(relativePath: String): Result<Unit> {
+        deleted.add(relativePath)
+        return Result.success(Unit)
+    }
+
+    override suspend fun deleteStaged(stagedPhoto: StagedPhoto): Result<Unit> = Result.success(Unit)
+
+    override suspend fun resolve(relativePath: String): java.io.File? = null
+
+    override suspend fun cleanStaging(): Result<Unit> = Result.success(Unit)
+
+    override suspend fun getRecipePhotoPaths(recipeId: String): List<String> = emptyList()
 }

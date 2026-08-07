@@ -1,5 +1,6 @@
 package com.rmm.recetasraquel.ui.editor
 
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -10,7 +11,11 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.rmm.recetasraquel.domain.model.IngredientDraft
 import com.rmm.recetasraquel.domain.model.RecipeDraft
 import com.rmm.recetasraquel.domain.model.RecipeStepDraft
+import com.rmm.recetasraquel.domain.photos.RecipePhotoStorage
+import com.rmm.recetasraquel.domain.photos.StagedPhoto
 import com.rmm.recetasraquel.domain.repository.RecipeRepository
+import com.rmm.recetasraquel.domain.usecase.SaveRecipeInput
+import com.rmm.recetasraquel.domain.usecase.SaveRecipeOperation
 import com.rmm.recetasraquel.ui.navigation.AppRoute
 import com.rmm.recetasraquel.util.IdGenerator
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -57,6 +62,7 @@ data class RecipeEditorUiState(
     val isSaving: Boolean = false,
     val isDeleting: Boolean = false,
     val recipeId: String? = null,
+    val pendingRecipeId: String? = null,
     val name: String = "",
     val category: String = "",
     val description: String = "",
@@ -66,6 +72,10 @@ data class RecipeEditorUiState(
     val notes: String = "",
     val ingredients: List<EditorIngredientItem> = emptyList(),
     val steps: List<EditorStepItem> = emptyList(),
+    val coverPhotoState: EditorPhotoState = EditorPhotoState.None,
+    val stepPhotoStates: Map<String, EditorPhotoState> = emptyMap(),
+    val replacedCoverPath: String? = null,
+    val replacedStepPaths: Map<String, String> = emptyMap(),
     val nameError: String? = null,
     val ingredientErrors: Map<String, String> = emptyMap(),
     val stepErrors: Map<String, String> = emptyMap(),
@@ -87,6 +97,8 @@ data class RecipeEditorUiState(
 class RecipeEditorViewModel(
     private val repository: RecipeRepository,
     private val idGenerator: IdGenerator,
+    private val photoStorage: RecipePhotoStorage,
+    private val saveRecipeUseCase: SaveRecipeOperation,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -125,6 +137,19 @@ class RecipeEditorViewModel(
                 _uiState.value = RecipeEditorUiState.forEditNotFound()
                 return@launch
             }
+            val coverState = recipe.coverPhotoPath?.let { EditorPhotoState.Persisted(it) }
+                ?: EditorPhotoState.None
+            val stepStates = mutableMapOf<String, EditorPhotoState>()
+            val steps = recipe.steps.sortedBy { it.sortOrder }.map { step ->
+                val key = UUID.randomUUID().toString()
+                step.photoPath?.let { stepStates[key] = EditorPhotoState.Persisted(it) }
+                EditorStepItem(
+                    key = key,
+                    id = step.id,
+                    instruction = step.instruction,
+                    timerMinutes = step.timerMinutes?.toString() ?: "",
+                )
+            }
             _uiState.value = RecipeEditorUiState(
                 mode = mode,
                 recipeId = recipe.id,
@@ -145,14 +170,9 @@ class RecipeEditorViewModel(
                         notes = ing.notes ?: "",
                     )
                 },
-                steps = recipe.steps.sortedBy { it.sortOrder }.map { step ->
-                    EditorStepItem(
-                        key = UUID.randomUUID().toString(),
-                        id = step.id,
-                        instruction = step.instruction,
-                        timerMinutes = step.timerMinutes?.toString() ?: "",
-                    )
-                },
+                steps = steps,
+                coverPhotoState = coverState,
+                stepPhotoStates = stepStates,
             )
             initialState = computeNormalizedState(_uiState.value)
         }
@@ -326,6 +346,7 @@ class RecipeEditorViewModel(
             state.copy(
                 steps = state.steps.filter { it.key != key },
                 stepErrors = state.stepErrors - key,
+                stepPhotoStates = state.stepPhotoStates - key,
             )
         }
         checkForUnsavedChanges()
@@ -355,6 +376,116 @@ class RecipeEditorViewModel(
         checkForUnsavedChanges()
     }
 
+    // --- Cover photo ---
+
+    fun selectCoverPhoto(uri: Uri) {
+        selectCoverPhoto(uri.toString())
+    }
+
+    fun selectCoverPhoto(uriString: String) {
+        val previous = _uiState.value.coverPhotoState
+        val replacePath = if (previous is EditorPhotoState.Persisted) previous.relativePath else null
+        _uiState.update { it.copy(coverPhotoState = EditorPhotoState.Processing(previous), replacedCoverPath = replacePath ?: it.replacedCoverPath) }
+        viewModelScope.launch {
+            val result = photoStorage.stagePhoto(uriString)
+            result.fold(
+                onSuccess = { staged ->
+                    _uiState.update { it.copy(coverPhotoState = EditorPhotoState.Staged(staged)) }
+                    checkForUnsavedChanges()
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(coverPhotoState = EditorPhotoState.Error(previous, error.message ?: "Error"))
+                    }
+                },
+            )
+        }
+    }
+
+    fun removeCoverPhoto() {
+        val current = _uiState.value.coverPhotoState
+        when (current) {
+            is EditorPhotoState.Staged -> {
+                viewModelScope.launch { photoStorage.deleteStaged(current.stagedPhoto) }
+                _uiState.update { it.copy(coverPhotoState = EditorPhotoState.None) }
+            }
+            is EditorPhotoState.Persisted -> {
+                _uiState.update { it.copy(coverPhotoState = EditorPhotoState.Removed(current)) }
+            }
+            else -> {}
+        }
+        checkForUnsavedChanges()
+    }
+
+    // --- Step photos ---
+
+    fun selectStepPhoto(stepKey: String, uri: Uri) {
+        selectStepPhoto(stepKey, uri.toString())
+    }
+
+    fun selectStepPhoto(stepKey: String, uriString: String) {
+        val previous = _uiState.value.stepPhotoStates[stepKey] ?: EditorPhotoState.None
+        val replacePath = if (previous is EditorPhotoState.Persisted) previous.relativePath else null
+        _uiState.update { state ->
+            state.copy(
+                stepPhotoStates = state.stepPhotoStates + (stepKey to EditorPhotoState.Processing(previous)),
+                replacedStepPaths = if (replacePath != null) state.replacedStepPaths + (stepKey to replacePath) else state.replacedStepPaths,
+            )
+        }
+        viewModelScope.launch {
+            val result = photoStorage.stagePhoto(uriString)
+            result.fold(
+                onSuccess = { staged ->
+                    _uiState.update { state ->
+                        state.copy(stepPhotoStates = state.stepPhotoStates + (stepKey to EditorPhotoState.Staged(staged)))
+                    }
+                    checkForUnsavedChanges()
+                },
+                onFailure = { error ->
+                    _uiState.update { state ->
+                        state.copy(
+                            stepPhotoStates = state.stepPhotoStates + (
+                                stepKey to EditorPhotoState.Error(previous, error.message ?: "Error")
+                            ),
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    fun removeStepPhoto(stepKey: String) {
+        val current = _uiState.value.stepPhotoStates[stepKey] ?: return
+        when (current) {
+            is EditorPhotoState.Staged -> {
+                viewModelScope.launch { photoStorage.deleteStaged(current.stagedPhoto) }
+                _uiState.update { state ->
+                    state.copy(stepPhotoStates = state.stepPhotoStates - stepKey)
+                }
+            }
+            is EditorPhotoState.Persisted -> {
+                _uiState.update { state ->
+                    state.copy(stepPhotoStates = state.stepPhotoStates + (stepKey to EditorPhotoState.Removed(current)))
+                }
+            }
+            else -> {}
+        }
+        checkForUnsavedChanges()
+    }
+
+    fun dismissPhotoError() {
+        val current = _uiState.value.coverPhotoState
+        if (current is EditorPhotoState.Error) {
+            _uiState.update { it.copy(coverPhotoState = current.previous ?: EditorPhotoState.None) }
+        }
+        _uiState.update { state ->
+            val cleaned = state.stepPhotoStates.mapValues { (_, v) ->
+                if (v is EditorPhotoState.Error) v.previous ?: EditorPhotoState.None else v
+            }
+            state.copy(stepPhotoStates = cleaned)
+        }
+    }
+
     // --- Unsaved changes detection ---
 
     private fun checkForUnsavedChanges() {
@@ -377,7 +508,20 @@ class RecipeEditorViewModel(
             steps = state.steps
                 .filter { it.instruction.isNotBlank() || it.timerMinutes.isNotBlank() }
                 .map { NormalizedStep(it.instruction.trim(), it.timerMinutes.trim()) },
+            coverPhotoState = normalizePhotoState(state.coverPhotoState),
+            stepPhotoStates = state.stepPhotoStates
+                .filter { state.steps.any { step -> step.key == it.key } }
+                .mapValues { normalizePhotoState(it.value) },
         )
+    }
+
+    private fun normalizePhotoState(state: EditorPhotoState): String = when (state) {
+        is EditorPhotoState.None -> "none"
+        is EditorPhotoState.Persisted -> "persisted:${state.relativePath}"
+        is EditorPhotoState.Staged -> "staged:${state.stagedPhoto.relativePath}"
+        is EditorPhotoState.Processing -> "processing"
+        is EditorPhotoState.Removed -> "removed"
+        is EditorPhotoState.Error -> "error"
     }
 
     // --- Validation ---
@@ -427,12 +571,15 @@ class RecipeEditorViewModel(
 
     private fun createRecipe() {
         val state = _uiState.value
-        _uiState.update { it.copy(isSaving = true, saveError = null) }
+        val recipeId = state.pendingRecipeId ?: idGenerator.newId()
+        _uiState.update { it.copy(isSaving = true, saveError = null, pendingRecipeId = recipeId) }
         viewModelScope.launch {
-            val draft = buildDraft(state)
-            val result = repository.createRecipe(draft)
+            val input = buildSaveInput(state, recipeId)
+            val result = saveRecipeUseCase.create(input)
             if (result.isSuccess) {
-                _navigation.emit(EditorNavigationEvent.RecipeCreated(result.getOrThrow()))
+                val newRecipeId = result.getOrThrow()
+                _uiState.update { it.copy(isSaving = false, pendingRecipeId = newRecipeId) }
+                _navigation.emit(EditorNavigationEvent.RecipeCreated(newRecipeId))
             } else {
                 _uiState.update {
                     it.copy(isSaving = false, saveError = "No se pudo guardar la receta. Inténtalo de nuevo.")
@@ -445,9 +592,10 @@ class RecipeEditorViewModel(
         val state = _uiState.value
         _uiState.update { it.copy(isSaving = true, saveError = null) }
         viewModelScope.launch {
-            val draft = buildDraft(state)
-            val result = repository.updateRecipeFromDraft(id, draft)
+            val input = buildSaveInput(state)
+            val result = saveRecipeUseCase.update(id, input)
             if (result.isSuccess) {
+                _uiState.update { it.copy(isSaving = false, pendingRecipeId = null) }
                 _navigation.emit(EditorNavigationEvent.RecipeUpdated(id))
             } else {
                 _uiState.update {
@@ -457,8 +605,40 @@ class RecipeEditorViewModel(
         }
     }
 
-    private fun buildDraft(state: RecipeEditorUiState): RecipeDraft {
+    private fun buildSaveInput(state: RecipeEditorUiState, recipeId: String? = null): SaveRecipeInput {
+        val stepIds = mutableMapOf<String, String>()
+        state.steps.forEach { step ->
+            if (step.id == null) {
+                stepIds[step.key] = idGenerator.newId()
+            } else {
+                stepIds[step.key] = step.id
+            }
+        }
+
+        val draft = buildDraft(state, stepIds, recipeId)
+
+        val stagedCover = (state.coverPhotoState as? EditorPhotoState.Staged)?.stagedPhoto
+        val stagedSteps = state.steps.associate { step ->
+            step.key to (state.stepPhotoStates[step.key] as? EditorPhotoState.Staged)?.stagedPhoto
+        }
+
+        return SaveRecipeInput(
+            draft = draft,
+            stagedCover = stagedCover,
+            stagedSteps = stagedSteps,
+            replacedCoverPath = state.replacedCoverPath,
+            replacedStepPaths = state.replacedStepPaths,
+        )
+    }
+
+    private fun buildDraft(
+        state: RecipeEditorUiState,
+        stepIds: Map<String, String>,
+        recipeId: String? = null,
+    ): RecipeDraft {
+        val coverPath = resolveCoverPath(state)
         return RecipeDraft(
+            id = recipeId,
             name = state.name,
             description = state.description.ifBlank { null },
             category = state.category.ifBlank { null },
@@ -466,6 +646,7 @@ class RecipeEditorViewModel(
             preparationMinutes = state.preparationMinutes.toIntOrNull(),
             cookingMinutes = state.cookingMinutes.toIntOrNull(),
             notes = state.notes.ifBlank { null },
+            coverPhotoPath = coverPath,
             ingredients = state.ingredients
                 .filter { it.name.isNotBlank() }
                 .map { item ->
@@ -480,13 +661,30 @@ class RecipeEditorViewModel(
             steps = state.steps
                 .filter { it.instruction.isNotBlank() || it.timerMinutes.isNotBlank() }
                 .map { item ->
+                    val stepPhoto = state.stepPhotoStates[item.key]
                     RecipeStepDraft(
-                        id = item.id,
+                        id = stepIds[item.key],
+                        stepKey = item.key,
                         instruction = item.instruction,
                         timerMinutes = item.timerMinutes.toIntOrNull(),
+                        photoPath = resolveStepPhotoPath(stepPhoto),
                     )
                 },
         )
+    }
+
+    private fun resolveCoverPath(state: RecipeEditorUiState): String? = when (val cover = state.coverPhotoState) {
+        is EditorPhotoState.Persisted -> cover.relativePath
+        is EditorPhotoState.Staged -> null
+        is EditorPhotoState.Removed -> null
+        else -> null
+    }
+
+    private fun resolveStepPhotoPath(photo: EditorPhotoState?): String? = when (photo) {
+        is EditorPhotoState.Persisted -> photo.relativePath
+        is EditorPhotoState.Staged -> null
+        is EditorPhotoState.Removed -> null
+        else -> null
     }
 
     // --- Delete ---
@@ -504,8 +702,10 @@ class RecipeEditorViewModel(
         if (_uiState.value.isDeleting) return
         _uiState.update { it.copy(isDeleting = true, showDeleteConfirmation = false, deleteError = null) }
         viewModelScope.launch {
+            val photoPaths = photoStorage.getRecipePhotoPaths(id)
             val result = repository.deleteRecipe(id)
             if (result.isSuccess) {
+                photoPaths.forEach { photoStorage.delete(it) }
                 _navigation.emit(EditorNavigationEvent.RecipeDeleted)
             } else {
                 _uiState.update {
@@ -526,6 +726,7 @@ class RecipeEditorViewModel(
     }
 
     fun discardChanges() {
+        cleanStaging()
         _uiState.update { it.copy(showDiscardConfirmation = false) }
     }
 
@@ -539,13 +740,25 @@ class RecipeEditorViewModel(
         _uiState.update { it.copy(saveError = null) }
     }
 
+    private fun cleanStaging() {
+        val state = _uiState.value
+        if (state.coverPhotoState is EditorPhotoState.Staged) {
+            viewModelScope.launch { photoStorage.deleteStaged(state.coverPhotoState.stagedPhoto) }
+        }
+        state.stepPhotoStates.values.filterIsInstance<EditorPhotoState.Staged>().forEach { staged ->
+            viewModelScope.launch { photoStorage.deleteStaged(staged.stagedPhoto) }
+        }
+    }
+
     companion object {
         fun factory(
             repository: RecipeRepository,
             idGenerator: IdGenerator,
+            photoStorage: RecipePhotoStorage,
+            saveRecipeUseCase: SaveRecipeOperation,
         ): ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                RecipeEditorViewModel(repository, idGenerator, createSavedStateHandle())
+                RecipeEditorViewModel(repository, idGenerator, photoStorage, saveRecipeUseCase, createSavedStateHandle())
             }
         }
     }
@@ -561,6 +774,8 @@ private data class NormalizedEditorState(
     val notes: String? = null,
     val ingredients: List<NormalizedIngredient> = emptyList(),
     val steps: List<NormalizedStep> = emptyList(),
+    val coverPhotoState: String = "none",
+    val stepPhotoStates: Map<String, String> = emptyMap(),
 )
 
 private data class NormalizedIngredient(

@@ -1,6 +1,7 @@
 package com.rmm.recetasraquel.domain.model
 
 data class RecipeDraft(
+    val id: String? = null,
     val name: String,
     val description: String? = null,
     val category: String? = null,
@@ -23,6 +24,7 @@ data class IngredientDraft(
 
 data class RecipeStepDraft(
     val id: String? = null,
+    val stepKey: String? = null,
     val instruction: String,
     val timerMinutes: Int? = null,
     val photoPath: String? = null,

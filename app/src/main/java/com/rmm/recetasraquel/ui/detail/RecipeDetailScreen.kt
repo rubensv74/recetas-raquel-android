@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,11 +21,14 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.rmm.recetasraquel.domain.model.Recipe
 import com.rmm.recetasraquel.ui.components.formatIngredient
 import com.rmm.recetasraquel.ui.components.formatTotalTime
@@ -90,6 +94,16 @@ private fun RecipeContent(recipe: Recipe, actionMessage: String?, modifier: Modi
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp),
     ) {
+        if (recipe.coverPhotoPath != null) {
+            item {
+                AsyncImage(
+                    model = recipe.coverPhotoPath,
+                    contentDescription = recipe.name,
+                    modifier = Modifier.fillMaxWidth().height(220.dp).clip(MaterialTheme.shapes.medium).testTag("detail_cover_photo"),
+                    contentScale = ContentScale.Crop,
+                )
+            }
+        }
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 recipe.category?.let { Text(it, style = MaterialTheme.typography.labelLarge) }
@@ -117,9 +131,17 @@ private fun RecipeContent(recipe: Recipe, actionMessage: String?, modifier: Modi
             item { SectionTitle("Pasos") }
             items(recipe.steps.sortedBy { it.sortOrder }, key = { it.id }) { step ->
                 val number = recipe.steps.sortedBy { it.sortOrder }.indexOfFirst { it.id == step.id } + 1
-                Column(Modifier.fillMaxWidth()) {
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("$number. ${step.instruction}")
                     step.timerMinutes?.let { Text("$it min", style = MaterialTheme.typography.bodySmall) }
+                    if (step.photoPath != null) {
+                        AsyncImage(
+                            model = step.photoPath,
+                            contentDescription = "Foto del paso $number",
+                            modifier = Modifier.fillMaxWidth().height(140.dp).clip(MaterialTheme.shapes.medium).testTag("step_photo_${step.id}"),
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
                 }
             }
         }

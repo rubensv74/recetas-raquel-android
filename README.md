@@ -12,6 +12,8 @@ Aplicación Android privada y local-first para guardar y consultar recetas sin c
 
 El Sprint 3 incorpora editor de recetas con creación, edición y eliminación. La pantalla única del editor permite campos obligatorios, ingredientes y pasos con reordenamiento, validación en línea, detección de cambios sin guardar y eliminación con confirmación. La UI consume Room exclusivamente mediante ViewModels y `RecipeRepository`.
 
+El Sprint 4 añade soporte para fotos de portada y por paso. El editor permite seleccionar, previsualizar y eliminar fotos con el Android Photo Picker; las imágenes se comprimen y almacenan en almacenamiento privado. El catálogo y el detalle muestran portadas con Coil.
+
 La base de producción se llama `recipes.db`. El esquema continúa en versión 1 y se exporta a `app/schemas`. Los IDs son UUID almacenados como `String` y los timestamps son milisegundos Unix UTC (`Long`).
 
 En debug, Ajustes permite cargar y retirar de forma idempotente cinco recetas de demostración. Nunca se insertan automáticamente y el controlador no existe en release.

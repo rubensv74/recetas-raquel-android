@@ -1,5 +1,9 @@
 package com.rmm.recetasraquel.ui.editor
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,16 +35,22 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +77,10 @@ fun RecipeEditorScreen(
     onRemoveStep: (String) -> Unit,
     onMoveStepUp: (String) -> Unit,
     onMoveStepDown: (String) -> Unit,
+    onCoverPhotoSelected: (Uri) -> Unit,
+    onRemoveCoverPhoto: () -> Unit,
+    onStepPhotoSelected: (String, Uri) -> Unit,
+    onRemoveStepPhoto: (String) -> Unit,
     onSave: () -> Unit,
     onNavigateBack: () -> Unit,
     onDelete: () -> Unit,
@@ -74,11 +89,28 @@ fun RecipeEditorScreen(
     onConfirmDiscard: () -> Unit,
     onCancelDiscard: () -> Unit,
     onDismissSaveError: () -> Unit,
+    onDismissPhotoError: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val title = when (state.mode) {
         is EditorMode.Create -> "Nueva receta"
         is EditorMode.Edit -> "Editar receta"
+    }
+
+    var pendingStepKey by remember { mutableStateOf<String?>(null) }
+
+    val coverPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+    ) { uri: Uri? ->
+        uri?.let { onCoverPhotoSelected(it) }
+    }
+
+    val stepPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+    ) { uri: Uri? ->
+        val key = pendingStepKey
+        uri?.let { if (key != null) onStepPhotoSelected(key, it) }
+        pendingStepKey = null
     }
 
     LaunchedEffect(state.saveError) {
@@ -157,6 +189,13 @@ fun RecipeEditorScreen(
                 onRemoveStep = onRemoveStep,
                 onMoveStepUp = onMoveStepUp,
                 onMoveStepDown = onMoveStepDown,
+                onCoverPhotoSelected = { coverPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                onRemoveCoverPhoto = onRemoveCoverPhoto,
+                onStepPhotoSelected = { stepKey ->
+                    pendingStepKey = stepKey
+                    stepPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                },
+                onRemoveStepPhoto = onRemoveStepPhoto,
                 modifier = Modifier.padding(padding),
             )
         }
@@ -223,6 +262,10 @@ private fun EditorContent(
     onRemoveStep: (String) -> Unit,
     onMoveStepUp: (String) -> Unit,
     onMoveStepDown: (String) -> Unit,
+    onCoverPhotoSelected: () -> Unit,
+    onRemoveCoverPhoto: () -> Unit,
+    onStepPhotoSelected: (String) -> Unit,
+    onRemoveStepPhoto: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -230,6 +273,16 @@ private fun EditorContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp),
     ) {
+        item { SectionTitle("Fotografía de la receta") }
+
+        item {
+            CoverPhotoSection(
+                photoState = state.coverPhotoState,
+                onSelect = onCoverPhotoSelected,
+                onRemove = onRemoveCoverPhoto,
+            )
+        }
+
         item { SectionTitle("Información general") }
 
         item {
@@ -335,9 +388,11 @@ private fun EditorContent(
         item { SectionTitle("Preparación") }
 
         items(state.steps, key = { it.key }) { item ->
+            val stepPhoto = state.stepPhotoStates[item.key] ?: EditorPhotoState.None
             StepEditorRow(
                 item = item,
                 index = state.steps.indexOf(item),
+                photoState = stepPhoto,
                 error = state.stepErrors[item.key],
                 isFirst = state.steps.firstOrNull()?.key == item.key,
                 isLast = state.steps.lastOrNull()?.key == item.key,
@@ -346,6 +401,8 @@ private fun EditorContent(
                 onRemove = { onRemoveStep(item.key) },
                 onMoveUp = { onMoveStepUp(item.key) },
                 onMoveDown = { onMoveStepDown(item.key) },
+                onSelectPhoto = { onStepPhotoSelected(item.key) },
+                onRemovePhoto = { onRemoveStepPhoto(item.key) },
                 modifier = Modifier.testTag("editor_step_${item.key}"),
             )
         }
@@ -359,6 +416,54 @@ private fun EditorContent(
         }
 
         item { Spacer(Modifier.height(32.dp)) }
+    }
+}
+
+@Composable
+private fun CoverPhotoSection(
+    photoState: EditorPhotoState,
+    onSelect: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            when (photoState) {
+                is EditorPhotoState.None, is EditorPhotoState.Removed -> {
+                    OutlinedButton(
+                        onClick = onSelect,
+                        modifier = Modifier.fillMaxWidth().testTag("select_cover_photo"),
+                    ) { Text("Seleccionar foto") }
+                }
+                is EditorPhotoState.Processing -> {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Procesando...")
+                    }
+                }
+                is EditorPhotoState.Staged, is EditorPhotoState.Persisted -> {
+                    val model = when (photoState) {
+                        is EditorPhotoState.Staged -> photoState.stagedPhoto.stagedFile
+                        is EditorPhotoState.Persisted -> photoState.relativePath
+                        else -> null
+                    }
+                    AsyncImage(
+                        model = model,
+                        contentDescription = "Fotografía de la receta",
+                        modifier = Modifier.fillMaxWidth().height(200.dp).clip(MaterialTheme.shapes.medium).testTag("cover_photo_preview"),
+                        contentScale = ContentScale.Crop,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = onSelect, modifier = Modifier.testTag("change_cover_photo")) { Text("Cambiar") }
+                        OutlinedButton(onClick = onRemove, modifier = Modifier.testTag("remove_cover_photo")) { Text("Quitar") }
+                    }
+                }
+                is EditorPhotoState.Error -> {
+                    Text(photoState.message, color = MaterialTheme.colorScheme.error)
+                    OutlinedButton(onClick = onSelect) { Text("Reintentar") }
+                }
+            }
+        }
     }
 }
 
@@ -435,6 +540,7 @@ private fun IngredientEditorRow(
 private fun StepEditorRow(
     item: EditorStepItem,
     index: Int,
+    photoState: EditorPhotoState,
     error: String?,
     isFirst: Boolean,
     isLast: Boolean,
@@ -443,6 +549,8 @@ private fun StepEditorRow(
     onRemove: () -> Unit,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
+    onSelectPhoto: () -> Unit,
+    onRemovePhoto: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(modifier = modifier.fillMaxWidth()) {
@@ -473,6 +581,11 @@ private fun StepEditorRow(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )
+            StepPhotoSection(
+                photoState = photoState,
+                onSelect = onSelectPhoto,
+                onRemove = onRemovePhoto,
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(
                     onClick = onMoveUp,
@@ -485,6 +598,49 @@ private fun StepEditorRow(
                     modifier = Modifier.semantics { contentDescription = "Bajar paso" },
                 ) { Text("↓") }
             }
+        }
+    }
+}
+
+@Composable
+private fun StepPhotoSection(
+    photoState: EditorPhotoState,
+    onSelect: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    when (photoState) {
+        is EditorPhotoState.None, is EditorPhotoState.Removed -> {
+            OutlinedButton(onClick = onSelect, modifier = Modifier.testTag("add_step_photo")) {
+                Text("Añadir foto")
+            }
+        }
+        is EditorPhotoState.Processing -> {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Procesando...", style = MaterialTheme.typography.bodySmall)
+            }
+        }
+        is EditorPhotoState.Staged, is EditorPhotoState.Persisted -> {
+            val model = when (photoState) {
+                is EditorPhotoState.Staged -> photoState.stagedPhoto.stagedFile
+                is EditorPhotoState.Persisted -> photoState.relativePath
+                else -> null
+            }
+            AsyncImage(
+                model = model,
+                contentDescription = "Foto del paso",
+                modifier = Modifier.fillMaxWidth().height(120.dp).clip(MaterialTheme.shapes.medium).testTag("step_photo_preview"),
+                contentScale = ContentScale.Crop,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = onSelect, modifier = Modifier.testTag("change_step_photo")) { Text("Cambiar") }
+                OutlinedButton(onClick = onRemove, modifier = Modifier.testTag("remove_step_photo")) { Text("Quitar") }
+            }
+        }
+        is EditorPhotoState.Error -> {
+            Text(photoState.message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            OutlinedButton(onClick = onSelect) { Text("Reintentar") }
         }
     }
 }

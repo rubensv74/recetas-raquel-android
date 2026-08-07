@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,11 +28,14 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.testTag
+import coil.compose.AsyncImage
 import com.rmm.recetasraquel.domain.model.RecipeSummary
 import com.rmm.recetasraquel.ui.components.formatTotalTime
 
@@ -169,10 +173,22 @@ private fun CatalogMessage(message: String, action: (@Composable () -> Unit)? = 
 private fun RecipeCard(recipe: RecipeSummary, onFavorite: () -> Unit, onOpen: () -> Unit) {
     Card(onClick = onOpen, modifier = Modifier.fillMaxWidth().testTag("recipe_${recipe.id}")) {
         Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                Modifier.padding(end = 16.dp),
-                contentAlignment = Alignment.Center,
-            ) { Text("Sin foto", style = MaterialTheme.typography.labelSmall) }
+            if (recipe.coverPhotoPath != null) {
+                AsyncImage(
+                    model = recipe.coverPhotoPath,
+                    contentDescription = recipe.name,
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(MaterialTheme.shapes.medium)
+                        .padding(end = 16.dp),
+                    contentScale = ContentScale.Crop,
+                )
+            } else {
+                Box(
+                    Modifier.size(72.dp).padding(end = 16.dp).clip(MaterialTheme.shapes.medium),
+                    contentAlignment = Alignment.Center,
+                ) { Text("Sin foto", style = MaterialTheme.typography.labelSmall) }
+            }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(recipe.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 recipe.category?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }

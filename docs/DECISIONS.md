@@ -59,3 +59,7 @@
 ## ADR-015 — Editor de recetas sin esquema nuevo
 
 **Aceptada en Sprint 3.** El editor funciona con el esquema v1 existente. `RecipeMapper.toUpdatedRecipe` preserva IDs de recetas hijas para actualizaciones in-place, y `LocalRecipeRepository.updateRecipeFromDraft` usa la estrategia de reemplazo transaccional del DAO. No se añaden dependencias ni migraciones.
+
+## ADR-016 — Strings URI en el domain layer
+
+**Aceptada en agosto de 2026.** `RecipePhotoStorage` usa `String` en lugar de `android.net.Uri` para mantener los tipos del framework Android fuera de la capa de dominio, mejorando testabilidad y portabilidad.

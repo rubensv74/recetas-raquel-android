@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.rmm.recetasraquel.domain.photos.RecipePhotoStorage
 import com.rmm.recetasraquel.domain.repository.DemoDataController
 import com.rmm.recetasraquel.domain.repository.RecipeRepository
 import com.rmm.recetasraquel.ui.detail.RecipeDetailScreen
@@ -17,6 +18,7 @@ import com.rmm.recetasraquel.ui.editor.RecipeEditorScreen
 import com.rmm.recetasraquel.ui.editor.RecipeEditorViewModel
 import com.rmm.recetasraquel.ui.home.HomeScreen
 import com.rmm.recetasraquel.ui.home.RecipeCatalogViewModel
+import com.rmm.recetasraquel.domain.usecase.SaveRecipeOperation
 import com.rmm.recetasraquel.ui.navigation.AppRoute
 import com.rmm.recetasraquel.ui.settings.SettingsScreen
 import com.rmm.recetasraquel.ui.settings.SettingsViewModel
@@ -26,6 +28,8 @@ import com.rmm.recetasraquel.util.IdGenerator
 fun RecetasRaquelApp(
     repository: RecipeRepository,
     idGenerator: IdGenerator,
+    photoStorage: RecipePhotoStorage,
+    saveRecipeUseCase: SaveRecipeOperation,
     demoDataController: DemoDataController?,
 ) {
     val navController = rememberNavController()
@@ -63,7 +67,7 @@ fun RecetasRaquelApp(
         }
         composable(AppRoute.NEW_RECIPE) {
             val editorViewModel: RecipeEditorViewModel = viewModel(
-                factory = RecipeEditorViewModel.factory(repository, idGenerator),
+                factory = RecipeEditorViewModel.factory(repository, idGenerator, photoStorage, saveRecipeUseCase),
             )
             EditorRoute(viewModel = editorViewModel, navController = navController)
         }
@@ -72,7 +76,7 @@ fun RecetasRaquelApp(
             arguments = listOf(navArgument(AppRoute.RECIPE_ID) { type = NavType.StringType }),
         ) {
             val editorViewModel: RecipeEditorViewModel = viewModel(
-                factory = RecipeEditorViewModel.factory(repository, idGenerator),
+                factory = RecipeEditorViewModel.factory(repository, idGenerator, photoStorage, saveRecipeUseCase),
             )
             EditorRoute(viewModel = editorViewModel, navController = navController)
         }
@@ -142,6 +146,10 @@ private fun EditorRoute(
         onRemoveStep = viewModel::removeStep,
         onMoveStepUp = viewModel::moveStepUp,
         onMoveStepDown = viewModel::moveStepDown,
+        onCoverPhotoSelected = viewModel::selectCoverPhoto,
+        onRemoveCoverPhoto = viewModel::removeCoverPhoto,
+        onStepPhotoSelected = viewModel::selectStepPhoto,
+        onRemoveStepPhoto = viewModel::removeStepPhoto,
         onSave = viewModel::save,
         onNavigateBack = viewModel::handleBack,
         onDelete = viewModel::requestDelete,
@@ -150,5 +158,6 @@ private fun EditorRoute(
         onConfirmDiscard = viewModel::discardChanges,
         onCancelDiscard = viewModel::cancelDiscard,
         onDismissSaveError = viewModel::consumeSaveError,
+        onDismissPhotoError = viewModel::dismissPhotoError,
     )
 }

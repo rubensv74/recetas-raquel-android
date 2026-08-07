@@ -13,6 +13,10 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.rmm.recetasraquel.app.RecetasRaquelApp
+import com.rmm.recetasraquel.domain.photos.PhotoDestination
+import com.rmm.recetasraquel.domain.photos.RecipePhotoStorage
+import com.rmm.recetasraquel.domain.photos.StagedPhoto
+import com.rmm.recetasraquel.domain.usecase.SaveRecipeUseCase
 import com.rmm.recetasraquel.util.UuidIdGenerator
 import com.rmm.recetasraquel.domain.model.Ingredient
 import com.rmm.recetasraquel.domain.model.Recipe
@@ -108,8 +112,10 @@ class RecipeCatalogUiTest {
     }
 
     private fun setApp(repository: RecipeRepository) {
+        val photoStorage = FakeUiPhotoStorage()
+        val saveRecipeUseCase = SaveRecipeUseCase(repository, photoStorage)
         composeRule.setContent {
-            RecetasRaquelTheme { RecetasRaquelApp(repository, idGenerator = UuidIdGenerator(), demoDataController = null) }
+            RecetasRaquelTheme { RecetasRaquelApp(repository, idGenerator = UuidIdGenerator(), photoStorage = photoStorage, saveRecipeUseCase = saveRecipeUseCase, demoDataController = null) }
         }
     }
 
@@ -200,3 +206,15 @@ private fun sampleRecipes() = listOf(
 private fun Recipe.toSummary() = RecipeSummary(
     id, name, category, servings, preparationMinutes, cookingMinutes, isFavorite, coverPhotoPath, updatedAt,
 )
+
+private class FakeUiPhotoStorage : RecipePhotoStorage {
+    override suspend fun stagePhoto(sourceUriString: String): Result<StagedPhoto> = Result.success(
+        StagedPhoto(stagedFile = java.io.File("fake"), relativePath = "fake/path.jpg")
+    )
+    override suspend fun promotePhoto(stagedPhoto: StagedPhoto, destination: PhotoDestination): Result<String> = Result.success("fake/promoted.jpg")
+    override suspend fun delete(relativePath: String): Result<Unit> = Result.success(Unit)
+    override suspend fun deleteStaged(stagedPhoto: StagedPhoto): Result<Unit> = Result.success(Unit)
+    override suspend fun resolve(relativePath: String): java.io.File? = null
+    override suspend fun cleanStaging(): Result<Unit> = Result.success(Unit)
+    override suspend fun getRecipePhotoPaths(recipeId: String): List<String> = emptyList()
+}
