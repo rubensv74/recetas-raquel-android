@@ -46,7 +46,7 @@
 
 ## ADR-012 — Navigation Compose y ViewModels
 
-**Aceptada.** Rutas `catalog`, `recipe/{recipeId}`, `recipe/new`, `recipe/{recipeId}/edit` y `settings`; estados `StateFlow`; ID desde `SavedStateHandle`. Navegación de un solo uso con `SharedFlow`.
+**Aceptada.** Rutas de aplicación mediante Navigation Compose; estados `StateFlow`; IDs desde `SavedStateHandle`. Navegación de un solo uso con `SharedFlow` cuando procede.
 
 ## ADR-013 — Read model y consulta SQL
 
@@ -58,8 +58,12 @@
 
 ## ADR-015 — Editor de recetas sin esquema nuevo
 
-**Aceptada en Sprint 3.** El editor funciona con el esquema v1 existente. `RecipeMapper.toUpdatedRecipe` preserva IDs de recetas hijas para actualizaciones in-place, y `LocalRecipeRepository.updateRecipeFromDraft` usa la estrategia de reemplazo transaccional del DAO. No se añaden dependencias ni migraciones.
+**Aceptada en Sprint 3.** El editor funciona con el esquema v1 existente. `RecipeMapper.toUpdatedRecipe` preserva IDs de recetas hijas para actualizaciones in-place y `LocalRecipeRepository.updateRecipeFromDraft` usa la estrategia transaccional del DAO.
 
 ## ADR-016 — Strings URI en el domain layer
 
-**Aceptada en agosto de 2026.** `RecipePhotoStorage` usa `String` en lugar de `android.net.Uri` para mantener los tipos del framework Android fuera de la capa de dominio, mejorando testabilidad y portabilidad.
+**Aceptada en agosto de 2026.** `RecipePhotoStorage` usa `String` en lugar de `android.net.Uri` para mantener tipos Android fuera de la capa de dominio.
+
+## ADR-017 — Modo cocina como estado efímero de UI
+
+**Aceptada en Sprint 5.** El modo cocina no crea entidades ni cambia Room. La receta se observa mediante `RecipeRepository`, el paso actual se conserva en `SavedStateHandle` y los ingredientes se muestran sin abandonar la ruta. Mantener la pantalla encendida se resuelve en Compose con `LocalView.keepScreenOn` y `DisposableEffect`, restaurando el valor anterior al salir. Los temporizadores ejecutables quedan para una fase posterior.

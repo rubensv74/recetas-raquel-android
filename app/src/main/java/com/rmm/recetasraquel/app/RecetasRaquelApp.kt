@@ -12,13 +12,15 @@ import androidx.navigation.navArgument
 import com.rmm.recetasraquel.domain.photos.RecipePhotoStorage
 import com.rmm.recetasraquel.domain.repository.DemoDataController
 import com.rmm.recetasraquel.domain.repository.RecipeRepository
+import com.rmm.recetasraquel.domain.usecase.SaveRecipeOperation
+import com.rmm.recetasraquel.ui.cooking.CookingModeScreen
+import com.rmm.recetasraquel.ui.cooking.CookingModeViewModel
 import com.rmm.recetasraquel.ui.detail.RecipeDetailScreen
 import com.rmm.recetasraquel.ui.detail.RecipeDetailViewModel
 import com.rmm.recetasraquel.ui.editor.RecipeEditorScreen
 import com.rmm.recetasraquel.ui.editor.RecipeEditorViewModel
 import com.rmm.recetasraquel.ui.home.HomeScreen
 import com.rmm.recetasraquel.ui.home.RecipeCatalogViewModel
-import com.rmm.recetasraquel.domain.usecase.SaveRecipeOperation
 import com.rmm.recetasraquel.ui.navigation.AppRoute
 import com.rmm.recetasraquel.ui.settings.SettingsScreen
 import com.rmm.recetasraquel.ui.settings.SettingsViewModel
@@ -63,6 +65,24 @@ fun RecetasRaquelApp(
                 onNavigateBack = { navController.popBackStack() },
                 onToggleFavorite = detailViewModel::toggleFavorite,
                 onEditRecipe = { id -> navController.navigate(AppRoute.editRecipe(id)) { launchSingleTop = true } },
+                onStartCooking = { id -> navController.navigate(AppRoute.cookRecipe(id)) { launchSingleTop = true } },
+            )
+        }
+        composable(
+            route = AppRoute.COOK_RECIPE,
+            arguments = listOf(navArgument(AppRoute.RECIPE_ID) { type = NavType.StringType }),
+        ) {
+            val cookingViewModel: CookingModeViewModel = viewModel(
+                factory = CookingModeViewModel.factory(repository),
+            )
+            CookingModeScreen(
+                state = cookingViewModel.uiState.collectAsStateWithLifecycle().value,
+                onPreviousStep = cookingViewModel::previousStep,
+                onNextStep = cookingViewModel::nextStep,
+                onShowIngredients = cookingViewModel::showIngredients,
+                onHideIngredients = cookingViewModel::hideIngredients,
+                onFinish = { navController.popBackStack() },
+                onNavigateBack = { navController.popBackStack() },
             )
         }
         composable(AppRoute.NEW_RECIPE) {

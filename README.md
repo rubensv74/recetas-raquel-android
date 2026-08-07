@@ -14,6 +14,8 @@ El Sprint 3 incorpora editor de recetas con creación, edición y eliminación. 
 
 El Sprint 4 añade soporte para fotos de portada y por paso. El editor permite seleccionar, previsualizar y eliminar fotos con el Android Photo Picker; las imágenes se comprimen y almacenan en almacenamiento privado. El catálogo y el detalle muestran portadas con Coil.
 
+El Sprint 5 incorpora un modo cocina guiado: acceso desde el detalle, un paso cada vez, progreso, navegación anterior/siguiente, fotografía del paso, consulta rápida de ingredientes, visualización del tiempo configurado y pantalla activa mientras se cocina. Los temporizadores ejecutables permanecen fuera de alcance.
+
 La base de producción se llama `recipes.db`. El esquema continúa en versión 1 y se exporta a `app/schemas`. Los IDs son UUID almacenados como `String` y los timestamps son milisegundos Unix UTC (`Long`).
 
 En debug, Ajustes permite cargar y retirar de forma idempotente cinco recetas de demostración. Nunca se insertan automáticamente y el controlador no existe en release.
@@ -32,4 +34,4 @@ En debug, Ajustes permite cargar y retirar de forma idempotente cinco recetas de
 
 En Windows se puede usar `gradlew.bat`. La aplicación requiere Android 8.0 (API 26) o posterior.
 
-La documentación se encuentra en [`docs`](docs/).
+La documentación se encuentra en [`docs`](docs/). El encargo y criterios del Sprint 5 están en [`docs/SPRINT_05_COOKING_MODE.md`](docs/SPRINT_05_COOKING_MODE.md).
