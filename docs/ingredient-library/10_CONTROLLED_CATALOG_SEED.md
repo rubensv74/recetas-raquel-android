@@ -8,9 +8,19 @@
 
 Start catalog population with a deliberately small, high-confidence batch whose food-safety relations are directly traceable to current EU legal sources.
 
-This is not the 600-ingredient production catalog. The manifest remains `DRAFT`.
+This is not the 600-ingredient production catalog. The active manifest remains `DRAFT`.
 
-## Seed contents
+## Versioning decision
+
+Catalog versions are immutable once created. Therefore:
+
+- `ingredient-catalog/v1/` remains the validated infrastructure-only bundle (`catalogVersion = 1`);
+- `ingredient-catalog/v2/` is the first populated draft (`catalogVersion = 2`);
+- the asset reader now points to `ingredient-catalog/v2` as the active shipped bundle.
+
+This guarantees that a database which had already imported v1 can detect v2 and perform a real catalog upgrade instead of treating changed content as `AlreadyCurrent`.
+
+## Seed contents — v2
 
 ```text
 categories              20
@@ -102,7 +112,7 @@ Before this seed is accepted as the baseline for further population, run:
 .\gradlew -g "C:\Temp\gradle_home_ingredient_library" assembleRelease
 ```
 
-The instrumented catalog test now asserts the exact seed counts, the complete 14-code Annex II set, the sulphite threshold relation, import idempotency and invalid-bundle rollback.
+The instrumented catalog test asserts catalog version 2, the exact seed counts, the complete 14-code Annex II set, the sulphite threshold relation, import idempotency and invalid-version-3 rollback.
 
 ## Next content step
 
