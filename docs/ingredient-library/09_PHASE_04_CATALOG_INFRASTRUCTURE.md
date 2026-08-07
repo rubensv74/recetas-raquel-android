@@ -1,8 +1,9 @@
 # PHASE 04 — CATALOG INFRASTRUCTURE
 
-**Status:** IN PROGRESS — implementation written, local validation gate pending  
+**Status:** CLOSED — infrastructure validation gate passed  
 **Branch:** `program/ingredient-library-food-safety`  
-**Started:** 2026-08-08
+**Started:** 2026-08-08  
+**Closed:** 2026-08-08
 
 ## Objective
 
@@ -50,6 +51,36 @@ This phase deliberately separates **infrastructure readiness** from **content re
 - Unit tests for validator, normalization and asset reader.
 - Instrumented tests for real packaged asset import, idempotency and rollback-before-write when a new bundle fails validation.
 
+## Validation evidence
+
+User-executed local validation on the branch completed with:
+
+```text
+clean assembleDebug                 PASS
+testDebugUnitTest                   PASS
+lintDebug                           PASS
+compileDebugAndroidTestKotlin       PASS
+connectedDebugAndroidTest           PASS — 36/36
+skipped                             0
+failed                              0
+assembleRelease                     PASS
+working tree                        CLEAN
+```
+
+The non-fatal `stripDebugDebugSymbols` / `stripReleaseDebugSymbols` warning for `libandroidx.graphics.path.so` did not block packaging.
+
+## Gate criteria — result
+
+- packaged v1 assets parse successfully: PASS;
+- structural validator accepts the `INFRASTRUCTURE` bundle: PASS;
+- production release gate rejects the intentionally incomplete bundle: PASS by automated coverage tests;
+- first import persists metadata and 20 categories: PASS;
+- second import is idempotent: PASS;
+- invalid higher-version bundle leaves the previously imported catalog untouched: PASS;
+- existing recipe/migration regressions remain green: PASS;
+- Room schema remains v2; no v3 schema is introduced by this phase: PASS;
+- working tree clean after validation: PASS.
+
 ## Intentionally not implemented yet
 
 - Canonical ingredient population.
@@ -67,38 +98,15 @@ No clinical/safety relation has been invented to exercise the infrastructure.
 
 The current v1 bundle contains structural categories but **zero canonical ingredients and zero safety relations**. This is intentional.
 
-`INFRASTRUCTURE` means only that the parser/importer/validator contract is ready for testing. It must never be presented as catalog coverage.
+`INFRASTRUCTURE` means only that the parser/importer/validator contract is ready. It must never be presented as catalog coverage.
 
-## Local validation gate
+## Gate decision
 
-Required commands:
-
-```powershell
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" clean assembleDebug
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" testDebugUnitTest
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" lintDebug
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" compileDebugAndroidTestKotlin
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" connectedDebugAndroidTest
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" assembleRelease
+```text
+PHASE 4 — CATALOG INFRASTRUCTURE     CLOSED ✅
+CONTROLLED CATALOG POPULATION        AUTHORIZED TO START
+MASS UNREVIEWED SAFETY MAPPING       NOT AUTHORIZED
+MERGE TO master                      NOT AUTHORIZED YET
 ```
 
-## Gate criteria
-
-Phase 4 cannot close until:
-
-- all commands above are classified PASS/FAIL/NOT RUN;
-- packaged v1 assets parse successfully;
-- structural validator passes the infrastructure bundle;
-- production release gate rejects the intentionally incomplete bundle;
-- first import persists catalog metadata and 20 categories;
-- second import is idempotent;
-- invalid higher-version bundle leaves the previously imported catalog untouched;
-- existing recipe/migration regressions remain green;
-- Room schema remains v2 (no schema change expected from this phase);
-- working tree is clean after any generated artifacts are reviewed.
-
-## Next gate
-
-Only after Phase 4 closes may controlled catalog population begin.
-
-Mass generation remains blocked until each safety relation can satisfy the evidence/traceability policy already documented in `docs/food-safety/`.
+Controlled content population may now begin, but safety relations must continue to satisfy the evidence and traceability policy documented in `docs/food-safety/`.
