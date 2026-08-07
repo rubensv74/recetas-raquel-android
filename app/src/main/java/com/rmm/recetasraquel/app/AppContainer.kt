@@ -2,9 +2,13 @@ package com.rmm.recetasraquel.app
 
 import android.content.Context
 import com.rmm.recetasraquel.data.local.RecipeDatabase
+import com.rmm.recetasraquel.data.photos.LocalRecipePhotoStorage
 import com.rmm.recetasraquel.data.repository.LocalRecipeRepository
+import com.rmm.recetasraquel.domain.photos.RecipePhotoStorage
 import com.rmm.recetasraquel.domain.repository.RecipeRepository
 import com.rmm.recetasraquel.domain.repository.DemoDataController
+import com.rmm.recetasraquel.domain.usecase.SaveRecipeOperation
+import com.rmm.recetasraquel.domain.usecase.SaveRecipeUseCase
 import com.rmm.recetasraquel.util.IdGenerator
 import com.rmm.recetasraquel.util.SystemTimeProvider
 import com.rmm.recetasraquel.util.TimeProvider
@@ -19,5 +23,7 @@ class AppContainer(context: Context) {
         idGenerator = idGenerator,
         timeProvider = timeProvider,
     )
+    val photoStorage: RecipePhotoStorage = LocalRecipePhotoStorage(context)
+    val saveRecipeUseCase: SaveRecipeOperation = SaveRecipeUseCase(recipeRepository, photoStorage)
     val demoDataController: DemoDataController? = DemoDataControllerFactory.create(recipeRepository)
 }

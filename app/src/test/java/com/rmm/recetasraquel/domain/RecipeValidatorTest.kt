@@ -22,18 +22,18 @@ class RecipeValidatorTest {
 
     @Test
     fun rejectsInvalidServingsAndMinutes() {
-        assertThrows(RecipeValidationException::class.java) { RecipeValidator.normalize(RecipeDraft("R", servings = 0)) }
-        assertThrows(RecipeValidationException::class.java) { RecipeValidator.normalize(RecipeDraft("R", preparationMinutes = -1)) }
-        assertThrows(RecipeValidationException::class.java) { RecipeValidator.normalize(RecipeDraft("R", cookingMinutes = -1)) }
+        assertThrows(RecipeValidationException::class.java) { RecipeValidator.normalize(RecipeDraft(name = "R", servings = 0)) }
+        assertThrows(RecipeValidationException::class.java) { RecipeValidator.normalize(RecipeDraft(name = "R", preparationMinutes = -1)) }
+        assertThrows(RecipeValidationException::class.java) { RecipeValidator.normalize(RecipeDraft(name = "R", cookingMinutes = -1)) }
     }
 
     @Test
     fun rejectsIngredientWithoutNameAndStepWithoutInstruction() {
         assertThrows(RecipeValidationException::class.java) {
-            RecipeValidator.normalize(RecipeDraft("R", ingredients = listOf(IngredientDraft(name = " "))))
+            RecipeValidator.normalize(RecipeDraft(name = "R", ingredients = listOf(IngredientDraft(name = " "))))
         }
         assertThrows(RecipeValidationException::class.java) {
-            RecipeValidator.normalize(RecipeDraft("R", steps = listOf(RecipeStepDraft(instruction = " "))))
+            RecipeValidator.normalize(RecipeDraft(name = "R", steps = listOf(RecipeStepDraft(instruction = " "))))
         }
     }
 

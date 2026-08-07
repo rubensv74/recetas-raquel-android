@@ -81,7 +81,7 @@ object RecipeMapper {
 
     fun RecipeDraft.toNewRecipe(idGenerator: IdGenerator, timeProvider: TimeProvider): Recipe {
         val normalized = normalizeDraft(this)
-        val recipeId = idGenerator.newId()
+        val recipeId = normalized.id ?: idGenerator.newId()
         val now = timeProvider.nowEpochMillis()
         return Recipe(
             id = recipeId,
