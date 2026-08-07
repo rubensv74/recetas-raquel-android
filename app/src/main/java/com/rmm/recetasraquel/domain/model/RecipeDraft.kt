@@ -20,6 +20,8 @@ data class IngredientDraft(
     val unit: String? = null,
     val name: String,
     val notes: String? = null,
+    val catalogIngredientId: String? = null,
+    val customIngredientId: String? = null,
 )
 
 data class RecipeStepDraft(

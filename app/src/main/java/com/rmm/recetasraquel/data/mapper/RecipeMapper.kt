@@ -58,7 +58,15 @@ object RecipeMapper {
     )
 
     fun IngredientEntity.toDomain(): Ingredient = Ingredient(
-        id, recipeId, quantity, unit, name, notes, sortOrder,
+        id = id,
+        recipeId = recipeId,
+        quantity = quantity,
+        unit = unit,
+        name = name,
+        notes = notes,
+        sortOrder = sortOrder,
+        catalogIngredientId = catalogIngredientId,
+        customIngredientId = customIngredientId,
     )
 
     fun RecipeStepEntity.toDomain(): RecipeStep = RecipeStep(
@@ -103,6 +111,8 @@ object RecipeMapper {
                     name = ingredient.name,
                     notes = ingredient.notes,
                     sortOrder = index,
+                    catalogIngredientId = ingredient.catalogIngredientId,
+                    customIngredientId = ingredient.customIngredientId,
                 )
             },
             steps = normalized.steps.mapIndexed { index, step ->
@@ -139,6 +149,10 @@ object RecipeMapper {
             isFavorite = existingRecipe.isFavorite,
             coverPhotoPath = normalized.coverPhotoPath,
             ingredients = normalized.ingredients.mapIndexed { index, ingredient ->
+                val existingIngredient = ingredient.id?.let { ingredientId ->
+                    existingRecipe.ingredients.firstOrNull { it.id == ingredientId }
+                }
+                val hasExplicitOrigin = ingredient.catalogIngredientId != null || ingredient.customIngredientId != null
                 Ingredient(
                     id = ingredient.id ?: idGenerator.newId(),
                     recipeId = existingRecipe.id,
@@ -147,6 +161,16 @@ object RecipeMapper {
                     name = ingredient.name,
                     notes = ingredient.notes,
                     sortOrder = index,
+                    catalogIngredientId = if (hasExplicitOrigin) {
+                        ingredient.catalogIngredientId
+                    } else {
+                        existingIngredient?.catalogIngredientId
+                    },
+                    customIngredientId = if (hasExplicitOrigin) {
+                        ingredient.customIngredientId
+                    } else {
+                        existingIngredient?.customIngredientId
+                    },
                 )
             },
             steps = normalized.steps.mapIndexed { index, step ->
@@ -170,7 +194,15 @@ object RecipeMapper {
     )
 
     private fun Ingredient.toEntity(parentRecipeId: String) = IngredientEntity(
-        id, parentRecipeId, quantity, unit, name, notes, sortOrder,
+        id = id,
+        recipeId = parentRecipeId,
+        quantity = quantity,
+        unit = unit,
+        name = name,
+        notes = notes,
+        sortOrder = sortOrder,
+        catalogIngredientId = catalogIngredientId,
+        customIngredientId = customIngredientId,
     )
 
     private fun RecipeStep.toEntity(parentRecipeId: String) = RecipeStepEntity(

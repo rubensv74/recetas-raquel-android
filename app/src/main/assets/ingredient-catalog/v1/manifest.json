@@ -1,0 +1,25 @@
+{
+  "catalogId": "rmm-es-eu",
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "releaseStatus": "INFRASTRUCTURE",
+  "locale": "es-ES",
+  "jurisdiction": "EU-ES",
+  "reviewedAt": "2026-08-08",
+  "files": {
+    "categories": "categories.json",
+    "ingredients": "ingredients.json",
+    "aliases": "aliases.json",
+    "safetyGroups": "safety-groups.json",
+    "safetySources": "safety-sources.json",
+    "safetyRelations": "safety-relations.json"
+  },
+  "counts": {
+    "categories": 20,
+    "ingredients": 0,
+    "aliases": 0,
+    "safetyGroups": 0,
+    "safetySources": 0,
+    "safetyRelations": 0
+  }
+}
