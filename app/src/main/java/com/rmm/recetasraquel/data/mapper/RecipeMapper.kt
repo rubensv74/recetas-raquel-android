@@ -152,6 +152,7 @@ object RecipeMapper {
                 val existingIngredient = ingredient.id?.let { ingredientId ->
                     existingRecipe.ingredients.firstOrNull { it.id == ingredientId }
                 }
+                val hasExplicitOrigin = ingredient.catalogIngredientId != null || ingredient.customIngredientId != null
                 Ingredient(
                     id = ingredient.id ?: idGenerator.newId(),
                     recipeId = existingRecipe.id,
@@ -160,8 +161,16 @@ object RecipeMapper {
                     name = ingredient.name,
                     notes = ingredient.notes,
                     sortOrder = index,
-                    catalogIngredientId = ingredient.catalogIngredientId ?: existingIngredient?.catalogIngredientId,
-                    customIngredientId = ingredient.customIngredientId ?: existingIngredient?.customIngredientId,
+                    catalogIngredientId = if (hasExplicitOrigin) {
+                        ingredient.catalogIngredientId
+                    } else {
+                        existingIngredient?.catalogIngredientId
+                    },
+                    customIngredientId = if (hasExplicitOrigin) {
+                        ingredient.customIngredientId
+                    } else {
+                        existingIngredient?.customIngredientId
+                    },
                 )
             },
             steps = normalized.steps.mapIndexed { index, step ->
