@@ -1,7 +1,8 @@
 # PHASE 03 — ROOM MIGRATION STATUS
 
-**Status:** IN PROGRESS — implementation written, validation gate pending  
-**Branch:** `program/ingredient-library-food-safety`
+**Status:** CLOSED — Room v2 migration gate passed  
+**Branch:** `program/ingredient-library-food-safety`  
+**Closed:** 2026-08-08
 
 ## Implemented
 
@@ -12,10 +13,71 @@
 - Every v1 ingredient is migrated conservatively to a deterministic custom origin `legacy:<ingredientId>`.
 - No fuzzy or automatic catalog matching is performed by the migration.
 - Mapper compatibility protects migrated origins when an existing recipe is edited through the pre-library editor.
-- Migration test created using Room `MigrationTestHelper`.
-- Room schema directory exposed to Android instrumentation tests.
+- Room v2 schema exported and versioned at `app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/2.json`.
+- Instrumented migration test opens a real schema-v1 SQLite database through Room v2 and validates migrated data and foreign keys.
 
-## Intentionally not implemented yet
+## Validation evidence
+
+```text
+clean assembleDebug                 PASS
+testDebugUnitTest                   PASS
+lintDebug                           PASS
+compileDebugAndroidTestKotlin       PASS
+connectedDebugAndroidTest           PASS — 34/34
+skipped                             0
+failed                              0
+assembleRelease                     PASS — user-confirmed in closure sequence
+Room v2 schema versioned            PASS
+```
+
+The first migration-test implementation using `MigrationTestHelper` was replaced after a binary incompatibility in Room test serialization produced an `AbstractMethodError`. The final test does not bypass Room migration validation: it creates a physical v1 SQLite database and reopens that same database through `RecipeDatabase` v2 with `MIGRATION_1_2` registered.
+
+## Schema review
+
+The versioned `2.json` declares Room database version 2 and the expected tables:
+
+```text
+recipes
+ingredients
+recipe_steps
+ingredient_categories
+catalog_ingredients
+ingredient_aliases
+food_safety_groups
+safety_sources
+ingredient_safety_relations
+custom_ingredients
+custom_ingredient_aliases
+custom_ingredient_safety_relations
+catalog_metadata
+```
+
+The legacy `recipes` and `recipe_steps` structures remain unchanged. `ingredients` preserves all legacy columns and adds indexed nullable foreign keys to catalog/custom origins.
+
+## Migration invariants verified
+
+- legacy recipe/ingredient/step data preserved;
+- quantity, unit, notes and ordering preserved;
+- photo paths preserved;
+- favorites and timestamps preserved;
+- every migrated legacy ingredient receives `legacy:<ingredientId>` custom origin;
+- no catalog origin is invented;
+- `PRAGMA foreign_key_check` returns no rows;
+- no destructive migration fallback exists.
+
+## Transitional condition
+
+The database columns `catalogIngredientId` and `customIngredientId` intentionally remain nullable in Room v2. The migration guarantees an origin for migrated v1 rows, but the pre-library editor can still create a new recipe ingredient without either origin until the catalog/custom-ingredient runtime flow is implemented.
+
+Therefore the final logical invariant:
+
+```text
+exactly one origin = catalogIngredientId XOR customIngredientId
+```
+
+must be enforced by the application before this priority program is merged to `master`. This does not reopen the v1 -> v2 migration gate; it is a tracked integration requirement for the following phases.
+
+## Intentionally not implemented in Phase 3
 
 - Catalog JSON/assets.
 - Catalog importer.
@@ -24,34 +86,11 @@
 - Safety aggregation UI.
 - Automatic legacy relinking to catalog.
 
-These belong to later phases after the Room v1 -> v2 gate passes.
+## Gate decision
 
-## Pending validation gate
-
-The implementation is not considered complete until the local checkout generates and versions `2.json` and the following commands pass:
-
-```powershell
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" clean assembleDebug
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" testDebugUnitTest
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" lintDebug
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" compileDebugAndroidTestKotlin
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" connectedDebugAndroidTest
+```text
+PHASE 3 — ROOM v1 -> v2             CLOSED ✅
+PHASE 4 — CATALOG INFRASTRUCTURE     AUTHORIZED TO START
+MASS CATALOG POPULATION              STILL BLOCKED BY ITS OWN GATE
+MERGE TO master                      NOT AUTHORIZED YET
 ```
-
-`connectedDebugAndroidTest` requires a connected/authorized emulator or device.
-
-## Gate criteria
-
-- `app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/2.json` generated and reviewed.
-- Room migration schema validation passes.
-- Legacy recipe/ingredient/step data preserved.
-- Photo paths preserved.
-- Favorites/timestamps preserved.
-- Every migrated legacy ingredient has a custom origin.
-- `PRAGMA foreign_key_check` returns no rows.
-- Existing application regressions remain green.
-- No destructive migration fallback exists.
-
-## Merge policy
-
-Do not merge this branch into `master` until the Phase 3 gate is fully green and manually reviewed.
