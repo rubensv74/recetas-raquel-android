@@ -1,1 +1,5 @@
-[]
+[
+  {"id":"EU_FIC_1169_2011","organization":"Unión Europea","title":"Reglamento (UE) n.º 1169/2011, texto consolidado a 01-04-2025","officialReference":"CELEX 02011R1169-20250401","jurisdiction":"EU","publicationDate":"2011-11-22","reviewDate":"2026-08-08","documentStatus":"IN_FORCE_CONSOLIDATED","officialUrl":"http://data.europa.eu/eli/reg/2011/1169/2025-04-01"},
+  {"id":"EU_ALLERGEN_NOTICE_2017","organization":"Comisión Europea","title":"Comunicación 2017/C 428/01 sobre información relativa a sustancias o productos que causan alergias o intolerancias","officialReference":"CELEX 52017XC1213(01)","jurisdiction":"EU","publicationDate":"2017-12-13","reviewDate":"2026-08-08","documentStatus":"OFFICIAL_NOTICE","officialUrl":"https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:52017XC1213(01)"},
+  {"id":"EU_MUSTARD_2024_2512","organization":"Comisión Europea","title":"Reglamento Delegado (UE) 2024/2512 sobre ácido behénico procedente de semillas de mostaza","officialReference":"CELEX 32024R2512","jurisdiction":"EU","publicationDate":"2024-09-25","reviewDate":"2026-08-08","documentStatus":"IN_FORCE_APPLIES_2025-04-01","officialUrl":"http://data.europa.eu/eli/reg_del/2024/2512/oj"}
+]
