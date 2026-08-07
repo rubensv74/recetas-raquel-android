@@ -1,6 +1,6 @@
 # 10 — CONTROLLED CATALOG SEED
 
-**Status:** IMPLEMENTED — local validation pending  
+**Status:** VALIDATED — local gate passed  
 **Branch:** `program/ingredient-library-food-safety`  
 **Date:** 2026-08-08
 
@@ -16,7 +16,7 @@ Catalog versions are immutable once created. Therefore:
 
 - `ingredient-catalog/v1/` remains the validated infrastructure-only bundle (`catalogVersion = 1`);
 - `ingredient-catalog/v2/` is the first populated draft (`catalogVersion = 2`);
-- the asset reader now points to `ingredient-catalog/v2` as the active shipped bundle.
+- the asset reader points to `ingredient-catalog/v2` as the active shipped bundle.
 
 This guarantees that a database which had already imported v1 can detect v2 and perform a real catalog upgrade instead of treating changed content as `AlreadyCurrent`.
 
@@ -99,21 +99,39 @@ The initial 22 aliases are conservative search variants: singular/plural forms, 
 
 Aliases improve search only; they do not create or infer food-safety relations.
 
-## Validation gate
+## Validation evidence
 
-Before this seed is accepted as the baseline for further population, run:
+User-executed local validation completed on 2026-08-08 with:
 
-```powershell
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" clean assembleDebug
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" testDebugUnitTest
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" lintDebug
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" compileDebugAndroidTestKotlin
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" connectedDebugAndroidTest
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" assembleRelease
+```text
+clean assembleDebug                 PASS
+testDebugUnitTest                   PASS
+lintDebug                           PASS
+compileDebugAndroidTestKotlin       PASS
+connectedDebugAndroidTest           PASS — 36/36
+skipped                             0
+failed                              0
+assembleRelease                     PASS
+Room schemas                        1.json + 2.json only
+working tree                        CLEAN
 ```
 
 The instrumented catalog test asserts catalog version 2, the exact seed counts, the complete 14-code Annex II set, the sulphite threshold relation, import idempotency and invalid-version-3 rollback.
 
+The absence of `3.json` confirms that this content release changes the catalog version only and does not alter the Room schema.
+
+## Gate decision
+
+```text
+CONTROLLED CATALOG SEED v2           VALIDATED ✅
+NEXT REVIEWED CULINARY BATCH         AUTHORIZED TO PREPARE
+PRODUCTION_CANDIDATE                 NOT YET
+MASS UNREVIEWED SAFETY MAPPING       NOT AUTHORIZED
+MERGE TO master                      NOT AUTHORIZED YET
+```
+
 ## Next content step
 
-After the seed passes locally, expand the culinary catalog in reviewed batches. Priority should be common raw ingredients with no inferred safety relations, followed by source-backed derivatives/compound ingredients. Mass unreviewed allergen mapping remains forbidden.
+Expand the culinary catalog in reviewed batches. Priority is common raw culinary ingredients and search aliases. Ingredients without a verified safety relation may exist in the catalog without one; absence of a relation must never be interpreted as proof of absence of risk.
+
+Source-backed derivatives and compound ingredients should be added only after explicit identity/composition review. Mass unreviewed allergen mapping remains forbidden.
