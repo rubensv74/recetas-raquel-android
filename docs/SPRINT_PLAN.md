@@ -73,7 +73,7 @@ Fase 1 — investigación               CERRADA para pasar a diseño
 Fase 2 — diseño                      CERRADA como base de implementación
 Fase 3 — Room v1 -> v2               CERRADA — 34/34 instrumented PASS
 Fase 4 — infraestructura catálogo    CERRADA — 36/36 instrumented PASS
-Población controlada del catálogo    SIGUIENTE
+Población controlada del catálogo    EN CURSO — seed legal v1 escrito; gate local pendiente
 Mapeo masivo no revisado             NO AUTORIZADO
 Merge a master                       NO AUTORIZADO todavía
 ```
@@ -92,9 +92,26 @@ La infraestructura del catálogo versionado bajo `app/src/main/assets/ingredient
 
 Validación de cierre: `assembleDebug`, unit tests, lint, compilación instrumentada y `assembleRelease` PASS; `connectedDebugAndroidTest` PASS 36/36; working tree limpio.
 
-El bundle permanece en estado `INFRASTRUCTURE` y contiene cero ingredientes canónicos y cero relaciones de seguridad. La infraestructura está autorizada para comenzar población controlada; esto no autoriza inferencias ni generación masiva no revisada de relaciones de seguridad alimentaria.
-
 Ver `docs/ingredient-library/09_PHASE_04_CATALOG_INFRASTRUCTURE.md`.
+
+### Población controlada — seed regulatorio v1
+
+El bundle ha pasado de `INFRASTRUCTURE` a `DRAFT` y contiene un primer lote deliberadamente pequeño y trazable:
+
+```text
+20 categorías
+27 ingredientes canónicos
+22 alias
+14 grupos regulados del Anexo II
+3 fuentes oficiales UE
+27 relaciones de seguridad con evidencia EU_LEGAL
+```
+
+El lote se limita a términos directamente respaldados por el Anexo II y evita expandir por inferencia especies de crustáceos, pescados o moluscos, derivados, preparados comerciales o ingredientes compuestos.
+
+El tratamiento de sulfitos conserva explícitamente el umbral de 10 mg/kg o 10 mg/l de SO2 total; la mostaza conserva la excepción específica del Reglamento Delegado (UE) 2024/2512.
+
+Ver `docs/ingredient-library/10_CONTROLLED_CATALOG_SEED.md` y `docs/food-safety/INGREDIENT_COVERAGE_MATRIX.md`.
 
 ## Sprints futuros congelados
 
