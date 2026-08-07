@@ -40,7 +40,7 @@ class IngredientCatalogImportTest {
         assertEquals("DRAFT", bundle.manifest.releaseStatus)
         assertEquals(20, bundle.categories.size)
         assertEquals(127, bundle.ingredients.size)
-        assertEquals(151, bundle.aliases.size)
+        assertEquals(122, bundle.aliases.size)
         assertEquals(14, bundle.safetyGroups.size)
         assertEquals(3, bundle.safetySources.size)
         assertEquals(27, bundle.safetyRelations.size)
@@ -86,7 +86,7 @@ class IngredientCatalogImportTest {
         assertTrue(first is CatalogImportResult.Imported)
         assertEquals(20, database.ingredientCatalogDao().countActiveCategories())
         assertEquals(127, database.ingredientCatalogDao().countActiveIngredients())
-        assertEquals(151, database.ingredientCatalogDao().countAliases())
+        assertEquals(122, database.ingredientCatalogDao().countAliases())
         assertEquals(14, database.ingredientCatalogDao().countActiveSafetyGroups())
         assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
 
@@ -99,7 +99,7 @@ class IngredientCatalogImportTest {
         val second = importer.ensureImported()
         assertTrue(second is CatalogImportResult.AlreadyCurrent)
         assertEquals(127, database.ingredientCatalogDao().countActiveIngredients())
-        assertEquals(151, database.ingredientCatalogDao().countAliases())
+        assertEquals(122, database.ingredientCatalogDao().countAliases())
         assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
     }
 
@@ -122,7 +122,7 @@ class IngredientCatalogImportTest {
         assertTrue(failure is CatalogValidationException)
         assertEquals(20, database.ingredientCatalogDao().countActiveCategories())
         assertEquals(127, database.ingredientCatalogDao().countActiveIngredients())
-        assertEquals(151, database.ingredientCatalogDao().countAliases())
+        assertEquals(122, database.ingredientCatalogDao().countAliases())
         assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
         assertEquals(3, database.ingredientCatalogDao().getMetadata(CatalogImporter.METADATA_KEY)?.catalogVersion)
     }
