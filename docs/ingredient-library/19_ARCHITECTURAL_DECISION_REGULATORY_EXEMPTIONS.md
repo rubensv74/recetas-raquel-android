@@ -1,6 +1,6 @@
 # 19 — DECISIÓN ARQUITECTÓNICA: EXENCIONES REGULATORIAS
 
-**Estado:** ABIERTA — decisión requerida  
+**Estado:** ACEPTADA — OPCIÓN B  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-08
 
@@ -26,13 +26,13 @@ Estas excepciones no deben interpretarse por la aplicación como `sin riesgo`, `
 
 ## 2. Problema
 
-El modelo actual dispone de:
+El modelo previo dispone de:
 
 - grafo culinario de linaje (`VARIANT_OF`, `CUT_OF`, `DERIVED_FROM`, `FORM_OF`);
 - relaciones positivas/advertencias de seguridad con fuente y nivel de evidencia;
 - notas libres.
 
-No existe una estructura dedicada para expresar:
+No existía una estructura dedicada para expresar:
 
 - que un derivado está excluido de una obligación regulatoria concreta;
 - bajo qué condiciones exactas se aplica la excepción;
@@ -43,28 +43,17 @@ No existe una estructura dedicada para expresar:
 
 Usar simplemente la ausencia de una relación de seguridad sería ambiguo y poco auditable.
 
-## 3. Opción A — Añadir `REGULATORY_EXEMPTION` al grafo de seguridad
+## 3. Alternativas evaluadas
 
-La excepción se convertiría en un nuevo tipo de `IngredientSafetyRelation`.
+### Opción A — Añadir `REGULATORY_EXEMPTION` al grafo de seguridad
 
-### Ventajas
+Reutilizaría `IngredientSafetyRelation`, pero mezclaría presencia/riesgo con efectos jurídicos de signo distinto y trasladaría condiciones complejas a campos poco estructurados.
 
-- menor cambio estructural;
-- reutiliza tabla, fuentes y trazabilidad existentes;
-- implementación rápida.
+### Opción B — Registro estructurado de exenciones regulatorias separado
 
-### Inconvenientes
+Crear un concepto independiente `RegulatoryExemption`, relacionado con ingrediente/derivado, grupo regulatorio y fuente oficial.
 
-- mezcla relaciones que describen presencia/riesgo con excepciones legales;
-- una misma tabla tendría semánticas de signo opuesto;
-- las condiciones complejas acabarían probablemente en `notes`;
-- aumenta el riesgo de que una capa de UI interprete la exención como ausencia de riesgo.
-
-## 4. Opción B — Registro estructurado de exenciones regulatorias separado
-
-Crear un concepto independiente, por ejemplo `RegulatoryExemption`, relacionado con ingrediente/derivado, grupo regulatorio y fuente oficial.
-
-Campos conceptuales mínimos:
+Campos iniciales:
 
 ```text
 id
@@ -74,84 +63,85 @@ jurisdiction
 regulatoryEffect
 conditions
 sourceId
-effectiveFrom
+effectiveFrom?
 effectiveTo?
 reviewedAt
 notes?
 isActive
 ```
 
-`regulatoryEffect` podría comenzar con un valor explícito como:
+Efecto inicial previsto:
 
 ```text
 EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION
 ```
 
-### Ventajas
+### Opción C — Mantener exenciones solo en documentación/notas
 
-- separa claramente derecho alimentario de inferencia clínica;
-- permite condiciones auditables;
-- facilita futuras revisiones regulatorias;
-- encaja mejor con el dossier de soporte de registro;
-- evita que ausencia de relación se use como significado implícito;
-- permite representar cambios de vigencia sin reescribir la historia.
+Evitaría cambios de esquema, pero ofrecería una base insuficiente para auditoría, actualización periódica y UI consistente.
 
-### Inconvenientes
+## 4. Decisión
 
-- requiere nueva entidad/tabla y migración Room;
-- requiere ampliar formato de catálogo, validador, importador y pruebas;
-- incrementa el coste de mantenimiento.
+**Se adopta la Opción B.**
 
-## 5. Opción C — Mantener exenciones solo en documentación/notas
-
-No se modifica el modelo estructurado. Las excepciones quedan en documentos y, cuando proceda, notas de ingrediente.
-
-### Ventajas
-
-- coste técnico mínimo;
-- no requiere migración.
-
-### Inconvenientes
-
-- baja capacidad de auditoría automática;
-- difícil actualización anual;
-- difícil mostrar información consistente en UI;
-- alto riesgo de divergencia entre documentación y catálogo;
-- insuficiente como base de largo plazo para conocimiento sensible versionado.
-
-## 6. Recomendación técnica
-
-**Se recomienda la Opción B.**
-
-El objetivo de la aplicación no es solo almacenar una lista de alérgenos, sino conservar la procedencia y significado de información sensible. Una excepción legal tiene naturaleza distinta de una relación de seguridad y merece un registro propio.
-
-La recomendación preserva tres capas independientes:
+Las excepciones regulatorias se almacenarán en una capa independiente y estructurada. Se preservan tres conceptos separados:
 
 ```text
 1. linaje culinario
 2. evidencia/alertas de seguridad
-3. excepciones regulatorias
+3. exenciones regulatorias
 ```
 
-Ninguna de las tres se propaga automáticamente a otra.
+Ninguna de las tres capas crea, hereda o propaga automáticamente datos hacia otra.
 
-## 7. Consecuencia sobre el catálogo
+## 5. Reglas semánticas obligatorias
 
-Hasta resolver esta ADR:
+1. Una exención regulatoria describe un efecto jurídico concreto; no significa ausencia de alérgeno ni ausencia de riesgo clínico.
+2. La ausencia de una relación de seguridad nunca significa que exista una exención.
+3. La ausencia de una exención nunca significa que exista automáticamente una relación de seguridad.
+4. Toda exención debe identificar ingrediente, grupo regulatorio, jurisdicción, efecto, condiciones, fuente oficial y fecha de revisión.
+5. `effectiveFrom` y `effectiveTo` son opcionales cuando la fuente revisada no permite registrar una fecha concreta sin inventarla.
+6. Las condiciones son obligatorias: no se admiten exenciones genéricas sin capturar el requisito que limita su aplicación.
+7. La UI no podrá traducir una exención a expresiones como `seguro`, `apto`, `sin riesgo` o equivalentes.
+8. Los cambios regulatorios posteriores deben producir nuevas revisiones/versiones; no se reescribe silenciosamente la historia.
 
-- catálogo v6 permanece válido e inmutable;
-- pueden seguir estudiándose ingredientes simples sin exenciones;
-- no se incorporarán derivados cuya interpretación correcta dependa de una excepción legal estructurada;
-- en particular, no se modelará todavía `aceite de soja totalmente refinado` como si la mera ausencia de una alerta expresara la exención.
+## 6. Persistencia
 
-## 8. Decisión requerida
-
-Elegir una de las siguientes opciones:
+La implementación inicial usa Room v4 y una tabla independiente:
 
 ```text
-A — Exención como tipo dentro del grafo de seguridad
-B — Registro/entidad regulatoria independiente (recomendada)
-C — Exenciones solo documentales
+regulatory_exemptions
 ```
 
-Tras la decisión se actualizará `DECISIONS.md` y, si procede, se diseñará la migración y la siguiente versión del catálogo.
+La clave técnica es `id`. Además se impide duplicar la misma combinación activa conceptual mediante un índice único sobre:
+
+```text
+ingredientId + safetyGroupId + jurisdiction + regulatoryEffect
+```
+
+Las referencias a ingrediente, grupo y fuente usan claves foráneas con `NO ACTION`, porque forman parte de la trazabilidad y no deben desaparecer en cascada.
+
+## 7. Versionado de catálogo
+
+Room v4 introduce únicamente la capacidad de persistencia. El catálogo activo v6 permanece inmutable y no se reescribe.
+
+La incorporación de exenciones reales se hará en una versión posterior del catálogo, con una evolución explícita del formato del catálogo y validaciones propias. Hasta superar el gate de Room v4 no se añadirán datos regulatorios reales a esta nueva tabla.
+
+## 8. Consecuencias
+
+La decisión permite modelar posteriormente, entre otros casos, derivados cuya situación legal depende del proceso o pureza, sin confundir la excepción con evidencia clínica.
+
+También mejora el futuro mecanismo de actualización anual: una revisión regulatoria podrá detectar cambios de vigencia, condiciones o fuentes en una capa específicamente diseñada para ello.
+
+## 9. Estado de implementación
+
+```text
+Decisión                         ACEPTADA — B
+Entidad RegulatoryExemption     IMPLEMENTADA
+Migración Room 3 -> 4            IMPLEMENTADA
+Schema Room v4                  PENDIENTE DE GENERACIÓN/REVISIÓN LOCAL
+Catálogo con exenciones reales  NO INICIADO
+Propagación automática          PROHIBIDA
+```
+
+Ver también `docs/ingredient-library/20_ROOM_V4_REGULATORY_EXEMPTIONS.md`.
