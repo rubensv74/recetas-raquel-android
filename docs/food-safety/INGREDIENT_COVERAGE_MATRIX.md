@@ -25,6 +25,7 @@ This matrix separates culinary catalog coverage from reviewed food-safety relati
 | Herbs/spices culinary identities | safety mapping not inferred | 37 | 0 | Batch 01+02 identity coverage; REVIEW_REQUIRED |
 | Additional seeds | safety mapping not inferred | 6 | 0 | Batch 02 identity coverage; REVIEW_REQUIRED |
 | Meat/poultry source identities | safety mapping not inferred | 20 | 0 | Batch 02 source-level coverage; REVIEW_REQUIRED |
+| Meat/poultry cut identities | lineage review only | 15 | 0 | catalog v5; 15 CUT_OF edges; REVIEW_REQUIRED |
 | Additional cereals/legumes | safety mapping not inferred | 16 | 0 | Batch 01 identity coverage; REVIEW_REQUIRED |
 | WHO/IUIS molecular allergens | nomenclature source | 0 | 0 | reference-only until mapped |
 | Lactose intolerance | AESAN | 0 | 0 | condition design |
@@ -33,36 +34,48 @@ This matrix separates culinary catalog coverage from reviewed food-safety relati
 | Commercial products | label-specific only | 0 | 0 | design pending implementation |
 | Compound ingredients | explicit unknown state | 0 | 0 | design ready |
 
-Current active draft totals (`ingredient-catalog/v4`):
+Current active draft totals (`ingredient-catalog/v5`):
 
 ```text
-227 canonical ingredients
-220 aliases
+242 canonical ingredients
+235 aliases
+15 culinary lineage relations
 14 EU Annex II regulatory groups
 3 authoritative EU sources
 27 reviewed safety relations
 ```
 
-Composition of those 227 canonical entries:
+Composition of the 242 canonical entries:
 
 ```text
 27 reviewed regulatory anchors
 100 Batch 01 culinary identity entries marked REVIEW_REQUIRED
 100 Batch 02 culinary identity entries marked REVIEW_REQUIRED
+15 catalog v5 cut identities marked REVIEW_REQUIRED
 ```
 
 Alias composition:
 
 ```text
-22 aliases inherited from the regulatory v2 seed
-100 new identity-conservative aliases in Batch 01
-98 new identity-conservative aliases in Batch 02
+22 aliases inherited from regulatory v2
+100 identity-conservative aliases from Batch 01
+98 identity-conservative aliases from Batch 02
+15 cut aliases from catalog v5
 ```
 
-`ingredient-catalog/v1`, `v2` and `v3` remain immutable historical bundles. Catalog v4 expands culinary identity/search coverage without changing the 27 reviewed safety relations.
+Lineage composition:
 
-A zero in the relations column means no relation has yet been approved for that area. It does not mean absence of risk.
+```text
+15 CUT_OF relations
+0 VARIANT_OF relations
+0 DERIVED_FROM relations
+0 FORM_OF relations
+```
 
-Batch 02 deliberately adds source-level meat/poultry, seeds, mushrooms and additional produce without inferring food-safety relations. In particular, the presence of pine nut or any seed in the catalog is not treated as evidence for or against a clinical restriction until a relation is reviewed and sourced.
+Catalog v1-v4 remain immutable historical bundles. Catalog v5 is the first bundle using catalog schema v3 and persisted lineage content.
 
-The next high-value expansion area includes cuts and derived ingredients. That work is paused at the architectural boundary documented in `docs/ingredient-library/13_ARCHITECTURAL_DECISION_INGREDIENT_LINEAGE.md`.
+A zero in the food-safety relations column means no relation has been approved for that area. It does not mean absence of risk.
+
+The 15 new cut relations are culinary identity only. They do not create, inherit or imply food-safety relations. This is an explicit test of the separation between the lineage graph and the safety-evidence graph.
+
+The next high-value content area is derivatives/forms such as flours and single-source oils. Those items require independent evidence review before any clinically relevant safety relation is added; an obvious culinary `DERIVED_FROM` relation is never sufficient evidence by itself.
