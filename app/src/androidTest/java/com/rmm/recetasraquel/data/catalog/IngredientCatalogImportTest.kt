@@ -41,6 +41,7 @@ class IngredientCatalogImportTest {
         assertEquals(20, bundle.categories.size)
         assertEquals(227, bundle.ingredients.size)
         assertEquals(220, bundle.aliases.size)
+        assertEquals(0, bundle.ingredientRelations.size)
         assertEquals(14, bundle.safetyGroups.size)
         assertEquals(3, bundle.safetySources.size)
         assertEquals(27, bundle.safetyRelations.size)
@@ -85,6 +86,7 @@ class IngredientCatalogImportTest {
         assertEquals(20, database.ingredientCatalogDao().countActiveCategories())
         assertEquals(227, database.ingredientCatalogDao().countActiveIngredients())
         assertEquals(220, database.ingredientCatalogDao().countAliases())
+        assertEquals(0, database.ingredientCatalogDao().countActiveIngredientRelations())
         assertEquals(14, database.ingredientCatalogDao().countActiveSafetyGroups())
         assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
 
@@ -98,6 +100,7 @@ class IngredientCatalogImportTest {
         assertTrue(second is CatalogImportResult.AlreadyCurrent)
         assertEquals(227, database.ingredientCatalogDao().countActiveIngredients())
         assertEquals(220, database.ingredientCatalogDao().countAliases())
+        assertEquals(0, database.ingredientCatalogDao().countActiveIngredientRelations())
         assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
     }
 
@@ -121,6 +124,7 @@ class IngredientCatalogImportTest {
         assertEquals(20, database.ingredientCatalogDao().countActiveCategories())
         assertEquals(227, database.ingredientCatalogDao().countActiveIngredients())
         assertEquals(220, database.ingredientCatalogDao().countAliases())
+        assertEquals(0, database.ingredientCatalogDao().countActiveIngredientRelations())
         assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
         assertEquals(4, database.ingredientCatalogDao().getMetadata(CatalogImporter.METADATA_KEY)?.catalogVersion)
     }
@@ -150,7 +154,8 @@ class IngredientCatalogImportTest {
                     "aliases":0,
                     "safetyGroups":0,
                     "safetySources":0,
-                    "safetyRelations":0
+                    "safetyRelations":0,
+                    "ingredientRelations":0
                   }
                 }
             """.trimIndent(),
