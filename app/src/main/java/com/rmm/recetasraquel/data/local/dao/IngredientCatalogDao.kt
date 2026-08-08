@@ -36,6 +36,20 @@ interface IngredientCatalogDao {
     @Query("SELECT COUNT(*) FROM catalog_ingredient_relations WHERE isActive = 1")
     suspend fun countActiveIngredientRelations(): Int
 
+    @Query(
+        "SELECT * FROM catalog_ingredient_relations " +
+            "WHERE childIngredientId = :ingredientId AND isActive = 1 " +
+            "ORDER BY relationType ASC, parentIngredientId ASC, id ASC",
+    )
+    suspend fun getParentRelations(ingredientId: String): List<CatalogIngredientRelationEntity>
+
+    @Query(
+        "SELECT * FROM catalog_ingredient_relations " +
+            "WHERE parentIngredientId = :ingredientId AND isActive = 1 " +
+            "ORDER BY relationType ASC, childIngredientId ASC, id ASC",
+    )
+    suspend fun getChildRelations(ingredientId: String): List<CatalogIngredientRelationEntity>
+
     @Query("SELECT COUNT(*) FROM food_safety_groups WHERE isActive = 1")
     suspend fun countActiveSafetyGroups(): Int
 
