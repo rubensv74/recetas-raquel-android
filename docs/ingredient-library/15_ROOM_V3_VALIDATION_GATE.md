@@ -1,6 +1,6 @@
 # 15 — ROOM V3 + LINEAGE VALIDATION GATE
 
-**Status:** SECOND CORRECTIVE RERUN REQUIRED  
+**Status:** EXECUTION GREEN — schema review/versioning pending  
 **Branch:** `program/ingredient-library-food-safety`  
 **Date:** 2026-08-08
 
@@ -17,9 +17,9 @@ This gate validates together:
 - transitional free-text editor origin repair;
 - no automatic safety propagation from lineage.
 
-## First local execution — 2026-08-08
+## Validation history
 
-The first execution produced:
+### First local execution
 
 ```text
 assembleDebug                  PASS
@@ -31,17 +31,15 @@ assembleRelease                PASS
 Room schema export             PASS — 1.json, 2.json, 3.json
 ```
 
-The three failures were diagnosed as two concrete fixture/catalog defects rather than a Room migration failure:
+The three failures were traced to two fixture/catalog defects:
 
-1. Catalog v4 contained 249 aliases while the manifest declared 220. A stale pantry shard contained 29 presentation aliases already removed during the validated v3 review. The v4 pantry shard was replaced with the reviewed version, restoring 220 aliases.
-2. The synthetic schema-v3 lineage fixture omitted explicit `isActive` values. Gson materialized them as false instead of applying Kotlin constructor defaults. The fixture now declares `isActive=true` explicitly.
+1. v4 had a stale pantry alias shard, producing 249 aliases instead of the declared 220. The shard was replaced with the reviewed v3 version.
+2. The synthetic schema-v3 lineage fixture omitted explicit `isActive=true`; Gson materialized those fields as false. The fixture was corrected.
 3. The rollback failure was a consequence of defect 1.
 
-No migration SQL, Room entity, lineage type or food-safety propagation rule changed.
+No migration SQL, Room entity, lineage type or food-safety rule changed.
 
-## Second local execution — 2026-08-08
-
-The corrected catalog/lineage rerun produced:
+### Second local execution
 
 ```text
 assembleDebug                  PASS
@@ -53,79 +51,64 @@ assembleRelease                PASS
 Room schema export             PASS — 1.json, 2.json, 3.json
 ```
 
-The previous three catalog/lineage failures did not recur before the run reached the UI suite. The only reported failing test was:
+The only reported test failure was `RecipeCatalogUiTest.favoritesCategoryAndClearFiltersWork`. The test was hardened to wait for the unfiltered result count and scroll the second recipe card into view before asserting visibility. No production behavior changed.
+
+The subsequent single-test execution completed successfully:
 
 ```text
-RecipeCatalogUiTest.favoritesCategoryAndClearFiltersWork
+RecipeCatalogUiTest.favoritesCategoryAndClearFiltersWork  PASS — 1/1
 ```
 
-The test clears a text query while the software keyboard may remain visible and then immediately requires the second recipe card to be displayed. On the current AVD this can reduce the `LazyColumn` viewport and make the assertion depend on keyboard/viewport state rather than on the filter behavior being tested. The test has therefore been stabilized without changing production UI behavior:
+The prior long-running attempt was attributable to an AVD/instrumentation state issue. After restarting ADB, the targeted test completed normally.
 
-1. after clearing filters, wait for `2 resultados` to prove the unfiltered state is restored;
-2. locate `recipe_tarta` by stable test tag;
-3. `performScrollTo()` before asserting visibility.
-
-This is test-harness hardening only; no application behavior, Room schema, catalog content, lineage model or safety rule changed.
-
-Because the instrumentation process also reported a crash after the UI failure, a complete rerun is required rather than treating the remaining 12 tests as passed.
-
-The generated `3.json` remains intentionally untracked until the complete instrumented gate is green and the schema is reviewed.
-
-## Corrective rerun commands
-
-Run from repository root:
-
-```powershell
-git pull --ff-only
-git status -sb
-
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" clean assembleDebug
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" testDebugUnitTest
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" lintDebug
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" compileDebugAndroidTestKotlin
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" connectedDebugAndroidTest
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" assembleRelease
-
-Get-ChildItem ".\app\schemas\com.rmm.recetasraquel.data.local.RecipeDatabase"
-git status -sb
-```
-
-## Expected schema result
+### Final instrumented rerun
 
 ```text
-1.json
-2.json
-3.json
+connectedDebugAndroidTest      PASS — 39/39
+skipped                        0
+failed                         0
+execution time                 50s
 ```
 
-`3.json` must remain untracked until its generated structure is reviewed against the migration and entity model.
-
-## Required PASS conditions
+The complete local gate is therefore green:
 
 ```text
 assembleDebug                  PASS
 testDebugUnitTest              PASS
 lintDebug                      PASS
 compileDebugAndroidTestKotlin  PASS
-connectedDebugAndroidTest      PASS — all 39 tests, 0 failed, 0 unexpectedly skipped
+connectedDebugAndroidTest      PASS — 39/39
 assembleRelease                PASS
+Room schema export             PASS — 1.json, 2.json, 3.json
 ```
 
-## Functional invariants exercised
+## Functional invariants validated
 
 1. v1 legacy recipe data survives the chained migration to v3.
 2. v2 custom safety relations preserve their old free-text source as `sourceDetails` and gain a required `sourceId`.
-3. `catalog_ingredient_relations` exists and has valid foreign keys/indexes.
-4. a schema-v3 test catalog can persist and traverse a `CUT_OF` edge.
-5. that lineage edge creates zero safety relations by itself.
+3. `catalog_ingredient_relations` exists with the intended foreign keys and indexes.
+4. a schema-v3 test catalog persists and traverses a `CUT_OF` edge.
+5. lineage creates zero safety relations by itself.
 6. catalog v4 imports with 227 ingredients, 220 aliases and 27 reviewed safety relations.
 7. old free-text recipe editing persists a dedicated `recipe-custom:<ingredientId>` origin without foreign-key failure.
 8. a dual recipe ingredient origin is rejected before persistence.
 
-## After a green gate
+## Remaining schema artifact gate
 
-1. inspect and version generated `3.json`;
-2. update this document with actual validation evidence;
-3. close the Room-v3 infrastructure gate;
+The generated file exists locally as:
+
+```text
+app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/3.json
+```
+
+and remains intentionally untracked.
+
+Before Room v3 is formally closed, the generated schema must be reviewed against the entity model and migration SQL and then versioned. Do not create catalog v5 with real lineage edges until that artifact review is complete.
+
+## After schema review
+
+1. version `3.json`;
+2. close the Room-v3 infrastructure gate;
+3. update `SPRINT_PLAN.md` and implementation status;
 4. create a new immutable catalog version for the first real lineage-backed derivatives/cuts;
 5. continue autonomously until the next architectural boundary.
