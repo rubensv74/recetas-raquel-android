@@ -184,14 +184,14 @@ class IngredientCatalogImportTest {
                   }
                 }
             """.trimIndent(),
-            "ingredient-catalog/v5-test/categories.json" to """[{"id":"cat-poultry","code":"POULTRY","name":"Aves","sortOrder":1}]""",
+            "ingredient-catalog/v5-test/categories.json" to """[{"id":"cat-poultry","code":"POULTRY","name":"Aves","sortOrder":1,"isActive":true}]""",
             "ingredient-catalog/v5-test/ingredients.json" to """[
-                {"id":"ing-chicken","canonicalName":"Pollo","normalizedName":"pollo","categoryId":"cat-poultry","verificationStatus":"REVIEW_REQUIRED","compositionVariability":"STABLE"},
-                {"id":"ing-chicken-breast","canonicalName":"Pechuga de pollo","normalizedName":"pechuga de pollo","categoryId":"cat-poultry","verificationStatus":"REVIEW_REQUIRED","compositionVariability":"STABLE"}
+                {"id":"ing-chicken","canonicalName":"Pollo","normalizedName":"pollo","categoryId":"cat-poultry","verificationStatus":"REVIEW_REQUIRED","compositionVariability":"STABLE","isActive":true},
+                {"id":"ing-chicken-breast","canonicalName":"Pechuga de pollo","normalizedName":"pechuga de pollo","categoryId":"cat-poultry","verificationStatus":"REVIEW_REQUIRED","compositionVariability":"STABLE","isActive":true}
             ]""",
             "ingredient-catalog/v5-test/aliases.json" to "[]",
             "ingredient-catalog/v5-test/ingredient-relations.json" to """[
-                {"id":"lineage-chicken-breast","childIngredientId":"ing-chicken-breast","parentIngredientId":"ing-chicken","relationType":"CUT_OF","reviewedAt":"2026-08-08","sourceReference":"CULINARY_IDENTITY_REVIEW"}
+                {"id":"lineage-chicken-breast","childIngredientId":"ing-chicken-breast","parentIngredientId":"ing-chicken","relationType":"CUT_OF","reviewedAt":"2026-08-08","sourceReference":"CULINARY_IDENTITY_REVIEW","isActive":true}
             ]""",
             "ingredient-catalog/v5-test/safety-groups.json" to "[]",
             "ingredient-catalog/v5-test/safety-sources.json" to "[]",
