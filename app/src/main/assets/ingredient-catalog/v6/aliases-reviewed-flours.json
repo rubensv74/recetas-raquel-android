@@ -1,7 +1,7 @@
 [
   {"id":"alias-wheat-flour-short","ingredientId":"ing-wheat-flour","alias":"Harina trigo","normalizedAlias":"harina trigo","languageCode":"es","aliasType":"COMMON"},
   {"id":"alias-spelt-flour-short","ingredientId":"ing-spelt-flour","alias":"Harina espelta","normalizedAlias":"harina espelta","languageCode":"es","aliasType":"COMMON"},
-  {"id":"alias-khorasan-flour-kamut","ingredientId":"ing-khorasan-flour","alias":"Harina de kamut","normalizedAlias":"harina de kamut","languageCode":"es","aliasType":"COMMON"},
+  {"id":"alias-khorasan-flour-short","ingredientId":"ing-khorasan-flour","alias":"Harina khorasan","normalizedAlias":"harina khorasan","languageCode":"es","aliasType":"COMMON"},
   {"id":"alias-rye-flour-short","ingredientId":"ing-rye-flour","alias":"Harina centeno","normalizedAlias":"harina centeno","languageCode":"es","aliasType":"COMMON"},
   {"id":"alias-barley-flour-short","ingredientId":"ing-barley-flour","alias":"Harina cebada","normalizedAlias":"harina cebada","languageCode":"es","aliasType":"COMMON"},
   {"id":"alias-oats-flour-short","ingredientId":"ing-oats-flour","alias":"Harina avena","normalizedAlias":"harina avena","languageCode":"es","aliasType":"COMMON"},
