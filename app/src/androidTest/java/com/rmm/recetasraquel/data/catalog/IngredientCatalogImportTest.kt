@@ -31,20 +31,20 @@ class IngredientCatalogImportTest {
     }
 
     @Test
-    fun importsVersionedLineageCatalogV5AndIsIdempotent() = runBlocking {
+    fun importsVersionedDerivativeCatalogV6AndIsIdempotent() = runBlocking {
         val reader = IngredientCatalogAssetReader(AndroidAssetCatalogTextSource(context.assets))
         val bundle = reader.read()
 
         assertEquals(3, bundle.manifest.schemaVersion)
-        assertEquals(5, bundle.manifest.catalogVersion)
+        assertEquals(6, bundle.manifest.catalogVersion)
         assertEquals("DRAFT", bundle.manifest.releaseStatus)
         assertEquals(20, bundle.categories.size)
-        assertEquals(242, bundle.ingredients.size)
-        assertEquals(235, bundle.aliases.size)
-        assertEquals(15, bundle.ingredientRelations.size)
+        assertEquals(252, bundle.ingredients.size)
+        assertEquals(245, bundle.aliases.size)
+        assertEquals(25, bundle.ingredientRelations.size)
         assertEquals(14, bundle.safetyGroups.size)
         assertEquals(3, bundle.safetySources.size)
-        assertEquals(27, bundle.safetyRelations.size)
+        assertEquals(33, bundle.safetyRelations.size)
 
         val expectedEuCodes = setOf(
             "CEREALS_CONTAINING_GLUTEN",
@@ -82,6 +82,26 @@ class IngredientCatalogImportTest {
         assertEquals("CUT_OF", chickenBreastLineage.relationType)
         assertTrue(bundle.safetyRelations.none { it.ingredientId == "ing-chicken-breast" })
 
+        val wheatFlour = bundle.ingredients.single { it.id == "ing-wheat-flour" }
+        assertEquals("REVIEW_REQUIRED", wheatFlour.verificationStatus)
+        val wheatFlourLineage = bundle.ingredientRelations.single { it.childIngredientId == "ing-wheat-flour" }
+        assertEquals("ing-wheat", wheatFlourLineage.parentIngredientId)
+        assertEquals("DERIVED_FROM", wheatFlourLineage.relationType)
+        val wheatFlourSafety = bundle.safetyRelations.single { it.ingredientId == "ing-wheat-flour" }
+        assertEquals("sg-eu-cereals-gluten", wheatFlourSafety.safetyGroupId)
+        assertEquals("DERIVED_FROM", wheatFlourSafety.relationType)
+        assertEquals("EU_LEGAL", wheatFlourSafety.evidenceLevel)
+        assertEquals("EU_FIC_1169_2011", wheatFlourSafety.sourceId)
+
+        val chickpeaFlourLineage = bundle.ingredientRelations.single { it.childIngredientId == "ing-chickpea-flour" }
+        assertEquals("ing-chickpea", chickpeaFlourLineage.parentIngredientId)
+        assertEquals("DERIVED_FROM", chickpeaFlourLineage.relationType)
+        assertTrue(bundle.safetyRelations.none { it.ingredientId == "ing-chickpea-flour" })
+
+        val buckwheatFlourLineage = bundle.ingredientRelations.single { it.childIngredientId == "ing-buckwheat-flour" }
+        assertEquals("ing-buckwheat", buckwheatFlourLineage.parentIngredientId)
+        assertTrue(bundle.safetyRelations.none { it.ingredientId == "ing-buckwheat-flour" })
+
         val importer = CatalogImporter(
             reader = reader,
             dao = database.ingredientCatalogDao(),
@@ -91,30 +111,38 @@ class IngredientCatalogImportTest {
         val first = importer.ensureImported()
         assertTrue(first is CatalogImportResult.Imported)
         assertEquals(20, database.ingredientCatalogDao().countActiveCategories())
-        assertEquals(242, database.ingredientCatalogDao().countActiveIngredients())
-        assertEquals(235, database.ingredientCatalogDao().countAliases())
-        assertEquals(15, database.ingredientCatalogDao().countActiveIngredientRelations())
+        assertEquals(252, database.ingredientCatalogDao().countActiveIngredients())
+        assertEquals(245, database.ingredientCatalogDao().countAliases())
+        assertEquals(25, database.ingredientCatalogDao().countActiveIngredientRelations())
         assertEquals(14, database.ingredientCatalogDao().countActiveSafetyGroups())
-        assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
+        assertEquals(33, database.ingredientCatalogDao().countSafetyRelations())
 
-        val parents = database.ingredientCatalogDao().getParentRelations("ing-chicken-breast")
-        assertEquals(1, parents.size)
-        assertEquals("ing-chicken", parents.single().parentIngredientId)
-        assertEquals("CUT_OF", parents.single().relationType)
+        val chickenParents = database.ingredientCatalogDao().getParentRelations("ing-chicken-breast")
+        assertEquals(1, chickenParents.size)
+        assertEquals("ing-chicken", chickenParents.single().parentIngredientId)
+        assertEquals("CUT_OF", chickenParents.single().relationType)
         assertEquals(0, database.ingredientCatalogDao().getSafetyRelationsForIngredient("ing-chicken-breast").size)
 
+        val wheatFlourParents = database.ingredientCatalogDao().getParentRelations("ing-wheat-flour")
+        assertEquals(1, wheatFlourParents.size)
+        assertEquals("ing-wheat", wheatFlourParents.single().parentIngredientId)
+        assertEquals("DERIVED_FROM", wheatFlourParents.single().relationType)
+        assertEquals(1, database.ingredientCatalogDao().getSafetyRelationsForIngredient("ing-wheat-flour").size)
+        assertEquals(0, database.ingredientCatalogDao().getSafetyRelationsForIngredient("ing-chickpea-flour").size)
+        assertEquals(0, database.ingredientCatalogDao().getSafetyRelationsForIngredient("ing-buckwheat-flour").size)
+
         val metadata = requireNotNull(database.ingredientCatalogDao().getMetadata(CatalogImporter.METADATA_KEY))
-        assertEquals(5, metadata.catalogVersion)
+        assertEquals(6, metadata.catalogVersion)
         assertEquals("es-ES", metadata.locale)
         assertEquals("EU-ES", metadata.jurisdiction)
         assertEquals(1234L, metadata.importedAt)
 
         val second = importer.ensureImported()
         assertTrue(second is CatalogImportResult.AlreadyCurrent)
-        assertEquals(242, database.ingredientCatalogDao().countActiveIngredients())
-        assertEquals(235, database.ingredientCatalogDao().countAliases())
-        assertEquals(15, database.ingredientCatalogDao().countActiveIngredientRelations())
-        assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
+        assertEquals(252, database.ingredientCatalogDao().countActiveIngredients())
+        assertEquals(245, database.ingredientCatalogDao().countAliases())
+        assertEquals(25, database.ingredientCatalogDao().countActiveIngredientRelations())
+        assertEquals(33, database.ingredientCatalogDao().countSafetyRelations())
     }
 
     @Test
@@ -151,7 +179,7 @@ class IngredientCatalogImportTest {
         realImporter.ensureImported()
 
         val brokenImporter = CatalogImporter(
-            reader = IngredientCatalogAssetReader(BrokenVersionSixSource()),
+            reader = IngredientCatalogAssetReader(BrokenVersionSevenSource()),
             dao = database.ingredientCatalogDao(),
             timeProvider = TimeProvider { 200L },
         )
@@ -159,11 +187,11 @@ class IngredientCatalogImportTest {
         val failure = runCatching { brokenImporter.ensureImported() }.exceptionOrNull()
         assertTrue(failure is CatalogValidationException)
         assertEquals(20, database.ingredientCatalogDao().countActiveCategories())
-        assertEquals(242, database.ingredientCatalogDao().countActiveIngredients())
-        assertEquals(235, database.ingredientCatalogDao().countAliases())
-        assertEquals(15, database.ingredientCatalogDao().countActiveIngredientRelations())
-        assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
-        assertEquals(5, database.ingredientCatalogDao().getMetadata(CatalogImporter.METADATA_KEY)?.catalogVersion)
+        assertEquals(252, database.ingredientCatalogDao().countActiveIngredients())
+        assertEquals(245, database.ingredientCatalogDao().countAliases())
+        assertEquals(25, database.ingredientCatalogDao().countActiveIngredientRelations())
+        assertEquals(33, database.ingredientCatalogDao().countSafetyRelations())
+        assertEquals(6, database.ingredientCatalogDao().getMetadata(CatalogImporter.METADATA_KEY)?.catalogVersion)
     }
 
     private class LineageBundleSource : CatalogTextSource {
@@ -214,13 +242,13 @@ class IngredientCatalogImportTest {
         override fun read(path: String): String = values[path] ?: error("Missing lineage test asset: $path")
     }
 
-    private class BrokenVersionSixSource : CatalogTextSource {
+    private class BrokenVersionSevenSource : CatalogTextSource {
         private val values = mapOf(
-            "ingredient-catalog/v5/manifest.json" to """
+            "ingredient-catalog/v6/manifest.json" to """
                 {
                   "catalogId":"broken",
                   "schemaVersion":1,
-                  "catalogVersion":6,
+                  "catalogVersion":7,
                   "releaseStatus":"INFRASTRUCTURE",
                   "locale":"es-ES",
                   "jurisdiction":"EU-ES",
@@ -244,12 +272,12 @@ class IngredientCatalogImportTest {
                   }
                 }
             """.trimIndent(),
-            "ingredient-catalog/v5/categories.json" to "[]",
-            "ingredient-catalog/v5/ingredients.json" to "[]",
-            "ingredient-catalog/v5/aliases.json" to "[]",
-            "ingredient-catalog/v5/safety-groups.json" to "[]",
-            "ingredient-catalog/v5/safety-sources.json" to "[]",
-            "ingredient-catalog/v5/safety-relations.json" to "[]",
+            "ingredient-catalog/v6/categories.json" to "[]",
+            "ingredient-catalog/v6/ingredients.json" to "[]",
+            "ingredient-catalog/v6/aliases.json" to "[]",
+            "ingredient-catalog/v6/safety-groups.json" to "[]",
+            "ingredient-catalog/v6/safety-sources.json" to "[]",
+            "ingredient-catalog/v6/safety-relations.json" to "[]",
         )
 
         override fun read(path: String): String = values[path] ?: error("Missing broken test asset: $path")
