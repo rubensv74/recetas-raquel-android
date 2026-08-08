@@ -73,7 +73,7 @@ Fase 1 — investigación               CERRADA para pasar a diseño
 Fase 2 — diseño                      CERRADA como base de implementación
 Fase 3 — Room v1 -> v2               CERRADA — 34/34 instrumented PASS
 Fase 4 — infraestructura catálogo    CERRADA — 36/36 instrumented PASS
-Población controlada del catálogo    EN CURSO — Batch 01 v3 escrito; gate local pendiente
+Población controlada del catálogo    EN CURSO — Batch 01 v3 VALIDADO; siguiente lote autorizado
 Mapeo masivo no revisado             NO AUTORIZADO
 Merge a master                       NO AUTORIZADO todavía
 ```
@@ -108,7 +108,7 @@ Ver `docs/ingredient-library/10_CONTROLLED_CATALOG_SEED.md`.
 
 ### Población controlada — Batch 01 culinario v3
 
-Se ha creado `app/src/main/assets/ingredient-catalog/v3/` como nueva versión inmutable del catálogo.
+`app/src/main/assets/ingredient-catalog/v3/` es la versión activa del catálogo culinario y permanece `DRAFT`.
 
 El manifiesto usa `schemaVersion = 2` para soportar ficheros fragmentados por lotes, manteniendo compatibilidad de lectura con los catálogos v1/v2 de fichero único.
 
@@ -127,11 +127,13 @@ relaciones de seguridad  27
 
 Batch 01 añade 100 ingredientes culinarios de verduras, frutas, hierbas, especias, cereales y legumbres, junto con 100 alias nuevos de búsqueda. Los 27 anclajes regulatorios, sus 22 alias y sus relaciones permanecen intactos.
 
-Durante la revisión del lote se descartaron alias que introducían calificadores de presentación/preparación, para no colapsar silenciosamente identidades distintas solo con el objetivo de aumentar cobertura.
-
 Los 100 ingredientes nuevos están marcados `REVIEW_REQUIRED` y no reciben relaciones de seguridad por inferencia. La existencia de un ingrediente en la biblioteca y la existencia de evidencia de seguridad siguen siendo conceptos separados.
 
-El gate local de v3 está pendiente. Ver `docs/ingredient-library/11_CULINARY_CATALOG_BATCH_01.md`.
+El gate local v3 quedó superado el 2026-08-08 con `assembleDebug`, unit tests, lint, compilación instrumentada y `assembleRelease` PASS; `connectedDebugAndroidTest` PASS 36/36; Room conserva exclusivamente `1.json` y `2.json`; working tree limpio.
+
+El siguiente lote culinario está autorizado para prepararse, manteniendo el mismo principio: ampliar identidad y búsqueda no autoriza añadir relaciones de seguridad sin evidencia trazable.
+
+Ver `docs/ingredient-library/11_CULINARY_CATALOG_BATCH_01.md`.
 
 ## Sprints futuros congelados
 
