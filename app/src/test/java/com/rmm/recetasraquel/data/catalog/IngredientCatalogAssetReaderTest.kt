@@ -50,6 +50,7 @@ class IngredientCatalogAssetReaderTest {
         assertEquals("Categoría", bundle.categories.single().name)
         assertEquals(0, bundle.ingredients.size)
         assertEquals(0, bundle.ingredientRelations.size)
+        assertEquals(0, bundle.regulatoryExemptions.size)
     }
 
     @Test
@@ -99,6 +100,7 @@ class IngredientCatalogAssetReaderTest {
         assertEquals(listOf("ing-a", "ing-b"), bundle.ingredients.map { it.id })
         assertEquals(listOf("alias-a", "alias-b"), bundle.aliases.map { it.id })
         assertEquals(0, bundle.ingredientRelations.size)
+        assertEquals(0, bundle.regulatoryExemptions.size)
         assertEquals(3, bundle.manifest.catalogVersion)
         assertEquals(2, bundle.manifest.schemaVersion)
     }
@@ -151,7 +153,61 @@ class IngredientCatalogAssetReaderTest {
 
         assertEquals(listOf("lineage-a", "lineage-b"), bundle.ingredientRelations.map { it.id })
         assertEquals("CUT_OF", bundle.ingredientRelations.first().relationType)
+        assertEquals(0, bundle.regulatoryExemptions.size)
         assertEquals(3, bundle.manifest.schemaVersion)
+    }
+
+    @Test
+    fun readsSchemaFourRegulatoryExemptionShards() {
+        val source = MapCatalogTextSource(
+            mapOf(
+                "ingredient-catalog/v7/manifest.json" to """
+                    {
+                      "catalogId":"test-regulatory",
+                      "schemaVersion":4,
+                      "catalogVersion":7,
+                      "releaseStatus":"DRAFT",
+                      "locale":"es-ES",
+                      "jurisdiction":"EU-ES",
+                      "reviewedAt":"2026-08-08",
+                      "files":{
+                        "categories":"categories.json",
+                        "ingredientShards":["ingredients.json"],
+                        "aliasShards":["aliases.json"],
+                        "regulatoryExemptionShards":["exemptions-a.json","exemptions-b.json"],
+                        "safetyGroups":"safety-groups.json",
+                        "safetySources":"safety-sources.json",
+                        "safetyRelations":"safety-relations.json"
+                      },
+                      "counts":{
+                        "categories":1,
+                        "ingredients":1,
+                        "aliases":0,
+                        "ingredientRelations":0,
+                        "regulatoryExemptions":2,
+                        "safetyGroups":1,
+                        "safetySources":1,
+                        "safetyRelations":0
+                      }
+                    }
+                """.trimIndent(),
+                "ingredient-catalog/v7/categories.json" to """[{"id":"cat-1","code":"C1","name":"Categoría","sortOrder":1}]""",
+                "ingredient-catalog/v7/ingredients.json" to """[{"id":"ing-test","canonicalName":"Derivado de prueba","normalizedName":"derivado de prueba","categoryId":"cat-1","verificationStatus":"REVIEW_REQUIRED","compositionVariability":"STABLE"}]""",
+                "ingredient-catalog/v7/aliases.json" to "[]",
+                "ingredient-catalog/v7/exemptions-a.json" to """[{"id":"ex-a","ingredientId":"ing-test","safetyGroupId":"sg-test","jurisdiction":"EU","regulatoryEffect":"EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION","conditions":"Condición A","sourceId":"source-test","reviewedAt":"2026-08-08"}]""",
+                "ingredient-catalog/v7/exemptions-b.json" to """[{"id":"ex-b","ingredientId":"ing-test","safetyGroupId":"sg-test","jurisdiction":"ES","regulatoryEffect":"EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION","conditions":"Condición B","sourceId":"source-test","reviewedAt":"2026-08-08"}]""",
+                "ingredient-catalog/v7/safety-groups.json" to """[{"id":"sg-test","code":"SOYBEANS","displayName":"Soja","conditionType":"FOOD_ALLERGY","regulatoryStatus":"EU_ANNEX_II","jurisdiction":"EU","isActive":true}]""",
+                "ingredient-catalog/v7/safety-sources.json" to """[{"id":"source-test","organization":"European Union","title":"Fuente de prueba","officialReference":"TEST","jurisdiction":"EU","reviewDate":"2026-08-08"}]""",
+                "ingredient-catalog/v7/safety-relations.json" to "[]",
+            ),
+        )
+
+        val bundle = IngredientCatalogAssetReader(source).read("ingredient-catalog/v7")
+
+        assertEquals(4, bundle.manifest.schemaVersion)
+        assertEquals(listOf("ex-a", "ex-b"), bundle.regulatoryExemptions.map { it.id })
+        assertEquals("EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION", bundle.regulatoryExemptions.first().regulatoryEffect)
+        assertEquals(0, bundle.safetyRelations.size)
     }
 
     private class MapCatalogTextSource(
