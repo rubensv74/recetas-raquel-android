@@ -1,6 +1,6 @@
 # 20 — ROOM V4: CAPA DE EXENCIONES REGULATORIAS
 
-**Estado:** GATE DE EJECUCIÓN SUPERADO — revisión de `4.json` pendiente  
+**Estado:** CERRADO — ejecución, esquema y versionado validados  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-08
 
@@ -83,7 +83,7 @@ La migración es aditiva y no destructiva.
 Room version 3 -> 4
 ```
 
-`RecipeDatabase.build()` registra ahora:
+`RecipeDatabase.build()` registra:
 
 ```text
 MIGRATION_1_2
@@ -110,9 +110,9 @@ MIGRATION_3_4
 
 Conserva su objetivo original —verificar el contrato `sourceId/sourceDetails`— y añade la comprobación de que la nueva tabla regulatoria queda vacía al llegar a v4.
 
-## 8. Catálogo
+## 8. Catálogo durante el gate
 
-`ingredient-catalog/v6/` permanece inmutable y sigue siendo el catálogo activo durante este gate.
+`ingredient-catalog/v6/` permaneció inmutable y siguió siendo el catálogo activo durante la migración.
 
 ```text
 Room schema version = 4
@@ -120,69 +120,82 @@ active catalogVersion = 6
 active catalog schemaVersion = 3
 ```
 
-La evolución del formato de catálogo para transportar exenciones se realizará únicamente después de revisar y versionar `4.json`.
+Room y el formato/versionado del catálogo continúan siendo conceptos independientes.
 
-## 9. Primera ejecución del gate — 2026-08-08
+## 9. Ejecución del gate
 
 La primera ejecución terminó con 1 fallo instrumentado. La causa fue exclusivamente una prueba histórica que registraba solo `MIGRATION_2_3` aunque `RecipeDatabase` ya estaba en v4. Room solicitó correctamente una ruta completa `2 -> 4`.
 
-Corrección aplicada:
-
-```text
-IngredientLibraryMigration23Test
-  MIGRATION_2_3
-  MIGRATION_3_4
-  PRAGMA user_version = 4
-  regulatory_exemptions count = 0
-```
-
-No fue necesario modificar código de producción para resolver ese fallo.
-
-## 10. Segunda ejecución correctiva — SUPERADA
-
-Evidencia local del 2026-08-08:
-
-```text
-compileDebugAndroidTestKotlin  PASS
-migrate2To4... targeted test  PASS — 1/1
-connectedDebugAndroidTest      PASS — 39/39, 0 skipped, 0 failed
-```
-
-Combinado con la primera ejecución del mismo cambio:
+Tras corregir el contrato de esa prueba, la ejecución final quedó:
 
 ```text
 assembleDebug                  PASS
 testDebugUnitTest              PASS
 lintDebug                      PASS
 compileDebugAndroidTestKotlin  PASS
-connectedDebugAndroidTest      PASS — 39/39
+migrate2To4... targeted test   PASS — 1/1
+connectedDebugAndroidTest      PASS — 39/39, 0 skipped, 0 failed
 assembleRelease                PASS
 Room schema export             PASS — 4.json generado
 ```
 
-Por tanto, el **gate de ejecución de Room v4 está verde**.
+Los avisos de `stripDebugSymbols` / `stripReleaseDebugSymbols` para `libandroidx.graphics.path.so` no impidieron el empaquetado y ambos builds terminaron en `BUILD SUCCESSFUL`.
 
-Estado local esperado y confirmado:
+## 10. Auditoría estructural de `4.json` — SUPERADA
+
+El esquema exportado y versionado confirma:
 
 ```text
-?? app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/4.json
+formatVersion = 1
+database.version = 4
+entities = 15
 ```
 
-El archivo no se versionará hasta completar su revisión estructural.
+Room v3 contenía 14 entidades. La nueva entidad es exclusivamente:
 
-## 11. Criterios de revisión de 4.json
+```text
+regulatory_exemptions
+```
 
-Debe existir `regulatory_exemptions` con:
+La tabla contiene exactamente las 12 columnas previstas y mantiene nulabilidad/tipos coherentes con `RegulatoryExemptionEntity`.
 
-- 12 columnas previstas;
-- tres claves foráneas `NO ACTION`;
-- índices simples sobre ingrediente, grupo y fuente;
-- índice único conceptual sobre ingrediente + grupo + jurisdicción + efecto;
-- ausencia de cambios inesperados en las demás entidades.
+Claves foráneas auditadas:
 
-La revisión también debe confirmar `version = 4` y que el cambio respecto de `3.json` es exclusivamente el esperado para esta entidad, además de los metadatos de Room.
+```text
+ingredientId  -> catalog_ingredients.id  NO ACTION / NO ACTION
+safetyGroupId -> food_safety_groups.id   NO ACTION / NO ACTION
+sourceId      -> safety_sources.id        NO ACTION / NO ACTION
+```
 
-## 12. Estado del gate
+Índices auditados:
+
+```text
+index_regulatory_exemptions_ingredientId
+index_regulatory_exemptions_safetyGroupId
+index_regulatory_exemptions_sourceId
+index_regulatory_exemptions_ingredientId_safetyGroupId_jurisdiction_regulatoryEffect  UNIQUE
+```
+
+La comparación de las entidades existentes con `3.json` no muestra un cambio funcional adicional esperado en Room v4. El cambio estructural deliberado es la incorporación de esta nueva tabla, además de los metadatos/identity hash propios de una nueva versión de Room.
+
+## 11. Versionado
+
+`4.json` está presente y versionado en la rama del programa:
+
+```text
+app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/4.json
+```
+
+La historia de esquemas queda:
+
+```text
+1.json
+2.json
+3.json
+4.json
+```
+
+## 12. Gate final
 
 ```text
 MIGRACIÓN 3 -> 4                 PASS
@@ -190,15 +203,21 @@ TEST DIRIGIDO 2 -> 4             PASS — 1/1
 SUITE INSTRUMENTADA              PASS — 39/39
 BUILD / UNIT / LINT / RELEASE    PASS
 GENERACIÓN 4.json                PASS
-AUDITORÍA DE 4.json              PENDING
-VERSIONADO DE 4.json             PENDING
+AUDITORÍA DE 4.json              PASS
+VERSIONADO DE 4.json             PASS
+ROOM V4                          CERRADO
 ```
 
 ## 13. Siguiente paso
 
-Después de revisar y versionar `4.json`:
+Con Room v4 cerrado, el siguiente bloque es ampliar el **formato del catálogo** para transportar exenciones regulatorias de forma estructurada:
 
-1. ampliar el formato de catálogo con una capa `regulatoryExemptions`;
-2. ampliar reader, validator, importer y DAO;
-3. crear pruebas sintéticas de separación entre exención y seguridad;
-4. solo entonces preparar una nueva versión del catálogo con exenciones reales revisadas.
+1. `CatalogBundle` y manifiesto;
+2. reader;
+3. validator;
+4. DAO/importer;
+5. modelo de dominio/repositorio;
+6. pruebas de separación entre exención y seguridad;
+7. solo después, nueva versión de catálogo con exenciones reales revisadas.
+
+Ver también `21_ROOM_V4_SCHEMA_REVIEW.md`.
