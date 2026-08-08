@@ -18,7 +18,7 @@ data class CatalogValidationResult(
 }
 
 object CatalogValidator {
-    private val supportedSchemaVersions = setOf(1, 2, 3)
+    private val supportedSchemaVersions = setOf(1, 2, 3, 4)
     private val releaseStatuses = setOf("INFRASTRUCTURE", "DRAFT", "PRODUCTION_CANDIDATE")
     private val verificationStatuses = setOf("VERIFIED", "REVIEW_REQUIRED", "UNVERIFIED")
     private val compositionVariability = setOf("STABLE", "VARIABLE_BY_BRAND", "VARIABLE_BY_PREPARATION", "UNKNOWN")
@@ -52,6 +52,9 @@ object CatalogValidator {
         "MANUFACTURER_LABEL",
         "USER_DECLARED",
         "UNVERIFIED",
+    )
+    private val regulatoryEffects = setOf(
+        "EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION",
     )
     private val euAnnexIiCodes = setOf(
         "CEREALS_CONTAINING_GLUTEN",
@@ -96,6 +99,7 @@ object CatalogValidator {
         validateUnique(errors, "safety group code", bundle.safetyGroups.map { it.code })
         validateUnique(errors, "safety source id", bundle.safetySources.map { it.id })
         validateUnique(errors, "safety relation id", bundle.safetyRelations.map { it.id })
+        validateUnique(errors, "regulatory exemption id", bundle.regulatoryExemptions.map { it.id })
 
         val categoryIds = bundle.categories.mapTo(mutableSetOf()) { it.id }
         val ingredientIds = bundle.ingredients.mapTo(mutableSetOf()) { it.id }
@@ -163,6 +167,14 @@ object CatalogValidator {
             requireDate(errors, "safetyRelation.reviewedAt", relation.reviewedAt)
         }
 
+        validateRegulatoryExemptions(
+            exemptions = bundle.regulatoryExemptions,
+            ingredientIds = ingredientIds,
+            groupIds = groupIds,
+            sourceIds = sourceIds,
+            errors = errors,
+        )
+
         if (manifest.releaseStatus == "PRODUCTION_CANDIDATE") validateProductionCandidate(bundle, errors)
 
         return CatalogValidationResult(errors.distinct())
@@ -195,6 +207,45 @@ object CatalogValidator {
         }
 
         detectLineageCycles(relations, errors)
+    }
+
+    private fun validateRegulatoryExemptions(
+        exemptions: List<CatalogRegulatoryExemptionRecord>,
+        ingredientIds: Set<String>,
+        groupIds: Set<String>,
+        sourceIds: Set<String>,
+        errors: MutableList<String>,
+    ) {
+        val conceptualKeys = mutableSetOf<String>()
+        exemptions.forEach { exemption ->
+            requireNonBlank(errors, "regulatoryExemption.id", exemption.id)
+            if (exemption.ingredientId !in ingredientIds) {
+                errors += "Regulatory exemption ${exemption.id} references missing ingredient ${exemption.ingredientId}"
+            }
+            if (exemption.safetyGroupId !in groupIds) {
+                errors += "Regulatory exemption ${exemption.id} references missing safety group ${exemption.safetyGroupId}"
+            }
+            if (exemption.sourceId !in sourceIds) {
+                errors += "Regulatory exemption ${exemption.id} references missing source ${exemption.sourceId}"
+            }
+            requireNonBlank(errors, "regulatoryExemption.jurisdiction", exemption.jurisdiction)
+            requireNonBlank(errors, "regulatoryExemption.conditions", exemption.conditions)
+            if (exemption.regulatoryEffect !in regulatoryEffects) {
+                errors += "Regulatory exemption ${exemption.id} has unsupported regulatoryEffect ${exemption.regulatoryEffect}"
+            }
+            requireDate(errors, "regulatoryExemption.reviewedAt", exemption.reviewedAt)
+            exemption.effectiveFrom?.let { requireDate(errors, "regulatoryExemption.effectiveFrom", it) }
+            exemption.effectiveTo?.let { requireDate(errors, "regulatoryExemption.effectiveTo", it) }
+
+            val from = exemption.effectiveFrom?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+            val to = exemption.effectiveTo?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+            if (from != null && to != null && from.isAfter(to)) {
+                errors += "Regulatory exemption ${exemption.id} has effectiveFrom after effectiveTo"
+            }
+
+            val key = "${exemption.ingredientId}|${exemption.safetyGroupId}|${exemption.jurisdiction}|${exemption.regulatoryEffect}"
+            if (!conceptualKeys.add(key)) errors += "Duplicate regulatory exemption: $key"
+        }
     }
 
     private fun detectLineageCycles(
@@ -232,9 +283,11 @@ object CatalogValidator {
         val ingredientShards = files.ingredientShards.orEmpty()
         val aliasShards = files.aliasShards.orEmpty()
         val ingredientRelationShards = files.ingredientRelationShards.orEmpty()
+        val regulatoryExemptionShards = files.regulatoryExemptionShards.orEmpty()
         val hasIngredientSingle = !files.ingredients.isNullOrBlank()
         val hasAliasSingle = !files.aliases.isNullOrBlank()
         val hasIngredientRelationSingle = !files.ingredientRelations.isNullOrBlank()
+        val hasRegulatoryExemptionSingle = !files.regulatoryExemptions.isNullOrBlank()
 
         if (hasIngredientSingle == ingredientShards.isNotEmpty()) {
             errors += "Manifest must declare exactly one ingredient file mode: ingredients or ingredientShards"
@@ -245,19 +298,27 @@ object CatalogValidator {
         if (hasIngredientRelationSingle && ingredientRelationShards.isNotEmpty()) {
             errors += "Manifest cannot declare both ingredientRelations and ingredientRelationShards"
         }
+        if (hasRegulatoryExemptionSingle && regulatoryExemptionShards.isNotEmpty()) {
+            errors += "Manifest cannot declare both regulatoryExemptions and regulatoryExemptionShards"
+        }
         if (schemaVersion == 1 && (ingredientShards.isNotEmpty() || aliasShards.isNotEmpty())) {
             errors += "Catalog schemaVersion 1 does not support sharded ingredient/alias files"
         }
         if (schemaVersion < 3 && (hasIngredientRelationSingle || ingredientRelationShards.isNotEmpty())) {
             errors += "Catalog schemaVersion $schemaVersion does not support ingredient lineage files"
         }
+        if (schemaVersion < 4 && (hasRegulatoryExemptionSingle || regulatoryExemptionShards.isNotEmpty())) {
+            errors += "Catalog schemaVersion $schemaVersion does not support regulatory exemption files"
+        }
 
         ingredientShards.forEach { requireNonBlank(errors, "manifest.files.ingredientShards", it) }
         aliasShards.forEach { requireNonBlank(errors, "manifest.files.aliasShards", it) }
         ingredientRelationShards.forEach { requireNonBlank(errors, "manifest.files.ingredientRelationShards", it) }
+        regulatoryExemptionShards.forEach { requireNonBlank(errors, "manifest.files.regulatoryExemptionShards", it) }
         validateUnique(errors, "ingredient shard file", ingredientShards)
         validateUnique(errors, "alias shard file", aliasShards)
         validateUnique(errors, "ingredient relation shard file", ingredientRelationShards)
+        validateUnique(errors, "regulatory exemption shard file", regulatoryExemptionShards)
     }
 
     private fun validateCounts(bundle: IngredientCatalogBundle, errors: MutableList<String>) {
@@ -269,6 +330,7 @@ object CatalogValidator {
         compareCount(errors, "safetyGroups", c.safetyGroups, bundle.safetyGroups.size)
         compareCount(errors, "safetySources", c.safetySources, bundle.safetySources.size)
         compareCount(errors, "safetyRelations", c.safetyRelations, bundle.safetyRelations.size)
+        compareCount(errors, "regulatoryExemptions", c.regulatoryExemptions, bundle.regulatoryExemptions.size)
     }
 
     private fun validateProductionCandidate(bundle: IngredientCatalogBundle, errors: MutableList<String>) {
