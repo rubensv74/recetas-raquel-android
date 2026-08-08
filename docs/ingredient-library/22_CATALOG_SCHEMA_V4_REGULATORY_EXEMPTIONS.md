@@ -1,6 +1,6 @@
 # 22 — CATÁLOGO SCHEMA V4: EXENCIONES REGULATORIAS
 
-**Estado:** IMPLEMENTADO — gate local pendiente  
+**Estado:** VALIDADO — gate local verde  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-08
 
@@ -195,7 +195,7 @@ El fixture no constituye evidencia legal para contenido real.
 
 `ingredient-catalog/v6` permanece sin cambios funcionales y con schema 3.
 
-La compatibilidad esperada es:
+La compatibilidad validada es:
 
 ```text
 bundle.regulatoryExemptions = 0
@@ -204,28 +204,20 @@ Room regulatory_exemptions = 0
 
 La infraestructura schema 4 solo se utilizará para contenido real en una nueva versión de catálogo posterior al gate.
 
-## 11. Gate requerido
+## 11. Gate de ejecución — SUPERADO
 
-Antes de preparar contenido regulatorio real debe pasar:
-
-```text
-clean assembleDebug
-testDebugUnitTest
-lintDebug
-compileDebugAndroidTestKotlin
-connectedDebugAndroidTest
-assembleRelease
-```
-
-Como se añade una prueba instrumentada, se esperan:
+Evidencia local comunicada el 2026-08-08:
 
 ```text
-40 instrumented tests
-0 failed
-0 skipped
+clean assembleDebug             PASS
+testDebugUnitTest               PASS
+lintDebug                       PASS
+compileDebugAndroidTestKotlin   PASS
+connectedDebugAndroidTest       PASS — 40/40, 0 skipped, 0 failed
+assembleRelease                 PASS
 ```
 
-Room no cambia en este bloque. La historia debe seguir siendo:
+Room permaneció estable y no se generó una nueva versión de esquema:
 
 ```text
 1.json
@@ -234,10 +226,30 @@ Room no cambia en este bloque. La historia debe seguir siendo:
 4.json
 ```
 
-**No debe aparecer `5.json`.**
+No apareció `5.json`, como correspondía.
 
-## 12. Próximo paso tras gate verde
+Los mensajes de Gradle sobre `libandroidx.graphics.path.so` indican que esa librería se empaqueta sin strip de símbolos; no bloquearon debug ni release y no forman parte de este gate funcional.
 
-Solo después de validar esta infraestructura se podrá preparar `ingredient-catalog/v7` con schema 4 y una primera exención real revisada contra fuente oficial vigente.
+El árbol de trabajo quedó limpio respecto a `origin/program/ingredient-library-food-safety` al finalizar la ejecución.
 
-Antes de codificar esa exención se realizará un `regulatory refresh` específico del texto legal y sus condiciones. Ninguna exención se convertirá en una afirmación clínica de seguridad.
+## 12. Resultado del gate
+
+```text
+CATALOG SCHEMA V4                 PASS
+READER                            PASS
+VALIDATOR                         PASS
+IMPORTACIÓN TRANSACCIONAL         PASS
+SEPARACIÓN EXENCIÓN/SEGURIDAD     PASS
+SUITE INSTRUMENTADA               PASS — 40/40
+ROOM                              SIN CAMBIOS — v4
+```
+
+La infraestructura queda aceptada como base estable para crear una nueva versión de catálogo con exenciones reales revisadas.
+
+## 13. Próximo paso
+
+El siguiente bloque es un `regulatory refresh` específico antes de introducir contenido real. La primera candidata es la excepción del punto 10 del Anexo II para ácido behénico procedente de semillas de mostaza bajo las condiciones establecidas por el Reglamento Delegado (UE) 2024/2512.
+
+Solo después de confirmar texto vigente, alcance, condiciones y fecha de aplicación se preparará `ingredient-catalog/v7` con schema 4.
+
+Ninguna exención se convertirá en una afirmación clínica de seguridad.
