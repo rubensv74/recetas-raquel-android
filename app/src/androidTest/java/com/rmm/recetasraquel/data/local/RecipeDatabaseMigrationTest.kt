@@ -31,13 +31,14 @@ class RecipeDatabaseMigrationTest {
     }
 
     @Test
-    fun migrate1To3PreservesLegacyRecipeDataAndAddsLineageInfrastructure() = runBlocking {
+    fun migrate1To4PreservesLegacyRecipeDataAndAddsRegulatoryInfrastructure() = runBlocking {
         createVersion1Database()
 
         val database = Room.databaseBuilder(context, RecipeDatabase::class.java, TEST_DB)
             .addMigrations(
                 RecipeDatabaseMigrations.MIGRATION_1_2,
                 IngredientLibraryMigrations.MIGRATION_2_3,
+                IngredientLibraryMigrations.MIGRATION_3_4,
             )
             .build()
 
@@ -124,6 +125,28 @@ class RecipeDatabaseMigrationTest {
                 assertEquals(0, cursor.getInt(0))
             }
 
+            migrated.query(
+                "SELECT COUNT(*) FROM regulatory_exemptions",
+            ).use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals(0, cursor.getInt(0))
+            }
+
+            migrated.query("PRAGMA table_info(`regulatory_exemptions`)").use { cursor ->
+                val columns = mutableSetOf<String>()
+                while (cursor.moveToNext()) columns += cursor.getString(1)
+                assertTrue("ingredientId" in columns)
+                assertTrue("safetyGroupId" in columns)
+                assertTrue("jurisdiction" in columns)
+                assertTrue("regulatoryEffect" in columns)
+                assertTrue("conditions" in columns)
+                assertTrue("sourceId" in columns)
+                assertTrue("effectiveFrom" in columns)
+                assertTrue("effectiveTo" in columns)
+                assertTrue("reviewedAt" in columns)
+                assertTrue("isActive" in columns)
+            }
+
             migrated.query("PRAGMA table_info(`custom_ingredient_safety_relations`)").use { cursor ->
                 val columns = mutableSetOf<String>()
                 while (cursor.moveToNext()) columns += cursor.getString(1)
@@ -151,7 +174,7 @@ class RecipeDatabaseMigrationTest {
 
             migrated.query("PRAGMA user_version").use { cursor ->
                 assertTrue(cursor.moveToFirst())
-                assertEquals(3, cursor.getInt(0))
+                assertEquals(4, cursor.getInt(0))
             }
 
             val recipe = database.recipeDao().getRecipeWithDetails("recipe-1")
@@ -273,6 +296,6 @@ class RecipeDatabaseMigrationTest {
     }
 
     private companion object {
-        const val TEST_DB = "recipes-migration-1-3-test.db"
+        const val TEST_DB = "recipes-migration-1-4-test.db"
     }
 }
