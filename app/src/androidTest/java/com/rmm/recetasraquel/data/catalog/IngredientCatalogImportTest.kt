@@ -105,6 +105,30 @@ class IngredientCatalogImportTest {
     }
 
     @Test
+    fun schemaThreeLineageBundlePersistsAndCanBeTraversedWithoutSafetyPropagation() = runBlocking {
+        val importer = CatalogImporter(
+            reader = IngredientCatalogAssetReader(LineageBundleSource()),
+            dao = database.ingredientCatalogDao(),
+            timeProvider = TimeProvider { 500L },
+        )
+
+        val result = importer.ensureImported("ingredient-catalog/v5-test")
+
+        assertTrue(result is CatalogImportResult.Imported)
+        assertEquals(2, database.ingredientCatalogDao().countActiveIngredients())
+        assertEquals(1, database.ingredientCatalogDao().countActiveIngredientRelations())
+        assertEquals(0, database.ingredientCatalogDao().countSafetyRelations())
+
+        val parents = database.ingredientCatalogDao().getParentRelations("ing-chicken-breast")
+        assertEquals(1, parents.size)
+        assertEquals("ing-chicken", parents.single().parentIngredientId)
+        assertEquals("CUT_OF", parents.single().relationType)
+
+        val children = database.ingredientCatalogDao().getChildRelations("ing-chicken")
+        assertEquals(listOf("ing-chicken-breast"), children.map { it.childIngredientId })
+    }
+
+    @Test
     fun invalidNewBundleDoesNotPartiallyReplaceExistingCatalog() = runBlocking {
         val realImporter = CatalogImporter(
             reader = IngredientCatalogAssetReader(AndroidAssetCatalogTextSource(context.assets)),
@@ -127,6 +151,54 @@ class IngredientCatalogImportTest {
         assertEquals(0, database.ingredientCatalogDao().countActiveIngredientRelations())
         assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
         assertEquals(4, database.ingredientCatalogDao().getMetadata(CatalogImporter.METADATA_KEY)?.catalogVersion)
+    }
+
+    private class LineageBundleSource : CatalogTextSource {
+        private val values = mapOf(
+            "ingredient-catalog/v5-test/manifest.json" to """
+                {
+                  "catalogId":"lineage-test",
+                  "schemaVersion":3,
+                  "catalogVersion":5,
+                  "releaseStatus":"DRAFT",
+                  "locale":"es-ES",
+                  "jurisdiction":"EU-ES",
+                  "reviewedAt":"2026-08-08",
+                  "files":{
+                    "categories":"categories.json",
+                    "ingredients":"ingredients.json",
+                    "aliases":"aliases.json",
+                    "ingredientRelations":"ingredient-relations.json",
+                    "safetyGroups":"safety-groups.json",
+                    "safetySources":"safety-sources.json",
+                    "safetyRelations":"safety-relations.json"
+                  },
+                  "counts":{
+                    "categories":1,
+                    "ingredients":2,
+                    "aliases":0,
+                    "ingredientRelations":1,
+                    "safetyGroups":0,
+                    "safetySources":0,
+                    "safetyRelations":0
+                  }
+                }
+            """.trimIndent(),
+            "ingredient-catalog/v5-test/categories.json" to """[{"id":"cat-poultry","code":"POULTRY","name":"Aves","sortOrder":1}]""",
+            "ingredient-catalog/v5-test/ingredients.json" to """[
+                {"id":"ing-chicken","canonicalName":"Pollo","normalizedName":"pollo","categoryId":"cat-poultry","verificationStatus":"REVIEW_REQUIRED","compositionVariability":"STABLE"},
+                {"id":"ing-chicken-breast","canonicalName":"Pechuga de pollo","normalizedName":"pechuga de pollo","categoryId":"cat-poultry","verificationStatus":"REVIEW_REQUIRED","compositionVariability":"STABLE"}
+            ]""",
+            "ingredient-catalog/v5-test/aliases.json" to "[]",
+            "ingredient-catalog/v5-test/ingredient-relations.json" to """[
+                {"id":"lineage-chicken-breast","childIngredientId":"ing-chicken-breast","parentIngredientId":"ing-chicken","relationType":"CUT_OF","reviewedAt":"2026-08-08","sourceReference":"CULINARY_IDENTITY_REVIEW"}
+            ]""",
+            "ingredient-catalog/v5-test/safety-groups.json" to "[]",
+            "ingredient-catalog/v5-test/safety-sources.json" to "[]",
+            "ingredient-catalog/v5-test/safety-relations.json" to "[]",
+        )
+
+        override fun read(path: String): String = values[path] ?: error("Missing lineage test asset: $path")
     }
 
     private class BrokenVersionFiveSource : CatalogTextSource {
