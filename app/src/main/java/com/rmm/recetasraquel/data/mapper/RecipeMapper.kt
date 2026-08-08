@@ -1,9 +1,11 @@
 package com.rmm.recetasraquel.data.mapper
 
+import com.rmm.recetasraquel.data.local.entity.CustomIngredientEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientEntity
 import com.rmm.recetasraquel.data.local.entity.RecipeEntity
 import com.rmm.recetasraquel.data.local.entity.RecipeStepEntity
 import com.rmm.recetasraquel.data.local.relation.RecipeWithDetails
+import com.rmm.recetasraquel.domain.ingredient.IngredientTextNormalizer
 import com.rmm.recetasraquel.domain.model.Ingredient
 import com.rmm.recetasraquel.domain.model.Recipe
 import com.rmm.recetasraquel.domain.model.RecipeDraft
@@ -17,9 +19,12 @@ data class PersistedRecipe(
     val recipe: RecipeEntity,
     val ingredients: List<IngredientEntity>,
     val steps: List<RecipeStepEntity>,
+    val compatibilityCustomIngredients: List<CustomIngredientEntity>,
 )
 
 object RecipeMapper {
+    const val RECIPE_FREE_TEXT_CUSTOM_PREFIX = "recipe-custom:"
+
     fun normalizeDraft(draft: RecipeDraft): RecipeDraft {
         val filtered = draft.copy(
             ingredients = draft.ingredients.filter { it.name.isNotBlank() },
@@ -80,10 +85,19 @@ object RecipeMapper {
 
     fun Recipe.toPersisted(updatedAt: Long = this.updatedAt): PersistedRecipe {
         val normalized = RecipeValidator.normalize(this)
+        val withOrigins = normalized.copy(
+            ingredients = normalized.ingredients.map { it.withPersistableOrigin() },
+        )
         return PersistedRecipe(
-            recipe = normalized.toEntity(updatedAt),
-            ingredients = normalized.ingredients.map { it.toEntity(normalized.id) },
-            steps = normalized.steps.map { it.toEntity(normalized.id) },
+            recipe = withOrigins.toEntity(updatedAt),
+            ingredients = withOrigins.ingredients.map { it.toEntity(withOrigins.id) },
+            steps = withOrigins.steps.map { it.toEntity(withOrigins.id) },
+            compatibilityCustomIngredients = withOrigins.ingredients.mapNotNull { ingredient ->
+                ingredient.toCompatibilityCustomIngredientOrNull(
+                    createdAt = withOrigins.createdAt,
+                    updatedAt = updatedAt,
+                )
+            },
         )
     }
 
@@ -185,6 +199,35 @@ object RecipeMapper {
             },
             createdAt = existingRecipe.createdAt,
             updatedAt = now,
+        )
+    }
+
+    private fun Ingredient.withPersistableOrigin(): Ingredient {
+        if (catalogIngredientId != null || customIngredientId != null) return this
+        return copy(customIngredientId = "$RECIPE_FREE_TEXT_CUSTOM_PREFIX$id")
+    }
+
+    private fun Ingredient.toCompatibilityCustomIngredientOrNull(
+        createdAt: Long,
+        updatedAt: Long,
+    ): CustomIngredientEntity? {
+        val originId = customIngredientId ?: return null
+        if (!originId.startsWith(RECIPE_FREE_TEXT_CUSTOM_PREFIX)) return null
+        return CustomIngredientEntity(
+            id = originId,
+            name = name,
+            normalizedName = IngredientTextNormalizer.normalize(name),
+            categoryId = null,
+            defaultUnit = unit,
+            ingredientType = "RECIPE_FREE_TEXT_COMPAT",
+            brand = null,
+            tradeName = null,
+            compositionKnown = false,
+            labelReadAt = null,
+            notes = null,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            isActive = true,
         )
     }
 
