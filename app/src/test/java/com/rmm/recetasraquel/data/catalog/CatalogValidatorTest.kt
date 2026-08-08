@@ -32,6 +32,129 @@ class CatalogValidatorTest {
     }
 
     @Test
+    fun schemaThreeCanDeclareIngredientLineageShards() {
+        val base = bundleWithTwoIngredients()
+        val relation = CatalogIngredientRelationRecord(
+            id = "lineage-child-parent",
+            childIngredientId = "ing-child",
+            parentIngredientId = "ing-parent",
+            relationType = "FORM_OF",
+            reviewedAt = "2026-08-08",
+        )
+        val bundle = base.copy(
+            manifest = base.manifest.copy(
+                schemaVersion = 3,
+                files = base.manifest.files.copy(
+                    ingredientRelationShards = listOf("relations-a.json"),
+                ),
+                counts = base.manifest.counts.copy(ingredientRelations = 1),
+            ),
+            ingredientRelations = listOf(relation),
+        )
+
+        val result = CatalogValidator.validate(bundle)
+        assertTrue(result.errors.joinToString(), result.isValid)
+    }
+
+    @Test
+    fun lineageCannotBeDeclaredBeforeSchemaThree() {
+        val base = bundleWithTwoIngredients()
+        val bundle = base.copy(
+            manifest = base.manifest.copy(
+                schemaVersion = 2,
+                files = base.manifest.files.copy(ingredientRelations = "relations.json"),
+                counts = base.manifest.counts.copy(ingredientRelations = 1),
+            ),
+            ingredientRelations = listOf(
+                CatalogIngredientRelationRecord(
+                    id = "lineage-child-parent",
+                    childIngredientId = "ing-child",
+                    parentIngredientId = "ing-parent",
+                    relationType = "FORM_OF",
+                    reviewedAt = "2026-08-08",
+                ),
+            ),
+        )
+
+        val result = CatalogValidator.validate(bundle)
+        assertFalse(result.isValid)
+        assertTrue(result.errors.any { it.contains("does not support ingredient lineage files") })
+    }
+
+    @Test
+    fun lineageRejectsUnknownReferencesSelfRelationAndUnsupportedType() {
+        val base = bundleWithTwoIngredients()
+        val bundle = base.copy(
+            manifest = base.manifest.copy(
+                schemaVersion = 3,
+                files = base.manifest.files.copy(ingredientRelations = "relations.json"),
+                counts = base.manifest.counts.copy(ingredientRelations = 3),
+            ),
+            ingredientRelations = listOf(
+                CatalogIngredientRelationRecord(
+                    id = "missing-child",
+                    childIngredientId = "missing",
+                    parentIngredientId = "ing-parent",
+                    relationType = "FORM_OF",
+                    reviewedAt = "2026-08-08",
+                ),
+                CatalogIngredientRelationRecord(
+                    id = "self",
+                    childIngredientId = "ing-parent",
+                    parentIngredientId = "ing-parent",
+                    relationType = "FORM_OF",
+                    reviewedAt = "2026-08-08",
+                ),
+                CatalogIngredientRelationRecord(
+                    id = "bad-type",
+                    childIngredientId = "ing-child",
+                    parentIngredientId = "ing-parent",
+                    relationType = "CONTAINS_ALLERGEN",
+                    reviewedAt = "2026-08-08",
+                ),
+            ),
+        )
+
+        val result = CatalogValidator.validate(bundle)
+        assertFalse(result.isValid)
+        assertTrue(result.errors.any { it.contains("missing child ingredient") })
+        assertTrue(result.errors.any { it.contains("same ingredient as child and parent") })
+        assertTrue(result.errors.any { it.contains("unsupported relationType") })
+    }
+
+    @Test
+    fun lineageRejectsCycles() {
+        val base = bundleWithTwoIngredients()
+        val bundle = base.copy(
+            manifest = base.manifest.copy(
+                schemaVersion = 3,
+                files = base.manifest.files.copy(ingredientRelations = "relations.json"),
+                counts = base.manifest.counts.copy(ingredientRelations = 2),
+            ),
+            ingredientRelations = listOf(
+                CatalogIngredientRelationRecord(
+                    id = "a-to-b",
+                    childIngredientId = "ing-child",
+                    parentIngredientId = "ing-parent",
+                    relationType = "FORM_OF",
+                    reviewedAt = "2026-08-08",
+                ),
+                CatalogIngredientRelationRecord(
+                    id = "b-to-a",
+                    childIngredientId = "ing-parent",
+                    parentIngredientId = "ing-child",
+                    relationType = "FORM_OF",
+                    reviewedAt = "2026-08-08",
+                ),
+            ),
+        )
+
+        val result = CatalogValidator.validate(bundle)
+        assertFalse(result.isValid)
+        assertTrue(result.errors.any { it.contains("lineage contains a cycle") })
+    }
+
+    @Test
     fun rejectsAmbiguousSingleAndShardedFileModes() {
         val base = validBundle()
         val bundle = base.copy(
@@ -117,6 +240,34 @@ class CatalogValidatorTest {
         assertTrue(IngredientTextNormalizer.normalize("  TOMÁTE   Rojo ") == "tomate rojo")
         assertTrue(IngredientTextNormalizer.normalize("nata cocina") == "nata cocina")
         assertTrue(IngredientTextNormalizer.normalize("nata cocina") != IngredientTextNormalizer.normalize("nata"))
+    }
+
+    private fun bundleWithTwoIngredients(): IngredientCatalogBundle {
+        val base = validBundle()
+        val ingredients = listOf(
+            CatalogIngredientRecord(
+                id = "ing-parent",
+                canonicalName = "Ingrediente padre",
+                normalizedName = "ingrediente padre",
+                categoryId = "cat-vegetables",
+                verificationStatus = "REVIEW_REQUIRED",
+                compositionVariability = "STABLE",
+            ),
+            CatalogIngredientRecord(
+                id = "ing-child",
+                canonicalName = "Ingrediente hijo",
+                normalizedName = "ingrediente hijo",
+                categoryId = "cat-vegetables",
+                verificationStatus = "REVIEW_REQUIRED",
+                compositionVariability = "STABLE",
+            ),
+        )
+        return base.copy(
+            manifest = base.manifest.copy(
+                counts = base.manifest.counts.copy(ingredients = ingredients.size),
+            ),
+            ingredients = ingredients,
+        )
     }
 
     private fun validBundle(): IngredientCatalogBundle {
