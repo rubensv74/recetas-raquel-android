@@ -116,7 +116,7 @@ data class IngredientCatalogBundle(
     val categories: List<CatalogCategoryRecord>,
     val ingredients: List<CatalogIngredientRecord>,
     val aliases: List<CatalogAliasRecord>,
-    val ingredientRelations: List<CatalogIngredientRelationRecord>,
+    val ingredientRelations: List<CatalogIngredientRelationRecord> = emptyList(),
     val safetyGroups: List<CatalogSafetyGroupRecord>,
     val safetySources: List<CatalogSafetySourceRecord>,
     val safetyRelations: List<CatalogSafetyRelationRecord>,
