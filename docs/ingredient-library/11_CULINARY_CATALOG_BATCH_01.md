@@ -1,6 +1,6 @@
 # 11 — CULINARY CATALOG BATCH 01
 
-**Status:** IMPLEMENTED — local validation pending  
+**Status:** VALIDATED — local gate passed  
 **Branch:** `program/ingredient-library-food-safety`  
 **Date:** 2026-08-08
 
@@ -119,7 +119,7 @@ Likewise, no fish/crustacean/mollusc species expansion is performed here. Those 
 
 ## Automated guardrails added
 
-The active catalog import test now verifies:
+The active catalog import test verifies:
 
 - schemaVersion 2;
 - catalogVersion 3;
@@ -132,30 +132,37 @@ The active catalog import test now verifies:
 - second import is idempotent;
 - an invalid catalog version 4 does not partially replace v3.
 
-Unit tests also cover both legacy single-file catalogs and schema-v2 sharded catalogs.
+Unit tests cover both legacy single-file catalogs and schema-v2 sharded catalogs.
 
-## Local validation gate
+## Validation evidence
 
-Run:
-
-```powershell
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" clean assembleDebug
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" testDebugUnitTest
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" lintDebug
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" compileDebugAndroidTestKotlin
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" connectedDebugAndroidTest
-.\gradlew -g "C:\Temp\gradle_home_ingredient_library" assembleRelease
-
-Get-ChildItem ".\app\schemas\com.rmm.recetasraquel.data.local.RecipeDatabase"
-git status -sb
-```
-
-Expected invariants:
+User-executed local validation completed on 2026-08-08 with:
 
 ```text
-connectedDebugAndroidTest     36/36 PASS
-Room schemas                  1.json + 2.json only
-working tree                  CLEAN
+clean assembleDebug                 PASS
+testDebugUnitTest                   PASS
+lintDebug                           PASS
+compileDebugAndroidTestKotlin       PASS
+connectedDebugAndroidTest           PASS — 36/36
+skipped                             0
+failed                              0
+assembleRelease                     PASS
+Room schemas                        1.json + 2.json only
+working tree                        CLEAN
+```
+
+The absence of `3.json` confirms that catalog v3 does not modify the Room schema.
+
+## Gate decision
+
+```text
+CULINARY CATALOG BATCH 01 v3         VALIDATED ✅
+ACTIVE CATALOG                       127 canonical ingredients / 122 aliases
+REVIEWED SAFETY RELATIONS            27
+NEXT CULINARY BATCH                  AUTHORIZED TO PREPARE
+PRODUCTION_CANDIDATE                 NOT YET
+MASS UNREVIEWED SAFETY MAPPING       NOT AUTHORIZED
+MERGE TO master                      NOT AUTHORIZED YET
 ```
 
 ## Next batch after validation
