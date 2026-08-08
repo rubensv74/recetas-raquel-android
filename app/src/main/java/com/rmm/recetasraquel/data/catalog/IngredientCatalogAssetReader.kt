@@ -42,6 +42,11 @@ class IngredientCatalogAssetReader(
             safetyGroups = readList(versionDirectory, manifest.files.safetyGroups),
             safetySources = readList(versionDirectory, manifest.files.safetySources),
             safetyRelations = readList(versionDirectory, manifest.files.safetyRelations),
+            regulatoryExemptions = readFileSet(
+                versionDirectory = versionDirectory,
+                singleFile = manifest.files.regulatoryExemptions,
+                shards = manifest.files.regulatoryExemptionShards,
+            ),
         )
     }
 
