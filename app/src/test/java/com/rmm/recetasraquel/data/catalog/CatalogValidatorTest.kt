@@ -155,6 +155,62 @@ class CatalogValidatorTest {
     }
 
     @Test
+    fun schemaFourCanDeclareStructuredRegulatoryExemptions() {
+        val result = CatalogValidator.validate(bundleWithRegulatoryExemption())
+        assertTrue(result.errors.joinToString(), result.isValid)
+    }
+
+    @Test
+    fun regulatoryExemptionsCannotBeDeclaredBeforeSchemaFour() {
+        val base = bundleWithRegulatoryExemption()
+        val bundle = base.copy(
+            manifest = base.manifest.copy(schemaVersion = 3),
+        )
+
+        val result = CatalogValidator.validate(bundle)
+        assertFalse(result.isValid)
+        assertTrue(result.errors.any { it.contains("does not support regulatory exemption files") })
+    }
+
+    @Test
+    fun regulatoryExemptionRequiresKnownReferencesSupportedEffectAndCoherentDates() {
+        val base = bundleWithRegulatoryExemption()
+        val invalid = base.regulatoryExemptions.single().copy(
+            ingredientId = "missing-ingredient",
+            safetyGroupId = "missing-group",
+            sourceId = "missing-source",
+            regulatoryEffect = "CLINICALLY_SAFE",
+            effectiveFrom = "2026-12-31",
+            effectiveTo = "2026-01-01",
+        )
+        val bundle = base.copy(regulatoryExemptions = listOf(invalid))
+
+        val result = CatalogValidator.validate(bundle)
+        assertFalse(result.isValid)
+        assertTrue(result.errors.any { it.contains("missing ingredient") })
+        assertTrue(result.errors.any { it.contains("missing safety group") })
+        assertTrue(result.errors.any { it.contains("missing source") })
+        assertTrue(result.errors.any { it.contains("unsupported regulatoryEffect") })
+        assertTrue(result.errors.any { it.contains("effectiveFrom after effectiveTo") })
+    }
+
+    @Test
+    fun regulatoryExemptionRejectsDuplicateConceptualMeaning() {
+        val base = bundleWithRegulatoryExemption()
+        val duplicate = base.regulatoryExemptions.single().copy(id = "exemption-2")
+        val bundle = base.copy(
+            manifest = base.manifest.copy(
+                counts = base.manifest.counts.copy(regulatoryExemptions = 2),
+            ),
+            regulatoryExemptions = base.regulatoryExemptions + duplicate,
+        )
+
+        val result = CatalogValidator.validate(bundle)
+        assertFalse(result.isValid)
+        assertTrue(result.errors.any { it.contains("Duplicate regulatory exemption") })
+    }
+
+    @Test
     fun rejectsAmbiguousSingleAndShardedFileModes() {
         val base = validBundle()
         val bundle = base.copy(
@@ -267,6 +323,61 @@ class CatalogValidatorTest {
                 counts = base.manifest.counts.copy(ingredients = ingredients.size),
             ),
             ingredients = ingredients,
+        )
+    }
+
+    private fun bundleWithRegulatoryExemption(): IngredientCatalogBundle {
+        val base = validBundle()
+        val ingredient = CatalogIngredientRecord(
+            id = "ing-refined-soy-oil-test",
+            canonicalName = "Aceite de soja totalmente refinado de prueba",
+            normalizedName = "aceite de soja totalmente refinado de prueba",
+            categoryId = "cat-vegetables",
+            verificationStatus = "REVIEW_REQUIRED",
+            compositionVariability = "STABLE",
+        )
+        val group = CatalogSafetyGroupRecord(
+            id = "sg-soy-test",
+            code = "SOYBEANS",
+            displayName = "Soja",
+            conditionType = "FOOD_ALLERGY",
+            regulatoryStatus = "EU_ANNEX_II",
+            jurisdiction = "EU",
+        )
+        val source = CatalogSafetySourceRecord(
+            id = "source-eu-test",
+            organization = "European Union",
+            title = "Regulation test source",
+            officialReference = "TEST",
+            jurisdiction = "EU",
+            reviewDate = "2026-08-08",
+        )
+        val exemption = CatalogRegulatoryExemptionRecord(
+            id = "exemption-1",
+            ingredientId = ingredient.id,
+            safetyGroupId = group.id,
+            jurisdiction = "EU",
+            regulatoryEffect = "EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION",
+            conditions = "Synthetic validator fixture: applies only when stated processing conditions are met.",
+            sourceId = source.id,
+            effectiveFrom = "2025-04-01",
+            reviewedAt = "2026-08-08",
+        )
+        return base.copy(
+            manifest = base.manifest.copy(
+                schemaVersion = 4,
+                files = base.manifest.files.copy(regulatoryExemptions = "regulatory-exemptions.json"),
+                counts = base.manifest.counts.copy(
+                    ingredients = 1,
+                    safetyGroups = 1,
+                    safetySources = 1,
+                    regulatoryExemptions = 1,
+                ),
+            ),
+            ingredients = listOf(ingredient),
+            safetyGroups = listOf(group),
+            safetySources = listOf(source),
+            regulatoryExemptions = listOf(exemption),
         )
     }
 
