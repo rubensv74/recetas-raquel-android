@@ -56,7 +56,9 @@ Objetivos principales:
 - alertas no absolutas sobre alérgenos, derivados, PAL, reactividad cruzada e información desconocida;
 - migración conservadora con pérdida de datos = 0;
 - catálogo versionado independiente del esquema Room;
-- funcionamiento completamente offline.
+- funcionamiento completamente offline;
+- dossier técnico de decisiones de seguridad alimentaria reutilizable como soporte de auditoría/registro;
+- proceso periódico y por eventos para revisar y actualizar conocimiento sensible.
 
 Documentación de control:
 
@@ -78,6 +80,8 @@ Batch 01 culinario v3                VALIDADO — 36/36 instrumented PASS
 Batch 02 culinario v4                VALIDADO en gate combinado
 Decisión de linaje                   OPCIÓN B ACEPTADA
 Room v2 -> v3 + linaje               EJECUCIÓN GREEN — 39/39; revisión/versionado 3.json pendiente
+Dossier soporte regulatorio          BASE DOCUMENTAL CREADA — refresh oficial antes de uso externo
+Mantenimiento conocimiento sensible REQUISITO REGISTRADO — arquitectura de distribución pendiente
 Mapeo masivo no revisado             NO AUTORIZADO
 Merge a master                       NO AUTORIZADO todavía
 ```
@@ -169,6 +173,22 @@ Room schema export             PASS — 1.json, 2.json, 3.json
 El único cierre pendiente de Room v3 es revisar el `3.json` generado localmente contra entidades y SQL de migración y después versionarlo. Hasta completar esa revisión no se crea un catálogo v5 con aristas reales de linaje.
 
 Ver `docs/ingredient-library/14_LINEAGE_GRAPH_IMPLEMENTATION.md` y `15_ROOM_V3_VALIDATION_GATE.md`.
+
+### Dossier técnico de seguridad alimentaria para soporte de registro
+
+Se ha creado `docs/food-safety/REGISTRATION_SUPPORT_FOOD_SAFETY_DOSSIER.md` como base consolidada de decisiones sobre los 14 grupos UE, papel de AESAN, separación alergia/intolerancia/celiaquía, evidencia, inferencias prohibidas, lenguaje seguro, trazabilidad y artefactos que deberían acompañar una futura auditoría o registro.
+
+El dossier no afirma cumplimiento regulatorio por sí solo. Antes de cualquier uso externo debe realizarse un `regulatory refresh` con fuentes oficiales vigentes en la fecha de presentación.
+
+### Mantenimiento periódico del conocimiento sensible
+
+Se ha registrado el requisito de revisar formalmente la información sensible al menos una vez al año y adicionalmente cuando existan cambios regulatorios, alertas o nueva evidencia oficial material.
+
+La actualización nunca será automática desde una publicación hacia una relación clínica: la evidencia debe pasar por revisión, clasificación, validación y una nueva versión inmutable del catálogo.
+
+El mecanismo de distribución de esos catálogos actualizados **no está decidido**. Cuando llegue el momento se abrirá una ADR para comparar, como mínimo, actualización empaquetada con la app, catálogo remoto firmado o solución híbrida. Esta decisión será un gate arquitectónico porque afecta al principio offline-first, autenticidad, rollback y seguridad.
+
+Ver `docs/food-safety/SAFETY_KNOWLEDGE_MAINTENANCE_REQUIREMENTS.md` y `CATALOG_MAINTENANCE_GUIDE.md`.
 
 ## Sprints futuros congelados
 
