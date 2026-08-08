@@ -1,0 +1,51 @@
+{
+  "catalogId": "rmm-es-eu",
+  "schemaVersion": 3,
+  "catalogVersion": 6,
+  "releaseStatus": "DRAFT",
+  "locale": "es-ES",
+  "jurisdiction": "EU-ES",
+  "reviewedAt": "2026-08-08",
+  "files": {
+    "categories": "categories.json",
+    "ingredientShards": [
+      "ingredients-regulatory.json",
+      "ingredients-vegetables.json",
+      "ingredients-fruits.json",
+      "ingredients-herbs-spices.json",
+      "ingredients-cereals-legumes.json",
+      "ingredients-meat-poultry.json",
+      "ingredients-seeds-spices-extra.json",
+      "ingredients-mushrooms-vegetables-extra.json",
+      "ingredients-fruits-extra.json",
+      "ingredients-lineage-cuts.json",
+      "ingredients-reviewed-flours.json"
+    ],
+    "aliasShards": [
+      "aliases-regulatory.json",
+      "aliases-produce.json",
+      "aliases-pantry.json",
+      "aliases-meat-poultry.json",
+      "aliases-seeds-spices-extra.json",
+      "aliases-produce-extra.json",
+      "aliases-lineage-cuts.json",
+      "aliases-reviewed-flours.json"
+    ],
+    "ingredientRelationShards": [
+      "ingredient-relations-cuts.json",
+      "ingredient-relations-flours.json"
+    ],
+    "safetyGroups": "safety-groups.json",
+    "safetySources": "safety-sources.json",
+    "safetyRelations": "safety-relations.json"
+  },
+  "counts": {
+    "categories": 20,
+    "ingredients": 252,
+    "aliases": 245,
+    "ingredientRelations": 25,
+    "safetyGroups": 14,
+    "safetySources": 3,
+    "safetyRelations": 33
+  }
+}
