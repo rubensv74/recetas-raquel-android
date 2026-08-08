@@ -2,6 +2,7 @@ package com.rmm.recetasraquel.data.catalog
 
 import com.rmm.recetasraquel.data.local.dao.IngredientCatalogDao
 import com.rmm.recetasraquel.data.local.entity.CatalogIngredientEntity
+import com.rmm.recetasraquel.data.local.entity.CatalogIngredientRelationEntity
 import com.rmm.recetasraquel.data.local.entity.CatalogMetadataEntity
 import com.rmm.recetasraquel.data.local.entity.FoodSafetyGroupEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientAliasEntity
@@ -46,6 +47,7 @@ class CatalogImporter(
             categories = bundle.categories.map { it.toEntity() },
             ingredients = bundle.ingredients.map { it.toEntity(manifest.catalogVersion) },
             aliases = bundle.aliases.map { it.toEntity() },
+            ingredientRelations = bundle.ingredientRelations.map { it.toEntity() },
             safetyGroups = bundle.safetyGroups.map { it.toEntity() },
             safetySources = bundle.safetySources.map { it.toEntity() },
             safetyRelations = bundle.safetyRelations.map { it.toEntity() },
@@ -92,6 +94,17 @@ class CatalogImporter(
         normalizedAlias = normalizedAlias,
         languageCode = languageCode,
         aliasType = aliasType,
+    )
+
+    private fun CatalogIngredientRelationRecord.toEntity() = CatalogIngredientRelationEntity(
+        id = id,
+        childIngredientId = childIngredientId,
+        parentIngredientId = parentIngredientId,
+        relationType = relationType,
+        reviewedAt = reviewedAt,
+        sourceReference = sourceReference,
+        notes = notes,
+        isActive = isActive,
     )
 
     private fun CatalogSafetyGroupRecord.toEntity() = FoodSafetyGroupEntity(
