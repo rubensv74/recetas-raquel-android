@@ -1,6 +1,6 @@
 # 20 — ROOM V4: CAPA DE EXENCIONES REGULATORIAS
 
-**Estado:** IMPLEMENTADO — gate local en corrección  
+**Estado:** GATE DE EJECUCIÓN SUPERADO — revisión de `4.json` pendiente  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-08
 
@@ -99,30 +99,20 @@ MIGRATION_3_4
 Room v1 -> v2 -> v3 -> v4
 ```
 
-Debe comprobar:
+Comprueba preservación de datos legacy, existencia vacía de `regulatory_exemptions`, integridad referencial y `PRAGMA user_version = 4`.
 
-- preservación de la receta legacy;
-- preservación de los ingredientes legacy y sus orígenes personalizados;
-- preservación del grafo de linaje existente;
-- existencia vacía de `regulatory_exemptions`;
-- columnas regulatorias esperadas;
-- `PRAGMA foreign_key_check` sin errores;
-- `PRAGMA user_version = 4`.
-
-La prueba histórica `IngredientLibraryMigration23Test` también debe abrir correctamente una base física v2 con la versión actual de `RecipeDatabase`. Desde Room v4 eso requiere registrar la cadena completa:
+La prueba histórica `IngredientLibraryMigration23Test` abre una base física v2 con la versión actual de `RecipeDatabase` registrando la cadena completa:
 
 ```text
 MIGRATION_2_3
 MIGRATION_3_4
 ```
 
-La prueba conserva su objetivo original —verificar que el contrato `sourceId/sourceDetails` de v2 se preserva— y añade la comprobación de que la nueva tabla regulatoria queda vacía al llegar a v4.
+Conserva su objetivo original —verificar el contrato `sourceId/sourceDetails`— y añade la comprobación de que la nueva tabla regulatoria queda vacía al llegar a v4.
 
 ## 8. Catálogo
 
 `ingredient-catalog/v6/` permanece inmutable y sigue siendo el catálogo activo durante este gate.
-
-Room v4 y `catalogVersion` continúan siendo conceptos independientes:
 
 ```text
 Room schema version = 4
@@ -130,55 +120,11 @@ active catalogVersion = 6
 active catalog schemaVersion = 3
 ```
 
-La evolución del formato de catálogo para transportar exenciones se realizará únicamente después de validar Room v4.
+La evolución del formato de catálogo para transportar exenciones se realizará únicamente después de revisar y versionar `4.json`.
 
-## 9. Gate local requerido
+## 9. Primera ejecución del gate — 2026-08-08
 
-Gate completo:
-
-```text
-clean assembleDebug
-testDebugUnitTest
-lintDebug
-compileDebugAndroidTestKotlin
-connectedDebugAndroidTest
-assembleRelease
-```
-
-Resultados esperados:
-
-```text
-39 instrumented tests PASS
-0 failed
-0 skipped
-```
-
-Room debe generar un nuevo:
-
-```text
-app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/4.json
-```
-
-El archivo `4.json` deberá revisarse antes de versionarlo.
-
-## 10. Primera ejecución del gate — 2026-08-08
-
-Resultados de producción/build:
-
-```text
-assembleDebug                  PASS
-testDebugUnitTest              PASS
-lintDebug                      PASS
-compileDebugAndroidTestKotlin  PASS
-assembleRelease                PASS
-Room schema export             PASS — 4.json generado
-```
-
-La suite instrumentada ejecutó 39 pruebas y terminó con **1 fallo**. El fallo no estaba en `MIGRATION_3_4`: la prueba histórica `IngredientLibraryMigration23Test` seguía construyendo la base actual con solo `MIGRATION_2_3`. Como `RecipeDatabase` ya tiene versión 4, Room solicitó correctamente una ruta completa `2 -> 4` y abortó con:
-
-```text
-A migration from 2 to 4 was required but not found
-```
+La primera ejecución terminó con 1 fallo instrumentado. La causa fue exclusivamente una prueba histórica que registraba solo `MIGRATION_2_3` aunque `RecipeDatabase` ya estaba en v4. Room solicitó correctamente una ruta completa `2 -> 4`.
 
 Corrección aplicada:
 
@@ -190,7 +136,39 @@ IngredientLibraryMigration23Test
   regulatory_exemptions count = 0
 ```
 
-No se ha modificado código de producción como consecuencia de este fallo; la corrección afecta únicamente al contrato de la prueba de migración histórica.
+No fue necesario modificar código de producción para resolver ese fallo.
+
+## 10. Segunda ejecución correctiva — SUPERADA
+
+Evidencia local del 2026-08-08:
+
+```text
+compileDebugAndroidTestKotlin  PASS
+migrate2To4... targeted test  PASS — 1/1
+connectedDebugAndroidTest      PASS — 39/39, 0 skipped, 0 failed
+```
+
+Combinado con la primera ejecución del mismo cambio:
+
+```text
+assembleDebug                  PASS
+testDebugUnitTest              PASS
+lintDebug                      PASS
+compileDebugAndroidTestKotlin  PASS
+connectedDebugAndroidTest      PASS — 39/39
+assembleRelease                PASS
+Room schema export             PASS — 4.json generado
+```
+
+Por tanto, el **gate de ejecución de Room v4 está verde**.
+
+Estado local esperado y confirmado:
+
+```text
+?? app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/4.json
+```
+
+El archivo no se versionará hasta completar su revisión estructural.
 
 ## 11. Criterios de revisión de 4.json
 
@@ -202,7 +180,21 @@ Debe existir `regulatory_exemptions` con:
 - índice único conceptual sobre ingrediente + grupo + jurisdicción + efecto;
 - ausencia de cambios inesperados en las demás entidades.
 
-## 12. Siguiente paso tras gate verde
+La revisión también debe confirmar `version = 4` y que el cambio respecto de `3.json` es exclusivamente el esperado para esta entidad, además de los metadatos de Room.
+
+## 12. Estado del gate
+
+```text
+MIGRACIÓN 3 -> 4                 PASS
+TEST DIRIGIDO 2 -> 4             PASS — 1/1
+SUITE INSTRUMENTADA              PASS — 39/39
+BUILD / UNIT / LINT / RELEASE    PASS
+GENERACIÓN 4.json                PASS
+AUDITORÍA DE 4.json              PENDING
+VERSIONADO DE 4.json             PENDING
+```
+
+## 13. Siguiente paso
 
 Después de revisar y versionar `4.json`:
 
