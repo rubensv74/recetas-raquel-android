@@ -1,6 +1,6 @@
 # 18 — CATÁLOGO V6: HARINAS REVISADAS Y DERIVADOS REGULADOS
 
-**Estado:** IMPLEMENTADO — validación local pendiente  
+**Estado:** VALIDADO  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-08
 
@@ -42,15 +42,15 @@ Todas permanecen `REVIEW_REQUIRED`. El hecho de disponer de una relación legal 
 Cada harina incorpora una arista no clínica `DERIVED_FROM` hacia su materia prima:
 
 ```text
-Harina de trigo          DERIVED_FROM Trigo
-Harina de espelta        DERIVED_FROM Espelta
-Harina de trigo khorasan DERIVED_FROM Trigo khorasan
-Harina de centeno        DERIVED_FROM Centeno
-Harina de cebada         DERIVED_FROM Cebada
-Harina de avena          DERIVED_FROM Avena
-Harina de arroz          DERIVED_FROM Arroz
-Harina de maíz           DERIVED_FROM Maíz
-Harina de garbanzo       DERIVED_FROM Garbanzo
+Harina de trigo           DERIVED_FROM Trigo
+Harina de espelta         DERIVED_FROM Espelta
+Harina de trigo khorasan  DERIVED_FROM Trigo khorasan
+Harina de centeno         DERIVED_FROM Centeno
+Harina de cebada          DERIVED_FROM Cebada
+Harina de avena           DERIVED_FROM Avena
+Harina de arroz           DERIVED_FROM Arroz
+Harina de maíz            DERIVED_FROM Maíz
+Harina de garbanzo        DERIVED_FROM Garbanzo
 Harina de trigo sarraceno DERIVED_FROM Trigo sarraceno
 ```
 
@@ -108,7 +108,7 @@ No se incluyen todavía:
 - tofu, tahini u otros ingredientes cuya composición/procesamiento requiera tratamiento adicional;
 - productos comerciales o de marca.
 
-## 8. Versionado esperado
+## 8. Versionado validado
 
 ```text
 catalogVersion        6
@@ -123,30 +123,26 @@ safetySources          3
 safetyRelations       33
 ```
 
-Room no cambia. Por tanto la historia de esquemas debe seguir siendo exactamente `1.json`, `2.json`, `3.json`.
+Room no cambia. La historia de esquemas sigue siendo exactamente `1.json`, `2.json`, `3.json`.
 
-## 9. Gate de validación
+## 9. Gate de validación — SUPERADO
 
-Antes de considerar v6 validado debe pasar:
+Validación local ejecutada el 2026-08-08:
 
 ```text
-assembleDebug
-testDebugUnitTest
-lintDebug
-compileDebugAndroidTestKotlin
-connectedDebugAndroidTest
-assembleRelease
+assembleDebug                  PASS
+testDebugUnitTest              PASS
+lintDebug                      PASS
+compileDebugAndroidTestKotlin  PASS
+connectedDebugAndroidTest      PASS — 39/39, 0 skipped, 0 failed
+assembleRelease                PASS
+Room schemas                   PASS — 1.json, 2.json, 3.json únicamente
+working tree                   clean
 ```
 
-Además se comprobará:
+La suite instrumentada valida además la importación del bundle, la idempotencia, el rollback de un catálogo posterior inválido, la navegación de linaje y la separación entre relaciones de linaje y relaciones de seguridad.
 
-- importación 252/245/25/33;
-- idempotencia;
-- rollback frente a un bundle posterior inválido;
-- navegación `Harina de trigo -> Trigo`;
-- una relación legal explícita para `Harina de trigo`;
-- cero relación universal de gluten para `Harina de garbanzo` y `Harina de trigo sarraceno`;
-- ausencia de Room `4.json`.
+Los avisos `Unable to strip ... libandroidx.graphics.path.so` observados en debug/release no hicieron fallar el empaquetado; ambos builds terminaron en `BUILD SUCCESSFUL`.
 
 ## 10. Principio preservado
 
@@ -155,3 +151,9 @@ linaje culinario != evidencia de seguridad
 ```
 
 Incluso cuando ambos grafos describen un mismo ingrediente, cada arista se crea, revisa y versiona de forma independiente.
+
+## 11. Siguiente frontera identificada
+
+La revisión de aceites y otros derivados muestra un nuevo requisito de modelado: el Anexo II contiene **excepciones regulatorias condicionadas**, por ejemplo el aceite y la grasa de soja totalmente refinados. Una excepción de etiquetado no debe modelarse simplemente como ausencia de una relación positiva ni interpretarse como una afirmación clínica de seguridad.
+
+Por ello, antes de incorporar derivados cuya situación dependa de una exención legal, se abre una decisión arquitectónica específica sobre cómo representar exenciones regulatorias de forma estructurada, trazable y separada de la evidencia clínica.
