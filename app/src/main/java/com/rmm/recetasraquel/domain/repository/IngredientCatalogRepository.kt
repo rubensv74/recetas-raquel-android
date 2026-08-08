@@ -1,5 +1,7 @@
 package com.rmm.recetasraquel.domain.repository
 
+import com.rmm.recetasraquel.domain.ingredient.IngredientLineageRelation
+
 data class IngredientCatalogImportSummary(
     val catalogVersion: Int,
     val status: Status,
@@ -13,4 +15,6 @@ data class IngredientCatalogImportSummary(
 
 interface IngredientCatalogRepository {
     suspend fun ensureCatalogImported(): Result<IngredientCatalogImportSummary>
+    suspend fun getParentRelations(ingredientId: String): Result<List<IngredientLineageRelation>>
+    suspend fun getChildRelations(ingredientId: String): Result<List<IngredientLineageRelation>>
 }
