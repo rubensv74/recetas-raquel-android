@@ -1,6 +1,6 @@
 # 15 — ROOM V3 + LINEAGE VALIDATION GATE
 
-**Status:** CORRECTIVE RERUN REQUIRED  
+**Status:** SECOND CORRECTIVE RERUN REQUIRED  
 **Branch:** `program/ingredient-library-food-safety`  
 **Date:** 2026-08-08
 
@@ -19,7 +19,7 @@ This gate validates together:
 
 ## First local execution — 2026-08-08
 
-The first execution produced the following result:
+The first execution produced:
 
 ```text
 assembleDebug                  PASS
@@ -31,15 +31,45 @@ assembleRelease                PASS
 Room schema export             PASS — 1.json, 2.json, 3.json
 ```
 
-The three failures were diagnosed as two concrete defects rather than a Room migration failure:
+The three failures were diagnosed as two concrete fixture/catalog defects rather than a Room migration failure:
 
-1. Catalog v4 contained 249 aliases while its immutable-version plan and manifest declared 220. The source was a stale `aliases-pantry.json` copied from an earlier, pre-review draft. It contained exactly 29 presentation aliases that had already been removed during the validated v3 review. Catalog v4 now reuses the validated v3 pantry alias shard, restoring the intended total of 220 aliases.
-2. The synthetic schema-v3 lineage fixture omitted explicit `isActive` fields. Gson does not apply Kotlin constructor defaults when materializing these records reflectively, so the test ingredients/relation were imported inactive. The fixture now declares `isActive=true` explicitly, matching the shipped catalog contract.
-3. The rollback test failed only because the initial real v4 import was blocked by the alias-count mismatch; it should recover automatically after correction 1.
+1. Catalog v4 contained 249 aliases while the manifest declared 220. A stale pantry shard contained 29 presentation aliases already removed during the validated v3 review. The v4 pantry shard was replaced with the reviewed version, restoring 220 aliases.
+2. The synthetic schema-v3 lineage fixture omitted explicit `isActive` values. Gson materialized them as false instead of applying Kotlin constructor defaults. The fixture now declares `isActive=true` explicitly.
+3. The rollback failure was a consequence of defect 1.
 
-No migration SQL, Room entity, lineage relation type or safety propagation rule was changed as a consequence of these failures.
+No migration SQL, Room entity, lineage type or food-safety propagation rule changed.
 
-The generated `3.json` remains intentionally untracked until the corrective rerun is completely green and the schema is reviewed.
+## Second local execution — 2026-08-08
+
+The corrected catalog/lineage rerun produced:
+
+```text
+assembleDebug                  PASS
+testDebugUnitTest              PASS
+lintDebug                      PASS
+compileDebugAndroidTestKotlin  PASS
+connectedDebugAndroidTest      FAIL — UI test/process crash after 27/39
+assembleRelease                PASS
+Room schema export             PASS — 1.json, 2.json, 3.json
+```
+
+The previous three catalog/lineage failures did not recur before the run reached the UI suite. The only reported failing test was:
+
+```text
+RecipeCatalogUiTest.favoritesCategoryAndClearFiltersWork
+```
+
+The test clears a text query while the software keyboard may remain visible and then immediately requires the second recipe card to be displayed. On the current AVD this can reduce the `LazyColumn` viewport and make the assertion depend on keyboard/viewport state rather than on the filter behavior being tested. The test has therefore been stabilized without changing production UI behavior:
+
+1. after clearing filters, wait for `2 resultados` to prove the unfiltered state is restored;
+2. locate `recipe_tarta` by stable test tag;
+3. `performScrollTo()` before asserting visibility.
+
+This is test-harness hardening only; no application behavior, Room schema, catalog content, lineage model or safety rule changed.
+
+Because the instrumentation process also reported a crash after the UI failure, a complete rerun is required rather than treating the remaining 12 tests as passed.
+
+The generated `3.json` remains intentionally untracked until the complete instrumented gate is green and the schema is reviewed.
 
 ## Corrective rerun commands
 
@@ -62,15 +92,13 @@ git status -sb
 
 ## Expected schema result
 
-After compilation Room should export:
-
 ```text
 1.json
 2.json
 3.json
 ```
 
-`3.json` is expected to remain untracked until its generated structure is reviewed against the migration and entity model.
+`3.json` must remain untracked until its generated structure is reviewed against the migration and entity model.
 
 ## Required PASS conditions
 
@@ -79,11 +107,9 @@ assembleDebug                  PASS
 testDebugUnitTest              PASS
 lintDebug                      PASS
 compileDebugAndroidTestKotlin  PASS
-connectedDebugAndroidTest      PASS
+connectedDebugAndroidTest      PASS — all 39 tests, 0 failed, 0 unexpectedly skipped
 assembleRelease                PASS
 ```
-
-No exact instrumented-test total is frozen in this document because new migration/origin/lineage tests have been added since the previous 36-test gate. The acceptance criterion is zero failed and zero unexpectedly skipped tests.
 
 ## Functional invariants exercised
 
@@ -92,7 +118,7 @@ No exact instrumented-test total is frozen in this document because new migratio
 3. `catalog_ingredient_relations` exists and has valid foreign keys/indexes.
 4. a schema-v3 test catalog can persist and traverse a `CUT_OF` edge.
 5. that lineage edge creates zero safety relations by itself.
-6. catalog v4 still imports with 227 ingredients, 220 aliases and 27 reviewed safety relations.
+6. catalog v4 imports with 227 ingredients, 220 aliases and 27 reviewed safety relations.
 7. old free-text recipe editing persists a dedicated `recipe-custom:<ingredientId>` origin without foreign-key failure.
 8. a dual recipe ingredient origin is rejected before persistence.
 
