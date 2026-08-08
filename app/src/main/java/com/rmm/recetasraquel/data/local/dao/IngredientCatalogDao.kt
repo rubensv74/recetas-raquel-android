@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import com.rmm.recetasraquel.data.local.entity.CatalogIngredientEntity
+import com.rmm.recetasraquel.data.local.entity.CatalogIngredientRelationEntity
 import com.rmm.recetasraquel.data.local.entity.CatalogMetadataEntity
 import com.rmm.recetasraquel.data.local.entity.FoodSafetyGroupEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientAliasEntity
@@ -32,6 +33,9 @@ interface IngredientCatalogDao {
     @Query("SELECT COUNT(*) FROM ingredient_aliases")
     suspend fun countAliases(): Int
 
+    @Query("SELECT COUNT(*) FROM catalog_ingredient_relations WHERE isActive = 1")
+    suspend fun countActiveIngredientRelations(): Int
+
     @Query("SELECT COUNT(*) FROM food_safety_groups WHERE isActive = 1")
     suspend fun countActiveSafetyGroups(): Int
 
@@ -46,6 +50,9 @@ interface IngredientCatalogDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertAliases(items: List<IngredientAliasEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertIngredientRelations(items: List<CatalogIngredientRelationEntity>)
 
     @Upsert
     suspend fun upsertSafetyGroups(items: List<FoodSafetyGroupEntity>)
@@ -71,6 +78,9 @@ interface IngredientCatalogDao {
     @Query("DELETE FROM ingredient_aliases")
     suspend fun deleteAllAliases()
 
+    @Query("DELETE FROM catalog_ingredient_relations")
+    suspend fun deleteAllIngredientRelations()
+
     @Query("DELETE FROM ingredient_safety_relations")
     suspend fun deleteAllSafetyRelations()
 
@@ -79,12 +89,14 @@ interface IngredientCatalogDao {
         categories: List<IngredientCategoryEntity>,
         ingredients: List<CatalogIngredientEntity>,
         aliases: List<IngredientAliasEntity>,
+        ingredientRelations: List<CatalogIngredientRelationEntity>,
         safetyGroups: List<FoodSafetyGroupEntity>,
         safetySources: List<SafetySourceEntity>,
         safetyRelations: List<IngredientSafetyRelationEntity>,
         metadata: CatalogMetadataEntity,
     ) {
         deleteAllSafetyRelations()
+        deleteAllIngredientRelations()
         deleteAllAliases()
         deactivateAllIngredients()
         deactivateAllCategories()
@@ -95,6 +107,7 @@ interface IngredientCatalogDao {
         if (safetySources.isNotEmpty()) upsertSafetySources(safetySources)
         if (ingredients.isNotEmpty()) upsertIngredients(ingredients)
         if (aliases.isNotEmpty()) insertAliases(aliases)
+        if (ingredientRelations.isNotEmpty()) insertIngredientRelations(ingredientRelations)
         if (safetyRelations.isNotEmpty()) insertSafetyRelations(safetyRelations)
         upsertMetadata(metadata)
     }
