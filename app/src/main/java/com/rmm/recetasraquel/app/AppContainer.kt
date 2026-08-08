@@ -28,14 +28,18 @@ class AppContainer(context: Context) {
         idGenerator = idGenerator,
         timeProvider = timeProvider,
     )
+    private val catalogDao = database.ingredientCatalogDao()
     private val catalogImporter = CatalogImporter(
         reader = IngredientCatalogAssetReader(
             source = AndroidAssetCatalogTextSource(context.assets),
         ),
-        dao = database.ingredientCatalogDao(),
+        dao = catalogDao,
         timeProvider = timeProvider,
     )
-    val ingredientCatalogRepository: IngredientCatalogRepository = LocalIngredientCatalogRepository(catalogImporter)
+    val ingredientCatalogRepository: IngredientCatalogRepository = LocalIngredientCatalogRepository(
+        importer = catalogImporter,
+        dao = catalogDao,
+    )
     val photoStorage: RecipePhotoStorage = LocalRecipePhotoStorage(context)
     val saveRecipeUseCase: SaveRecipeOperation = SaveRecipeUseCase(recipeRepository, photoStorage)
     val demoDataController: DemoDataController? = DemoDataControllerFactory.create(recipeRepository)
