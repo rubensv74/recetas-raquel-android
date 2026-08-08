@@ -53,7 +53,7 @@ class CatalogV7RegulatoryExemptionTest {
             assertEquals("EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION", exemption.regulatoryEffect)
             assertEquals("EU_MUSTARD_2024_2512", exemption.sourceId)
             assertEquals("2025-04-01", exemption.effectiveFrom)
-            assertEquals(null, exemption.effectiveTo)
+            assertTrue(exemption.effectiveTo == null)
             assertTrue(exemption.conditions.contains("85 %"))
             assertTrue(exemption.conditions.contains("E470a"))
             assertTrue(exemption.conditions.contains("E471"))
