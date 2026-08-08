@@ -1,6 +1,6 @@
 # 24 — CATÁLOGO V7: PRIMERA EXENCIÓN REGULATORIA REAL
 
-**Estado:** IMPLEMENTADO EN STAGING — validación local pendiente  
+**Estado:** STAGING VALIDADO — ACTIVACIÓN IMPLEMENTADA, gate post-activación pendiente  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-08
 
@@ -12,7 +12,7 @@ Crear la primera versión de catálogo que usa `schemaVersion = 4` con una exenc
 2. la infraestructura de catálogo schema v4;
 3. el `regulatory refresh` específico del Reglamento Delegado (UE) 2024/2512.
 
-El catálogo v6 permanece inmutable y sigue siendo el catálogo activo hasta que v7 supere su gate.
+El catálogo v6 permanece como versión histórica inmutable. V7 superó el gate de staging y posteriormente se modificó el lector predeterminado para activarlo; esa activación requiere un último gate local.
 
 ## 2. Delta desde v6
 
@@ -115,13 +115,13 @@ La revisión confirmó el efecto, las condiciones y la fecha de aplicación ante
 
 ## 8. Prueba instrumentada específica
 
-Se añade:
+Se añadió:
 
 ```text
 CatalogV7RegulatoryExemptionTest
 ```
 
-La prueba lee explícitamente `ingredient-catalog/v7` sin cambiar todavía el catálogo activo. Debe verificar:
+La prueba verifica:
 
 - validación completa del bundle;
 - 253 ingredientes;
@@ -135,21 +135,46 @@ La prueba lee explícitamente `ingredient-catalog/v7` sin cambiar todavía el ca
 - persistencia transaccional en Room v4;
 - metadata final con `catalogVersion = 7`.
 
-## 9. Catálogo activo durante el gate
+Después del gate de staging, la prueba se cambió para usar el lector y el importador **sin ruta explícita**, de forma que ahora comprueba además que v7 es el catálogo predeterminado activo.
 
-Se mantiene deliberadamente:
+## 9. Gate de staging ejecutado
+
+Resultado local comunicado el 2026-08-08:
 
 ```text
-IngredientCatalogAssetReader.DEFAULT_VERSION_DIRECTORY = ingredient-catalog/v6
+assembleDebug                  PASS
+testDebugUnitTest              PASS
+lintDebug                      PASS
+compileDebugAndroidTestKotlin  PASS
+connectedDebugAndroidTest      PASS — 41/41, 0 skipped, 0 failed
+assembleRelease                PASS
+Room schemas                   1.json, 2.json, 3.json, 4.json
+working tree                   clean
 ```
 
-Así, una versión v7 todavía no validada no se convierte en catálogo predeterminado de la aplicación.
+La invocación aislada inicial de `CatalogV7RegulatoryExemptionTest` falló antes de ejecutar pruebas porque PowerShell/Gradle interpretó incorrectamente el argumento `-Pandroid.testInstrumentationRunnerArguments.class=...` al no ir protegido. Ese fallo no fue un fallo del test ni del catálogo. La suite completa ejecutó 41 pruebas —incluida la nueva prueba de v7— y terminó con 0 fallos.
 
-Después del gate verde se hará un cambio separado para activar v7 y se repetirá la validación necesaria.
+## 10. Activación de v7
 
-## 10. Gate requerido
+Tras superar el gate de staging se cambió:
 
-Ejecutar:
+```text
+IngredientCatalogAssetReader.DEFAULT_VERSION_DIRECTORY
+```
+
+para apuntar a:
+
+```text
+ingredient-catalog/v7
+```
+
+La cobertura histórica de v6 permanece explícitamente fijada a `ingredient-catalog/v6` dentro de `IngredientCatalogImportTest`, evitando que la activación de v7 elimine la regresión histórica.
+
+La prueba `CatalogV7RegulatoryExemptionTest` usa ahora la ruta predeterminada y demuestra que la activación resuelve realmente v7.
+
+## 11. Gate post-activación requerido
+
+Antes de declarar v7 completamente cerrado debe ejecutarse un gate final después de activar el lector:
 
 ```text
 clean assembleDebug
@@ -160,41 +185,27 @@ connectedDebugAndroidTest
 assembleRelease
 ```
 
-Con la nueva prueba se esperan:
+Resultado esperado:
 
 ```text
 41 instrumented tests
 0 failed
 0 skipped
+Room: 1.json, 2.json, 3.json, 4.json
+sin 5.json
 ```
 
-Room no cambia:
+## 12. Criterio de cierre
+
+V7 quedará completamente validado cuando el gate post-activación confirme simultáneamente:
 
 ```text
-1.json
-2.json
-3.json
-4.json
-```
-
-No debe aparecer `5.json`.
-
-## 11. Criterio de aprobación
-
-El staging v7 solo podrá activarse si:
-
-```text
-CatalogValidator v7                PASS
-persistencia de exención           PASS
-separación exención/seguridad      PASS
-suite instrumentada                41/41 PASS
-build/unit/lint/release            PASS
-Room                               sin cambios
-```
-
-Hasta entonces:
-
-```text
-v6 = activo
-v7 = staging
+DEFAULT_VERSION_DIRECTORY            v7
+CatalogValidator v7                 PASS
+persistencia de exención            PASS
+separación exención/seguridad       PASS
+regresión explícita v6              PASS
+suite instrumentada                 41/41 PASS
+build/unit/lint/release             PASS
+Room                                sin cambios
 ```
