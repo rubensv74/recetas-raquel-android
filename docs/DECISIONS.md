@@ -10,7 +10,7 @@
 
 ## ADR-003 — Aplicación offline
 
-**Aceptada.** Casos principales sin red para disponibilidad y privacidad.
+**Aceptada.** Casus principales sin red para disponibilidad y privacidad.
 
 ## ADR-004 — Un único módulo
 
@@ -99,3 +99,7 @@
 ## ADR-025 — Grafo de linaje de ingredientes separado de seguridad alimentaria
 
 **Aceptada.** Se adopta un grafo no clínico de linaje entre `CatalogIngredient` con relaciones `VARIANT_OF`, `CUT_OF`, `DERIVED_FROM` y `FORM_OF`. Room v3 persiste estas relaciones en una tabla independiente. El grafo debe ser acíclico, no admite auto-relaciones ni duplicados equivalentes y puede conservar metadatos de revisión de identidad. Ninguna arista de linaje propaga, crea ni hereda relaciones de seguridad alimentaria. El grafo de seguridad sigue exigiendo evidencia propia y trazable. La composición de productos/ingredientes compuestos permanece fuera de alcance hasta una decisión arquitectónica específica.
+
+## ADR-026 — Representación de exenciones regulatorias
+
+**ABIERTA — decisión requerida.** La revisión posterior al catálogo v6 confirma que el Anexo II contiene excepciones legales condicionadas (por ejemplo, aceite y grasa de soja totalmente refinados). El modelo actual no debe representar una exención como simple ausencia de relación de seguridad ni equipararla a una afirmación clínica. Se comparan tres alternativas: `A` incorporar un tipo de exención dentro del grafo de seguridad; `B` crear un registro regulatorio independiente y estructurado; `C` mantener exenciones solo en documentación/notas. Se recomienda **B** por separación semántica, auditabilidad, condiciones y actualización regulatoria. Ver `docs/ingredient-library/19_ARCHITECTURAL_DECISION_REGULATORY_EXEMPTIONS.md`.
