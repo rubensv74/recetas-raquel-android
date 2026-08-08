@@ -73,7 +73,8 @@ Fase 1 — investigación               CERRADA para pasar a diseño
 Fase 2 — diseño                      CERRADA como base de implementación
 Fase 3 — Room v1 -> v2               CERRADA — 34/34 instrumented PASS
 Fase 4 — infraestructura catálogo    CERRADA — 36/36 instrumented PASS
-Población controlada del catálogo    EN CURSO — Batch 01 v3 VALIDADO; siguiente lote autorizado
+Población controlada del catálogo    EN CURSO — Batch 02 v4 IMPLEMENTADO; gate local pendiente
+Decisión de linaje/variantes          REQUERIDA antes de derivados/cortes
 Mapeo masivo no revisado             NO AUTORIZADO
 Merge a master                       NO AUTORIZADO todavía
 ```
@@ -108,11 +109,9 @@ Ver `docs/ingredient-library/10_CONTROLLED_CATALOG_SEED.md`.
 
 ### Población controlada — Batch 01 culinario v3
 
-`app/src/main/assets/ingredient-catalog/v3/` es la versión activa del catálogo culinario y permanece `DRAFT`.
+`app/src/main/assets/ingredient-catalog/v3/` permanece como versión histórica inmutable del primer lote culinario.
 
-El manifiesto usa `schemaVersion = 2` para soportar ficheros fragmentados por lotes, manteniendo compatibilidad de lectura con los catálogos v1/v2 de fichero único.
-
-Estado del catálogo v3:
+Estado validado del catálogo v3:
 
 ```text
 catalogVersion           3
@@ -125,15 +124,48 @@ fuentes de seguridad      3
 relaciones de seguridad  27
 ```
 
-Batch 01 añade 100 ingredientes culinarios de verduras, frutas, hierbas, especias, cereales y legumbres, junto con 100 alias nuevos de búsqueda. Los 27 anclajes regulatorios, sus 22 alias y sus relaciones permanecen intactos.
-
-Los 100 ingredientes nuevos están marcados `REVIEW_REQUIRED` y no reciben relaciones de seguridad por inferencia. La existencia de un ingrediente en la biblioteca y la existencia de evidencia de seguridad siguen siendo conceptos separados.
+Batch 01 añadió 100 ingredientes culinarios de verduras, frutas, hierbas, especias, cereales y legumbres. Los 100 ingredientes nuevos quedaron `REVIEW_REQUIRED` y sin relaciones de seguridad inferidas.
 
 El gate local v3 quedó superado el 2026-08-08 con `assembleDebug`, unit tests, lint, compilación instrumentada y `assembleRelease` PASS; `connectedDebugAndroidTest` PASS 36/36; Room conserva exclusivamente `1.json` y `2.json`; working tree limpio.
 
-El siguiente lote culinario está autorizado para prepararse, manteniendo el mismo principio: ampliar identidad y búsqueda no autoriza añadir relaciones de seguridad sin evidencia trazable.
-
 Ver `docs/ingredient-library/11_CULINARY_CATALOG_BATCH_01.md`.
+
+### Población controlada — Batch 02 culinario v4
+
+Se ha creado `app/src/main/assets/ingredient-catalog/v4/` como nueva versión inmutable activa.
+
+Estado implementado del catálogo v4:
+
+```text
+catalogVersion           4
+releaseStatus            DRAFT
+categorías               20
+ingredientes canónicos  227
+alias                    220
+grupos de seguridad      14
+fuentes de seguridad      3
+relaciones de seguridad  27
+```
+
+Batch 02 añade 100 identidades culinarias simples: fuentes de carne y aves, semillas/especias, setas, hortalizas/tubérculos adicionales y frutas. Añade 98 alias conservadores.
+
+Todos los nuevos registros están `REVIEW_REQUIRED` y las relaciones de seguridad permanecen exactamente en 27. El reader activo apunta a v4 y el test instrumentado se ha actualizado a los nuevos recuentos y a rollback frente a una v5 inválida.
+
+El gate local de v4 está pendiente. Ver `docs/ingredient-library/12_CULINARY_CATALOG_BATCH_02.md`.
+
+### Gate arquitectónico — linaje, variantes y derivados
+
+La expansión siguiente ya no consiste únicamente en añadir identidades planas. Cortes de carne, harinas, aceites, derivados lácteos, tofu, tahini y otras formas requieren expresar relaciones entre ingredientes.
+
+El modelo actual no dispone de un grafo de linaje/variantes. Se ha detenido la implementación antes de cruzar ese límite.
+
+La decisión está documentada en:
+
+```text
+docs/ingredient-library/13_ARCHITECTURAL_DECISION_INGREDIENT_LINEAGE.md
+```
+
+La recomendación técnica es introducir un grafo de linaje no clínico separado del grafo de seguridad, sin propagación automática de alérgenos, mediante una migración Room explícita v2 -> v3. Esta opción requiere autorización antes de implementarse.
 
 ## Sprints futuros congelados
 
