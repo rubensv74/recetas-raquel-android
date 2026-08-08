@@ -4,7 +4,8 @@ This matrix separates culinary catalog coverage from reviewed food-safety relati
 
 | Area | Official basis reviewed | Canonical catalog entries | Relations approved | Status |
 |---|---:|---:|---:|---|
-| Cereals containing gluten | YES | 6 | 6 | controlled regulatory seed |
+| Cereals containing gluten — source cereals | YES | 6 | 6 | controlled regulatory seed |
+| Cereals containing gluten — reviewed flours | YES | 6 | 6 | catalog v6; explicit `DERIVED_FROM`; local gate pending |
 | Crustaceans | YES | 1 | 1 | controlled generic seed |
 | Eggs | YES | 1 | 1 | controlled generic seed |
 | Fish | YES | 1 | 1 | controlled generic seed |
@@ -27,6 +28,7 @@ This matrix separates culinary catalog coverage from reviewed food-safety relati
 | Meat/poultry source identities | safety mapping not inferred | 20 | 0 | Batch 02 source-level coverage; REVIEW_REQUIRED |
 | Meat/poultry cut identities | lineage review only | 15 | 0 | catalog v5; 15 CUT_OF edges; REVIEW_REQUIRED |
 | Additional cereals/legumes | safety mapping not inferred | 16 | 0 | Batch 01 identity coverage; REVIEW_REQUIRED |
+| Non-Annex-II reviewed flour identities | identity + lineage reviewed | 4 | 0 | rice/corn/chickpea/buckwheat flours; no universal gluten relation |
 | WHO/IUIS molecular allergens | nomenclature source | 0 | 0 | reference-only until mapped |
 | Lactose intolerance | AESAN | 0 | 0 | condition design |
 | Coeliac disease | AESAN/NIDDK + EU gluten rules | 0 | 0 | condition design |
@@ -34,48 +36,56 @@ This matrix separates culinary catalog coverage from reviewed food-safety relati
 | Commercial products | label-specific only | 0 | 0 | design pending implementation |
 | Compound ingredients | explicit unknown state | 0 | 0 | design ready |
 
-Current active draft totals (`ingredient-catalog/v5`):
+Current implemented draft totals (`ingredient-catalog/v6`):
 
 ```text
-242 canonical ingredients
-235 aliases
-15 culinary lineage relations
+252 canonical ingredients
+245 aliases
+25 culinary lineage relations
 14 EU Annex II regulatory groups
-3 authoritative EU sources
-27 reviewed safety relations
+3 authoritative EU runtime sources
+33 reviewed safety relations
 ```
 
-Composition of the 242 canonical entries:
+Composition of the 252 canonical entries:
 
 ```text
 27 reviewed regulatory anchors
 100 Batch 01 culinary identity entries marked REVIEW_REQUIRED
 100 Batch 02 culinary identity entries marked REVIEW_REQUIRED
 15 catalog v5 cut identities marked REVIEW_REQUIRED
-```
-
-Alias composition:
-
-```text
-22 aliases inherited from regulatory v2
-100 identity-conservative aliases from Batch 01
-98 identity-conservative aliases from Batch 02
-15 cut aliases from catalog v5
+10 catalog v6 flour identities marked REVIEW_REQUIRED
 ```
 
 Lineage composition:
 
 ```text
 15 CUT_OF relations
+10 DERIVED_FROM relations
 0 VARIANT_OF relations
-0 DERIVED_FROM relations
 0 FORM_OF relations
 ```
 
-Catalog v1-v4 remain immutable historical bundles. Catalog v5 is the first bundle using catalog schema v3 and persisted lineage content.
+Food-safety delta in v6:
 
-A zero in the food-safety relations column means no relation has been approved for that area. It does not mean absence of risk.
+```text
++6 explicit DERIVED_FROM relations to sg-eu-cereals-gluten
+  wheat flour
+  spelt flour
+  khorasan wheat flour
+  rye flour
+  barley flour
+  oat flour
 
-The 15 new cut relations are culinary identity only. They do not create, inherit or imply food-safety relations. This is an explicit test of the separation between the lineage graph and the safety-evidence graph.
++0 universal gluten relations for
+  rice flour
+  corn flour
+  chickpea flour
+  buckwheat flour
+```
 
-The next high-value content area is derivatives/forms such as flours and single-source oils. Those items require independent evidence review before any clinically relevant safety relation is added; an obvious culinary `DERIVED_FROM` relation is never sufficient evidence by itself.
+Catalog v1-v5 remain immutable historical bundles. Catalog v6 is implemented but remains subject to its local execution gate before being marked validated.
+
+A zero in the food-safety relations column means no relation has been approved for that area. It does not mean absence of risk. AESAN alert ES2026/431 concerning a specific chickpea-flour product is retained as evidence for this design principle; it is not generalized into a universal ingredient relation.
+
+The v6 flour batch demonstrates that culinary lineage and safety evidence can coexist as separate records: a `DERIVED_FROM` lineage edge never manufactures the corresponding safety relation. The six regulated flour relations were added independently with `EU_LEGAL` evidence and `EU_FIC_1169_2011` provenance.
