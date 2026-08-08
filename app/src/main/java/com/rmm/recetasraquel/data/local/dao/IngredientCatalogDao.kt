@@ -13,6 +13,7 @@ import com.rmm.recetasraquel.data.local.entity.FoodSafetyGroupEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientAliasEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientCategoryEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientSafetyRelationEntity
+import com.rmm.recetasraquel.data.local.entity.RegulatoryExemptionEntity
 import com.rmm.recetasraquel.data.local.entity.SafetySourceEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -63,6 +64,16 @@ interface IngredientCatalogDao {
     )
     suspend fun getSafetyRelationsForIngredient(ingredientId: String): List<IngredientSafetyRelationEntity>
 
+    @Query("SELECT COUNT(*) FROM regulatory_exemptions WHERE isActive = 1")
+    suspend fun countActiveRegulatoryExemptions(): Int
+
+    @Query(
+        "SELECT * FROM regulatory_exemptions " +
+            "WHERE ingredientId = :ingredientId AND isActive = 1 " +
+            "ORDER BY safetyGroupId ASC, jurisdiction ASC, regulatoryEffect ASC, id ASC",
+    )
+    suspend fun getRegulatoryExemptionsForIngredient(ingredientId: String): List<RegulatoryExemptionEntity>
+
     @Upsert
     suspend fun upsertCategories(items: List<IngredientCategoryEntity>)
 
@@ -83,6 +94,9 @@ interface IngredientCatalogDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertSafetyRelations(items: List<IngredientSafetyRelationEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertRegulatoryExemptions(items: List<RegulatoryExemptionEntity>)
 
     @Upsert
     suspend fun upsertMetadata(item: CatalogMetadataEntity)
@@ -105,6 +119,9 @@ interface IngredientCatalogDao {
     @Query("DELETE FROM ingredient_safety_relations")
     suspend fun deleteAllSafetyRelations()
 
+    @Query("DELETE FROM regulatory_exemptions")
+    suspend fun deleteAllRegulatoryExemptions()
+
     @Transaction
     suspend fun replaceShippedCatalog(
         categories: List<IngredientCategoryEntity>,
@@ -114,8 +131,10 @@ interface IngredientCatalogDao {
         safetyGroups: List<FoodSafetyGroupEntity>,
         safetySources: List<SafetySourceEntity>,
         safetyRelations: List<IngredientSafetyRelationEntity>,
+        regulatoryExemptions: List<RegulatoryExemptionEntity>,
         metadata: CatalogMetadataEntity,
     ) {
+        deleteAllRegulatoryExemptions()
         deleteAllSafetyRelations()
         deleteAllIngredientRelations()
         deleteAllAliases()
@@ -130,6 +149,7 @@ interface IngredientCatalogDao {
         if (aliases.isNotEmpty()) insertAliases(aliases)
         if (ingredientRelations.isNotEmpty()) insertIngredientRelations(ingredientRelations)
         if (safetyRelations.isNotEmpty()) insertSafetyRelations(safetyRelations)
+        if (regulatoryExemptions.isNotEmpty()) insertRegulatoryExemptions(regulatoryExemptions)
         upsertMetadata(metadata)
     }
 }
