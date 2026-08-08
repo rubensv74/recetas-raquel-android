@@ -49,6 +49,7 @@ class IngredientCatalogAssetReaderTest {
         assertEquals(7, bundle.manifest.catalogVersion)
         assertEquals("Categoría", bundle.categories.single().name)
         assertEquals(0, bundle.ingredients.size)
+        assertEquals(0, bundle.ingredientRelations.size)
     }
 
     @Test
@@ -97,8 +98,60 @@ class IngredientCatalogAssetReaderTest {
 
         assertEquals(listOf("ing-a", "ing-b"), bundle.ingredients.map { it.id })
         assertEquals(listOf("alias-a", "alias-b"), bundle.aliases.map { it.id })
+        assertEquals(0, bundle.ingredientRelations.size)
         assertEquals(3, bundle.manifest.catalogVersion)
         assertEquals(2, bundle.manifest.schemaVersion)
+    }
+
+    @Test
+    fun readsSchemaThreeLineageShards() {
+        val source = MapCatalogTextSource(
+            mapOf(
+                "ingredient-catalog/v5/manifest.json" to """
+                    {
+                      "catalogId":"test-lineage",
+                      "schemaVersion":3,
+                      "catalogVersion":5,
+                      "releaseStatus":"DRAFT",
+                      "locale":"es-ES",
+                      "jurisdiction":"EU-ES",
+                      "reviewedAt":"2026-08-08",
+                      "files":{
+                        "categories":"categories.json",
+                        "ingredientShards":["ingredients.json"],
+                        "aliasShards":["aliases.json"],
+                        "ingredientRelationShards":["lineage-a.json","lineage-b.json"],
+                        "safetyGroups":"safety-groups.json",
+                        "safetySources":"safety-sources.json",
+                        "safetyRelations":"safety-relations.json"
+                      },
+                      "counts":{
+                        "categories":1,
+                        "ingredients":2,
+                        "aliases":0,
+                        "ingredientRelations":2,
+                        "safetyGroups":0,
+                        "safetySources":0,
+                        "safetyRelations":0
+                      }
+                    }
+                """.trimIndent(),
+                "ingredient-catalog/v5/categories.json" to """[{"id":"cat-1","code":"C1","name":"Categoría","sortOrder":1}]""",
+                "ingredient-catalog/v5/ingredients.json" to """[{"id":"ing-parent","canonicalName":"Pollo","normalizedName":"pollo","categoryId":"cat-1","verificationStatus":"REVIEW_REQUIRED","compositionVariability":"STABLE"},{"id":"ing-child","canonicalName":"Pechuga de pollo","normalizedName":"pechuga de pollo","categoryId":"cat-1","verificationStatus":"REVIEW_REQUIRED","compositionVariability":"STABLE"}]""",
+                "ingredient-catalog/v5/aliases.json" to "[]",
+                "ingredient-catalog/v5/lineage-a.json" to """[{"id":"lineage-a","childIngredientId":"ing-child","parentIngredientId":"ing-parent","relationType":"CUT_OF","reviewedAt":"2026-08-08"}]""",
+                "ingredient-catalog/v5/lineage-b.json" to """[{"id":"lineage-b","childIngredientId":"ing-parent","parentIngredientId":"ing-parent","relationType":"FORM_OF","reviewedAt":"2026-08-08","isActive":false}]""",
+                "ingredient-catalog/v5/safety-groups.json" to "[]",
+                "ingredient-catalog/v5/safety-sources.json" to "[]",
+                "ingredient-catalog/v5/safety-relations.json" to "[]",
+            ),
+        )
+
+        val bundle = IngredientCatalogAssetReader(source).read("ingredient-catalog/v5")
+
+        assertEquals(listOf("lineage-a", "lineage-b"), bundle.ingredientRelations.map { it.id })
+        assertEquals("CUT_OF", bundle.ingredientRelations.first().relationType)
+        assertEquals(3, bundle.manifest.schemaVersion)
     }
 
     private class MapCatalogTextSource(
