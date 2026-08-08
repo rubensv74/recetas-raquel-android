@@ -51,7 +51,12 @@ class LocalRecipeRepository(
         return try {
             val recipe = input.toNewRecipe(idGenerator, timeProvider)
             val persisted = recipe.toPersisted()
-            dao.saveRecipeWithDetails(persisted.recipe, persisted.ingredients, persisted.steps)
+            dao.saveRecipeWithDetails(
+                recipe = persisted.recipe,
+                ingredients = persisted.ingredients,
+                steps = persisted.steps,
+                compatibilityCustomIngredients = persisted.compatibilityCustomIngredients,
+            )
             Result.success(recipe.id)
         } catch (error: RecipeValidationException) {
             Result.failure(error)
@@ -65,7 +70,12 @@ class LocalRecipeRepository(
     override suspend fun updateRecipe(recipe: Recipe): Result<Unit> {
         return try {
             val persisted = recipe.toPersisted(updatedAt = timeProvider.nowEpochMillis())
-            dao.saveRecipeWithDetails(persisted.recipe, persisted.ingredients, persisted.steps)
+            dao.saveRecipeWithDetails(
+                recipe = persisted.recipe,
+                ingredients = persisted.ingredients,
+                steps = persisted.steps,
+                compatibilityCustomIngredients = persisted.compatibilityCustomIngredients,
+            )
             Result.success(Unit)
         } catch (error: RecipeValidationException) {
             Result.failure(error)
@@ -82,7 +92,12 @@ class LocalRecipeRepository(
                 ?: throw RecipeNotFoundException(recipeId)
             val recipe = draft.toUpdatedRecipe(existing, idGenerator, timeProvider)
             val persisted = recipe.toPersisted(updatedAt = timeProvider.nowEpochMillis())
-            dao.saveRecipeWithDetails(persisted.recipe, persisted.ingredients, persisted.steps)
+            dao.saveRecipeWithDetails(
+                recipe = persisted.recipe,
+                ingredients = persisted.ingredients,
+                steps = persisted.steps,
+                compatibilityCustomIngredients = persisted.compatibilityCustomIngredients,
+            )
             Result.success(Unit)
         } catch (error: RecipeNotFoundException) {
             Result.failure(error)
