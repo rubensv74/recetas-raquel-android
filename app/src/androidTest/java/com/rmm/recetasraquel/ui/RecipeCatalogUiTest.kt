@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import com.rmm.recetasraquel.app.RecetasRaquelApp
 import com.rmm.recetasraquel.domain.photos.PhotoDestination
@@ -69,7 +70,12 @@ class RecipeCatalogUiTest {
         composeRule.onNodeWithTag("catalog_search").performTextInput("inexistente")
         waitForText("No se encontraron recetas con estos filtros.")
         composeRule.onNodeWithContentDescription("Limpiar filtros").performClick()
-        waitForText("Tarta de queso")
+
+        // The software keyboard can remain visible after clearing the query and reduce the
+        // LazyColumn viewport on some AVD runs. First wait for the unfiltered result set,
+        // then scroll the target recipe into view before asserting visibility.
+        waitForText("2 resultados")
+        composeRule.onNodeWithTag("recipe_tarta").performScrollTo().assertIsDisplayed()
     }
 
     @Test
