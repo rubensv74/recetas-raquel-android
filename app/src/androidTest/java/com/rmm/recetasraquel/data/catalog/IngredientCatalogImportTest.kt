@@ -33,7 +33,7 @@ class IngredientCatalogImportTest {
     @Test
     fun importsVersionedDerivativeCatalogV6AndIsIdempotent() = runBlocking {
         val reader = IngredientCatalogAssetReader(AndroidAssetCatalogTextSource(context.assets))
-        val bundle = reader.read()
+        val bundle = reader.read("ingredient-catalog/v6")
 
         assertEquals(3, bundle.manifest.schemaVersion)
         assertEquals(6, bundle.manifest.catalogVersion)
@@ -109,7 +109,7 @@ class IngredientCatalogImportTest {
             timeProvider = TimeProvider { 1234L },
         )
 
-        val first = importer.ensureImported()
+        val first = importer.ensureImported("ingredient-catalog/v6")
         assertTrue(first is CatalogImportResult.Imported)
         assertEquals(20, database.ingredientCatalogDao().countActiveCategories())
         assertEquals(252, database.ingredientCatalogDao().countActiveIngredients())
@@ -139,7 +139,7 @@ class IngredientCatalogImportTest {
         assertEquals("EU-ES", metadata.jurisdiction)
         assertEquals(1234L, metadata.importedAt)
 
-        val second = importer.ensureImported()
+        val second = importer.ensureImported("ingredient-catalog/v6")
         assertTrue(second is CatalogImportResult.AlreadyCurrent)
         assertEquals(252, database.ingredientCatalogDao().countActiveIngredients())
         assertEquals(245, database.ingredientCatalogDao().countAliases())
@@ -206,7 +206,7 @@ class IngredientCatalogImportTest {
             dao = database.ingredientCatalogDao(),
             timeProvider = TimeProvider { 100L },
         )
-        realImporter.ensureImported()
+        realImporter.ensureImported("ingredient-catalog/v6")
 
         val brokenImporter = CatalogImporter(
             reader = IngredientCatalogAssetReader(BrokenVersionSevenSource()),
@@ -214,7 +214,7 @@ class IngredientCatalogImportTest {
             timeProvider = TimeProvider { 200L },
         )
 
-        val failure = runCatching { brokenImporter.ensureImported() }.exceptionOrNull()
+        val failure = runCatching { brokenImporter.ensureImported("ingredient-catalog/v6") }.exceptionOrNull()
         assertTrue(failure is CatalogValidationException)
         assertEquals(20, database.ingredientCatalogDao().countActiveCategories())
         assertEquals(252, database.ingredientCatalogDao().countActiveIngredients())
