@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
+import com.rmm.recetasraquel.data.local.entity.CustomIngredientEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientEntity
 import com.rmm.recetasraquel.data.local.entity.RecipeEntity
 import com.rmm.recetasraquel.data.local.entity.RecipeStepEntity
@@ -61,6 +62,9 @@ interface RecipeDao {
     @Upsert
     suspend fun upsertRecipe(recipe: RecipeEntity)
 
+    @Upsert
+    suspend fun upsertCustomIngredients(items: List<CustomIngredientEntity>)
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertIngredients(ingredients: List<IngredientEntity>)
 
@@ -90,8 +94,12 @@ interface RecipeDao {
         recipe: RecipeEntity,
         ingredients: List<IngredientEntity>,
         steps: List<RecipeStepEntity>,
+        compatibilityCustomIngredients: List<CustomIngredientEntity> = emptyList(),
     ) {
         upsertRecipe(recipe)
+        if (compatibilityCustomIngredients.isNotEmpty()) {
+            upsertCustomIngredients(compatibilityCustomIngredients)
+        }
         deleteIngredients(recipe.id)
         deleteSteps(recipe.id)
         if (ingredients.isNotEmpty()) insertIngredients(ingredients)
