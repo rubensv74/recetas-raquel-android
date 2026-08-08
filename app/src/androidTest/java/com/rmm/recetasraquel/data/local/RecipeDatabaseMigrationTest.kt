@@ -31,11 +31,14 @@ class RecipeDatabaseMigrationTest {
     }
 
     @Test
-    fun migrate1To2PreservesLegacyRecipeDataAndCreatesCustomIngredientOrigins() = runBlocking {
+    fun migrate1To3PreservesLegacyRecipeDataAndAddsLineageInfrastructure() = runBlocking {
         createVersion1Database()
 
         val database = Room.databaseBuilder(context, RecipeDatabase::class.java, TEST_DB)
-            .addMigrations(RecipeDatabaseMigrations.MIGRATION_1_2)
+            .addMigrations(
+                RecipeDatabaseMigrations.MIGRATION_1_2,
+                IngredientLibraryMigrations.MIGRATION_2_3,
+            )
             .build()
 
         try {
@@ -72,7 +75,6 @@ class RecipeDatabaseMigrationTest {
                 """.trimIndent(),
             ).use { cursor ->
                 assertEquals(2, cursor.count)
-
                 assertTrue(cursor.moveToFirst())
                 assertEquals("ingredient-1", cursor.getString(0))
                 assertEquals("1/2", cursor.getString(1))
@@ -116,6 +118,21 @@ class RecipeDatabaseMigrationTest {
             }
 
             migrated.query(
+                "SELECT COUNT(*) FROM catalog_ingredient_relations",
+            ).use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals(0, cursor.getInt(0))
+            }
+
+            migrated.query("PRAGMA table_info(`custom_ingredient_safety_relations`)").use { cursor ->
+                val columns = mutableSetOf<String>()
+                while (cursor.moveToNext()) columns += cursor.getString(1)
+                assertTrue("sourceId" in columns)
+                assertTrue("sourceDetails" in columns)
+                assertFalse("sourceDescription" in columns)
+            }
+
+            migrated.query(
                 """
                 SELECT instruction, timerMinutes, photoPath, sortOrder
                 FROM recipe_steps WHERE id = 'step-1'
@@ -134,7 +151,7 @@ class RecipeDatabaseMigrationTest {
 
             migrated.query("PRAGMA user_version").use { cursor ->
                 assertTrue(cursor.moveToFirst())
-                assertEquals(2, cursor.getInt(0))
+                assertEquals(3, cursor.getInt(0))
             }
 
             val recipe = database.recipeDao().getRecipeWithDetails("recipe-1")
@@ -256,6 +273,6 @@ class RecipeDatabaseMigrationTest {
     }
 
     private companion object {
-        const val TEST_DB = "recipes-migration-1-2-test.db"
+        const val TEST_DB = "recipes-migration-1-3-test.db"
     }
 }
