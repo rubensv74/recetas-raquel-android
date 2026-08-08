@@ -19,6 +19,7 @@ import com.rmm.recetasraquel.data.local.entity.IngredientEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientSafetyRelationEntity
 import com.rmm.recetasraquel.data.local.entity.RecipeEntity
 import com.rmm.recetasraquel.data.local.entity.RecipeStepEntity
+import com.rmm.recetasraquel.data.local.entity.RegulatoryExemptionEntity
 import com.rmm.recetasraquel.data.local.entity.SafetySourceEntity
 
 @Database(
@@ -33,12 +34,13 @@ import com.rmm.recetasraquel.data.local.entity.SafetySourceEntity
         FoodSafetyGroupEntity::class,
         SafetySourceEntity::class,
         IngredientSafetyRelationEntity::class,
+        RegulatoryExemptionEntity::class,
         CustomIngredientEntity::class,
         CustomIngredientAliasEntity::class,
         CustomIngredientSafetyRelationEntity::class,
         CatalogMetadataEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class RecipeDatabase : RoomDatabase() {
@@ -56,6 +58,7 @@ abstract class RecipeDatabase : RoomDatabase() {
             .addMigrations(
                 RecipeDatabaseMigrations.MIGRATION_1_2,
                 IngredientLibraryMigrations.MIGRATION_2_3,
+                IngredientLibraryMigrations.MIGRATION_3_4,
             )
             .build()
     }
