@@ -10,7 +10,7 @@
 
 ## ADR-003 — Aplicación offline
 
-**Aceptada.** Casus principales sin red para disponibilidad y privacidad.
+**Aceptada.** Casos principales sin red para disponibilidad y privacidad.
 
 ## ADR-004 — Un único módulo
 
