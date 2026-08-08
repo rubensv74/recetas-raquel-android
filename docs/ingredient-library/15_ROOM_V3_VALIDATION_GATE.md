@@ -1,6 +1,6 @@
 # 15 — ROOM V3 + LINEAGE VALIDATION GATE
 
-**Status:** EXECUTION GREEN — schema review/versioning pending  
+**Status:** SCHEMA REVIEW APPROVED — exact generated artifact versioning pending  
 **Branch:** `program/ingredient-library-food-safety`  
 **Date:** 2026-08-08
 
@@ -93,22 +93,43 @@ Room schema export             PASS — 1.json, 2.json, 3.json
 7. old free-text recipe editing persists a dedicated `recipe-custom:<ingredientId>` origin without foreign-key failure.
 8. a dual recipe ingredient origin is rejected before persistence.
 
-## Remaining schema artifact gate
+## Generated schema review
 
-The generated file exists locally as:
+The locally generated `3.json` has now been reviewed against:
+
+```text
+RecipeDatabase.kt
+IngredientLibraryEntity.kt
+IngredientLibraryMigrations.kt
+```
+
+Review result: **APPROVED**.
+
+Confirmed in the generated artifact:
+
+- database version 3;
+- 14 Room entities;
+- `catalog_ingredient_relations` with child/parent FKs and unique `(child,parent,type)` index;
+- corrected `custom_ingredient_safety_relations` with required `sourceId`, preserved `sourceDetails`, three FKs and indexes;
+- recipe ingredient catalog/custom origin FKs preserved;
+- safety relation provenance fields preserved;
+- no unexpected table deletion.
+
+Detailed review: `docs/ingredient-library/16_ROOM_V3_SCHEMA_REVIEW.md`.
+
+## Remaining operational artifact step
+
+The exact generated file remains local and untracked:
 
 ```text
 app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/3.json
 ```
 
-and remains intentionally untracked.
+It is approved for version control. Because this artifact was generated on the local Android build environment, the exact local file must be committed/pushed unchanged before the gate is formally closed.
 
-Before Room v3 is formally closed, the generated schema must be reviewed against the entity model and migration SQL and then versioned. Do not create catalog v5 with real lineage edges until that artifact review is complete.
+## After artifact versioning
 
-## After schema review
-
-1. version `3.json`;
-2. close the Room-v3 infrastructure gate;
-3. update `SPRINT_PLAN.md` and implementation status;
-4. create a new immutable catalog version for the first real lineage-backed derivatives/cuts;
-5. continue autonomously until the next architectural boundary.
+1. close the Room-v3 infrastructure gate;
+2. update `SPRINT_PLAN.md` and implementation status;
+3. create a new immutable catalog version for the first real lineage-backed derivatives/cuts;
+4. continue autonomously until the next architectural boundary.
