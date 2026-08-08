@@ -58,7 +58,8 @@ Objetivos principales:
 - catálogo versionado independiente del esquema Room;
 - funcionamiento offline-first;
 - dossier técnico de decisiones de seguridad alimentaria reutilizable como soporte de auditoría/registro;
-- proceso periódico y por eventos para revisar y actualizar conocimiento sensible.
+- proceso periódico y por eventos para revisar y actualizar conocimiento sensible;
+- capa regulatoria separada para exenciones legales condicionadas.
 
 Documentación de control:
 
@@ -70,21 +71,26 @@ docs/food-safety/
 Estado actual:
 
 ```text
-Fase 0 — auditoría                    CERRADA
-Fase 1 — investigación               CERRADA para pasar a diseño
-Fase 2 — diseño                      CERRADA como base de implementación
-Fase 3 — Room v1 -> v2               CERRADA — 34/34 instrumented PASS
-Fase 4 — infraestructura catálogo    CERRADA — 36/36 instrumented PASS
-Catálogo regulatorio v2              VALIDADO
-Batch 01 culinario v3                VALIDADO — 36/36 instrumented PASS
-Batch 02 culinario v4                VALIDADO en gate combinado
-Decisión de linaje                   OPCIÓN B ACEPTADA
-Room v2 -> v3 + linaje               CERRADO — 39/39; 3.json revisado y versionado
-Catálogo v5 con linaje real          VALIDADO — 39/39; Room sigue 1/2/3
-Dossier soporte regulatorio          BASE DOCUMENTAL CREADA — refresh oficial antes de uso externo
-Mantenimiento conocimiento sensible REQUISITO REGISTRADO — revisión anual + ADR distribución pendiente
-Mapeo masivo no revisado             NO AUTORIZADO
-Merge a master                       NO AUTORIZADO todavía
+Fase 0 — auditoría                         CERRADA
+Fase 1 — investigación                    CERRADA para pasar a diseño
+Fase 2 — diseño                           CERRADA como base de implementación
+Fase 3 — Room v1 -> v2                    CERRADA — 34/34 instrumented PASS
+Fase 4 — infraestructura catálogo         CERRADA — 36/36 instrumented PASS
+Catálogo regulatorio v2                   VALIDADO
+Batch 01 culinario v3                     VALIDADO — 36/36 instrumented PASS
+Batch 02 culinario v4                     VALIDADO en gate combinado
+ADR-025 linaje                            OPCIÓN B ACEPTADA
+Room v2 -> v3 + linaje                    CERRADO — 39/39; 3.json revisado/versionado
+Catálogo v5 con linaje real               VALIDADO — 39/39
+Catálogo v6 harinas revisadas             VALIDADO — 39/39
+ADR-026 exenciones regulatorias           OPCIÓN B ACEPTADA
+Room v3 -> v4 capa regulatoria            CERRADO — 39/39; 4.json revisado/versionado
+Catalog schema v4 para exenciones         IMPLEMENTADO — gate local pendiente
+Catálogo activo                           v6 / schema 3 hasta validar infraestructura v4
+Dossier soporte regulatorio               BASE DOCUMENTAL CREADA — refresh antes de uso externo
+Mantenimiento conocimiento sensible      REQUISITO REGISTRADO — revisión anual + ADR distribución pendiente
+Mapeo masivo no revisado                  NO AUTORIZADO
+Merge a master                            NO AUTORIZADO todavía
 ```
 
 ### Gate Fase 3 superado
@@ -117,7 +123,7 @@ alias                    122
 relaciones de seguridad  27
 ```
 
-El gate local quedó superado con `connectedDebugAndroidTest` 36/36 PASS y Room conservó únicamente `1.json` y `2.json`.
+El gate local quedó superado con `connectedDebugAndroidTest` 36/36 PASS.
 
 Ver `docs/ingredient-library/11_CULINARY_CATALOG_BATCH_01.md`.
 
@@ -139,7 +145,7 @@ Todos los nuevos registros permanecen `REVIEW_REQUIRED`.
 
 Ver `docs/ingredient-library/12_CULINARY_CATALOG_BATCH_02.md`.
 
-### ADR aceptada — linaje, variantes y derivados
+### ADR-025 aceptada — linaje, variantes y derivados
 
 Se adopta el **grafo de linaje no clínico** con tipos iniciales:
 
@@ -170,7 +176,7 @@ assembleRelease                PASS
 Room schema export             PASS — 1.json, 2.json, 3.json
 ```
 
-`3.json` fue revisado contra entidades y SQL de migración y está versionado. Room v3 ya no bloquea la evolución del catálogo.
+`3.json` fue revisado contra entidades y SQL de migración y está versionado.
 
 Ver `docs/ingredient-library/14_LINEAGE_GRAPH_IMPLEMENTATION.md`, `15_ROOM_V3_VALIDATION_GATE.md` y `16_ROOM_V3_SCHEMA_REVIEW.md`.
 
@@ -197,9 +203,30 @@ Delta desde v4:
 +0 relaciones de seguridad
 ```
 
-La primera expansión se limita a cortes físicos de baja ambigüedad. El objetivo es validar en datos reales la arquitectura de linaje sin introducir derivados con consecuencias regulatorias o clínicas todavía no revisadas.
+Gate local:
 
-El gate local quedó verde el 2026-08-08:
+```text
+connectedDebugAndroidTest PASS — 39/39, 0 skipped, 0 failed
+Room schemas              1.json, 2.json, 3.json
+```
+
+Ver `docs/ingredient-library/17_CATALOG_V5_FIRST_LINEAGE_CONTENT.md`.
+
+### Catálogo v6 — harinas revisadas — VALIDADO
+
+`ingredient-catalog/v6/` incorpora diez harinas de origen único y diez aristas `DERIVED_FROM`. Solo seis harinas de cereales expresamente cubiertos por el grupo regulado de cereales con gluten reciben relaciones de seguridad independientes `EU_LEGAL`.
+
+```text
+catalogVersion           6
+catalog schemaVersion    3
+categorías               20
+ingredientes canónicos  252
+alias                    245
+relaciones de linaje     25
+relaciones de seguridad  33
+```
+
+Gate local:
 
 ```text
 assembleDebug                  PASS
@@ -208,13 +235,66 @@ lintDebug                      PASS
 compileDebugAndroidTestKotlin  PASS
 connectedDebugAndroidTest      PASS — 39/39, 0 skipped, 0 failed
 assembleRelease                PASS
-Room schemas                   1.json, 2.json, 3.json únicamente
-working tree                   clean
 ```
 
-`IngredientCatalogAssetReader` apunta a v5. El siguiente paso es una revisión documental específica de derivados antes de crear una nueva versión de catálogo con harinas, aceites u otros derivados.
+`IngredientCatalogAssetReader` apunta actualmente a v6.
 
-Ver `docs/ingredient-library/17_CATALOG_V5_FIRST_LINEAGE_CONTENT.md`.
+Ver `docs/ingredient-library/18_CATALOG_V6_REVIEWED_FLOURS.md`.
+
+### ADR-026 aceptada — exenciones regulatorias separadas
+
+Se adopta la **Opción B**: una exención legal se representa en una capa estructurada separada del linaje y de las relaciones de seguridad.
+
+Principio:
+
+```text
+linaje culinario != evidencia de seguridad != exención regulatoria
+```
+
+Una exención no se interpreta como ausencia de alérgeno, ausencia de riesgo ni aptitud clínica.
+
+Ver `docs/ingredient-library/19_ARCHITECTURAL_DECISION_REGULATORY_EXEMPTIONS.md` y ADR-026 en `DECISIONS.md`.
+
+### Room v4 — capa de exenciones regulatorias — CERRADO
+
+Room v3 -> v4 añade de forma aditiva `regulatory_exemptions` con FKs hacia ingrediente, grupo y fuente, y un índice único conceptual por ingrediente + grupo + jurisdicción + efecto.
+
+La primera ejecución detectó un fallo exclusivo de una prueba histórica que no registraba toda la cadena 2 -> 4. Corregida la prueba, el gate final quedó:
+
+```text
+assembleDebug                  PASS
+testDebugUnitTest              PASS
+lintDebug                      PASS
+compileDebugAndroidTestKotlin  PASS
+test dirigido 2 -> 4           PASS — 1/1
+connectedDebugAndroidTest      PASS — 39/39, 0 skipped, 0 failed
+assembleRelease                PASS
+Room schema export             PASS — 1.json, 2.json, 3.json, 4.json
+```
+
+`4.json` fue auditado: versión 4, 15 entidades, 12 columnas regulatorias, tres FKs `NO ACTION`, tres índices simples y el índice único esperado. Está versionado en la rama.
+
+Ver `docs/ingredient-library/20_ROOM_V4_REGULATORY_EXEMPTIONS.md` y `21_ROOM_V4_SCHEMA_REVIEW.md`.
+
+### Catalog schema v4 — transporte de exenciones — IMPLEMENTADO, GATE PENDIENTE
+
+La infraestructura ya admite transportar exenciones regulatorias desde un catálogo versionado hasta Room v4:
+
+```text
+CatalogBundle / manifest       IMPLEMENTADO
+Asset reader                   IMPLEMENTADO
+Validator schema 4             IMPLEMENTADO
+DAO / importer transaccional   IMPLEMENTADO
+Modelo de dominio/repositorio  IMPLEMENTADO
+Pruebas unitarias              AÑADIDAS
+Prueba instrumentada sintética AÑADIDA
+```
+
+El fixture sintético prueba que una exención puede persistirse sin crear ninguna relación de seguridad. No constituye evidencia legal ni contenido productivo.
+
+El catálogo activo sigue siendo v6/schema3 hasta superar el gate. No se ha creado todavía un `ingredient-catalog/v7` real.
+
+Ver `docs/ingredient-library/22_CATALOG_SCHEMA_V4_REGULATORY_EXEMPTIONS.md`.
 
 ### Dossier técnico de seguridad alimentaria para soporte de registro
 
