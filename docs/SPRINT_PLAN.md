@@ -80,7 +80,7 @@ Batch 01 culinario v3                VALIDADO — 36/36 instrumented PASS
 Batch 02 culinario v4                VALIDADO en gate combinado
 Decisión de linaje                   OPCIÓN B ACEPTADA
 Room v2 -> v3 + linaje               CERRADO — 39/39; 3.json revisado y versionado
-Catálogo v5 con linaje real          IMPLEMENTADO — validación local pendiente
+Catálogo v5 con linaje real          VALIDADO — 39/39; Room sigue 1/2/3
 Dossier soporte regulatorio          BASE DOCUMENTAL CREADA — refresh oficial antes de uso externo
 Mantenimiento conocimiento sensible REQUISITO REGISTRADO — revisión anual + ADR distribución pendiente
 Mapeo masivo no revisado             NO AUTORIZADO
@@ -174,7 +174,7 @@ Room schema export             PASS — 1.json, 2.json, 3.json
 
 Ver `docs/ingredient-library/14_LINEAGE_GRAPH_IMPLEMENTATION.md`, `15_ROOM_V3_VALIDATION_GATE.md` y `16_ROOM_V3_SCHEMA_REVIEW.md`.
 
-### Catálogo v5 — primer contenido real de linaje
+### Catálogo v5 — primer contenido real de linaje — VALIDADO
 
 `ingredient-catalog/v5/` es el primer bundle que usa catalog schema v3 con aristas reales.
 
@@ -199,7 +199,20 @@ Delta desde v4:
 
 La primera expansión se limita a cortes físicos de baja ambigüedad. El objetivo es validar en datos reales la arquitectura de linaje sin introducir derivados con consecuencias regulatorias o clínicas todavía no revisadas.
 
-`IngredientCatalogAssetReader` apunta ahora a v5. El test instrumentado valida recuentos, persistencia, recorrido `Pechuga de pollo -> Pollo`, idempotencia, rollback y que el linaje no genere relaciones de seguridad.
+El gate local quedó verde el 2026-08-08:
+
+```text
+assembleDebug                  PASS
+testDebugUnitTest              PASS
+lintDebug                      PASS
+compileDebugAndroidTestKotlin  PASS
+connectedDebugAndroidTest      PASS — 39/39, 0 skipped, 0 failed
+assembleRelease                PASS
+Room schemas                   1.json, 2.json, 3.json únicamente
+working tree                   clean
+```
+
+`IngredientCatalogAssetReader` apunta a v5. El siguiente paso es una revisión documental específica de derivados antes de crear una nueva versión de catálogo con harinas, aceites u otros derivados.
 
 Ver `docs/ingredient-library/17_CATALOG_V5_FIRST_LINEAGE_CONTENT.md`.
 
