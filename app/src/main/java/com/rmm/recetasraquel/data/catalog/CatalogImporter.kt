@@ -8,6 +8,7 @@ import com.rmm.recetasraquel.data.local.entity.FoodSafetyGroupEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientAliasEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientCategoryEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientSafetyRelationEntity
+import com.rmm.recetasraquel.data.local.entity.RegulatoryExemptionEntity
 import com.rmm.recetasraquel.data.local.entity.SafetySourceEntity
 import com.rmm.recetasraquel.util.TimeProvider
 
@@ -51,6 +52,7 @@ class CatalogImporter(
             safetyGroups = bundle.safetyGroups.map { it.toEntity() },
             safetySources = bundle.safetySources.map { it.toEntity() },
             safetyRelations = bundle.safetyRelations.map { it.toEntity() },
+            regulatoryExemptions = bundle.regulatoryExemptions.map { it.toEntity() },
             metadata = CatalogMetadataEntity(
                 key = METADATA_KEY,
                 catalogVersion = manifest.catalogVersion,
@@ -139,6 +141,21 @@ class CatalogImporter(
         sourceId = sourceId,
         notes = notes,
         reviewedAt = reviewedAt,
+    )
+
+    private fun CatalogRegulatoryExemptionRecord.toEntity() = RegulatoryExemptionEntity(
+        id = id,
+        ingredientId = ingredientId,
+        safetyGroupId = safetyGroupId,
+        jurisdiction = jurisdiction,
+        regulatoryEffect = regulatoryEffect,
+        conditions = conditions,
+        sourceId = sourceId,
+        effectiveFrom = effectiveFrom,
+        effectiveTo = effectiveTo,
+        reviewedAt = reviewedAt,
+        notes = notes,
+        isActive = isActive,
     )
 
     companion object {
