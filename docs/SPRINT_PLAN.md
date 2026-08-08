@@ -54,7 +54,7 @@ Objetivos principales:
 - taxonomía de seguridad alimentaria extensible;
 - trazabilidad de fuentes/evidencia;
 - alertas no absolutas sobre alérgenos, derivados, PAL, reactividad cruzada e información desconocida;
-- migración conservadora desde Room v1 con pérdida de datos = 0;
+- migración conservadora con pérdida de datos = 0;
 - catálogo versionado independiente del esquema Room;
 - funcionamiento completamente offline.
 
@@ -73,99 +73,92 @@ Fase 1 — investigación               CERRADA para pasar a diseño
 Fase 2 — diseño                      CERRADA como base de implementación
 Fase 3 — Room v1 -> v2               CERRADA — 34/34 instrumented PASS
 Fase 4 — infraestructura catálogo    CERRADA — 36/36 instrumented PASS
-Población controlada del catálogo    EN CURSO — Batch 02 v4 IMPLEMENTADO; gate local pendiente
-Decisión de linaje/variantes          REQUERIDA antes de derivados/cortes
+Catálogo regulatorio v2              VALIDADO
+Batch 01 culinario v3                VALIDADO — 36/36 instrumented PASS
+Batch 02 culinario v4                IMPLEMENTADO — gate combinado pendiente
+Decisión de linaje                   OPCIÓN B ACEPTADA
+Room v2 -> v3 + linaje               IMPLEMENTADO — validación local pendiente
 Mapeo masivo no revisado             NO AUTORIZADO
 Merge a master                       NO AUTORIZADO todavía
 ```
 
 ### Gate Fase 3 superado
 
-La rama `program/ingredient-library-food-safety` contiene Room v2, migración explícita no destructiva, esquema `2.json` versionado y prueba instrumentada de migración real v1 -> v2.
-
-La migración conserva los datos legacy y asigna a cada ingrediente antiguo un origen personalizado `legacy:<ingredientId>` sin fuzzy matching ni asociación automática al catálogo.
-
-Queda como requisito transitorio para fases posteriores asegurar que todo ingrediente nuevo creado por el flujo de biblioteca/personalizado persista exactamente un origen (`catalogIngredientId XOR customIngredientId`) antes de autorizar el merge completo del programa a `master`.
+La migración Room v1 -> v2 conserva los datos legacy y asigna a cada ingrediente antiguo un origen personalizado `legacy:<ingredientId>` sin fuzzy matching ni asociación automática al catálogo. El esquema `2.json` está versionado y la prueba instrumentada real quedó validada.
 
 ### Gate Fase 4 superado
 
-La infraestructura del catálogo versionado bajo `app/src/main/assets/ingredient-catalog/v1/` está validada. Incluye manifiesto, 20 categorías estructurales, parser JSON, normalización determinista, validador integral, DAO/importador transaccional, repositorio separado y pruebas de importación/idempotencia/rollback.
-
-Validación de cierre: `assembleDebug`, unit tests, lint, compilación instrumentada y `assembleRelease` PASS; `connectedDebugAndroidTest` PASS 36/36; working tree limpio.
+La infraestructura del catálogo versionado incluye manifiesto, categorías estructurales, parser JSON, normalización determinista, validador integral, DAO/importador transaccional, repositorio separado y pruebas de importación/idempotencia/rollback.
 
 `ingredient-catalog/v1/` se conserva como bundle histórico e inmutable de infraestructura.
 
 Ver `docs/ingredient-library/09_PHASE_04_CATALOG_INFRASTRUCTURE.md`.
 
-### Población controlada — catálogo regulatorio v2
+### Catálogo regulatorio v2
 
-`app/src/main/assets/ingredient-catalog/v2/` es la primera versión poblada e inmutable del catálogo.
-
-Su seed validado contiene 27 ingredientes regulatoriamente anclados, 22 alias, los 14 grupos del Anexo II, 3 fuentes oficiales UE y 27 relaciones de seguridad con evidencia `EU_LEGAL`.
-
-El gate local del seed v2 quedó superado con builds debug/release, unit/lint, compilación instrumentada y `connectedDebugAndroidTest` 36/36 PASS. Room mantuvo únicamente `1.json` y `2.json`.
+`ingredient-catalog/v2/` es la primera versión poblada e inmutable. Su seed validado contiene 27 ingredientes regulatoriamente anclados, 22 alias, los 14 grupos del Anexo II, 3 fuentes oficiales UE y 27 relaciones de seguridad con evidencia `EU_LEGAL`.
 
 Ver `docs/ingredient-library/10_CONTROLLED_CATALOG_SEED.md`.
 
-### Población controlada — Batch 01 culinario v3
+### Batch 01 culinario v3
 
-`app/src/main/assets/ingredient-catalog/v3/` permanece como versión histórica inmutable del primer lote culinario.
+`ingredient-catalog/v3/` permanece como versión histórica inmutable. Añadió 100 ingredientes culinarios de verduras, frutas, hierbas, especias, cereales y legumbres sin inferir relaciones de seguridad.
 
-Estado validado del catálogo v3:
+Estado validado:
 
 ```text
 catalogVersion           3
-releaseStatus            DRAFT
 categorías               20
 ingredientes canónicos  127
 alias                    122
-grupos de seguridad      14
-fuentes de seguridad      3
 relaciones de seguridad  27
 ```
 
-Batch 01 añadió 100 ingredientes culinarios de verduras, frutas, hierbas, especias, cereales y legumbres. Los 100 ingredientes nuevos quedaron `REVIEW_REQUIRED` y sin relaciones de seguridad inferidas.
-
-El gate local v3 quedó superado el 2026-08-08 con `assembleDebug`, unit tests, lint, compilación instrumentada y `assembleRelease` PASS; `connectedDebugAndroidTest` PASS 36/36; Room conserva exclusivamente `1.json` y `2.json`; working tree limpio.
+El gate local quedó superado con `connectedDebugAndroidTest` 36/36 PASS y Room conservó únicamente `1.json` y `2.json`.
 
 Ver `docs/ingredient-library/11_CULINARY_CATALOG_BATCH_01.md`.
 
-### Población controlada — Batch 02 culinario v4
+### Batch 02 culinario v4
 
-Se ha creado `app/src/main/assets/ingredient-catalog/v4/` como nueva versión inmutable activa.
+`ingredient-catalog/v4/` es el bundle activo durante el gate de infraestructura de linaje. Añade 100 identidades culinarias simples —fuentes de carne y aves, semillas/especias, setas, hortalizas/tubérculos y frutas— y 98 alias conservadores.
 
-Estado implementado del catálogo v4:
+Estado implementado:
 
 ```text
 catalogVersion           4
-releaseStatus            DRAFT
+catalog schemaVersion    2
 categorías               20
 ingredientes canónicos  227
 alias                    220
-grupos de seguridad      14
-fuentes de seguridad      3
+relaciones de linaje      0
 relaciones de seguridad  27
 ```
 
-Batch 02 añade 100 identidades culinarias simples: fuentes de carne y aves, semillas/especias, setas, hortalizas/tubérculos adicionales y frutas. Añade 98 alias conservadores.
+Todos los nuevos registros están `REVIEW_REQUIRED`; las relaciones de seguridad permanecen exactamente en 27.
 
-Todos los nuevos registros están `REVIEW_REQUIRED` y las relaciones de seguridad permanecen exactamente en 27. El reader activo apunta a v4 y el test instrumentado se ha actualizado a los nuevos recuentos y a rollback frente a una v5 inválida.
+Ver `docs/ingredient-library/12_CULINARY_CATALOG_BATCH_02.md`.
 
-El gate local de v4 está pendiente. Ver `docs/ingredient-library/12_CULINARY_CATALOG_BATCH_02.md`.
+### ADR aceptada — linaje, variantes y derivados
 
-### Gate arquitectónico — linaje, variantes y derivados
+Se ha aceptado la **Opción B: grafo de linaje no clínico**. Las relaciones iniciales son `VARIANT_OF`, `CUT_OF`, `DERIVED_FROM` y `FORM_OF`.
 
-La expansión siguiente ya no consiste únicamente en añadir identidades planas. Cortes de carne, harinas, aceites, derivados lácteos, tofu, tahini y otras formas requieren expresar relaciones entre ingredientes.
+El grafo de linaje y el grafo de seguridad alimentaria son conceptos y tablas separados. Ninguna relación de linaje crea, hereda o propaga una relación de seguridad.
 
-El modelo actual no dispone de un grafo de linaje/variantes. Se ha detenido la implementación antes de cruzar ese límite.
+Ver `docs/ingredient-library/13_ARCHITECTURAL_DECISION_INGREDIENT_LINEAGE.md` y ADR-025 en `DECISIONS.md`.
 
-La decisión está documentada en:
+### Room v3 — infraestructura de linaje implementada
 
-```text
-docs/ingredient-library/13_ARCHITECTURAL_DECISION_INGREDIENT_LINEAGE.md
-```
+Room evoluciona explícitamente v2 -> v3 sin migración destructiva. Se añade `catalog_ingredient_relations`, se amplían importer/validator/DAO/repository y el catalog schema v3 admite ficheros de linaje únicos o fragmentados.
 
-La recomendación técnica es introducir un grafo de linaje no clínico separado del grafo de seguridad, sin propagación automática de alérgenos, mediante una migración Room explícita v2 -> v3. Esta opción requiere autorización antes de implementarse.
+La misma migración corrige el contrato de `custom_ingredient_safety_relations`: toda relación personalizada pasa a tener `sourceId`; el antiguo texto libre se conserva como `sourceDetails` mediante una fuente de migración determinista.
+
+También se ha cerrado el riesgo transitorio del editor antiguo: un ingrediente nuevo de texto libre sin origen explícito se persiste como un `CustomIngredient` dedicado `recipe-custom:<ingredientId>` antes de crear la FK del ingrediente de receta. Los orígenes `legacy:*`, catálogo y personalizados reales se preservan; un origen doble se rechaza.
+
+Pruebas añadidas cubren migración encadenada v1 -> v3, migración directa v2 -> v3 con preservación de fuente personalizada, validación de ciclos/referencias del grafo, importación de v4 con cero aristas y persistencia del editor libre sin fallo de FK.
+
+El gate local combinado está pendiente. Hasta superarlo no se crea un catálogo v5 con aristas reales de linaje y no se considera cerrado Room v3.
+
+Ver `docs/ingredient-library/14_LINEAGE_GRAPH_IMPLEMENTATION.md`.
 
 ## Sprints futuros congelados
 
