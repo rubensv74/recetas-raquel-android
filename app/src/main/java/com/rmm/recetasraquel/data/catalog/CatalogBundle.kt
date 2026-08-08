@@ -18,6 +18,8 @@ data class CatalogFiles(
     val aliases: String? = null,
     val ingredientShards: List<String>? = null,
     val aliasShards: List<String>? = null,
+    val ingredientRelations: String? = null,
+    val ingredientRelationShards: List<String>? = null,
     val safetyGroups: String,
     val safetySources: String,
     val safetyRelations: String,
@@ -30,6 +32,7 @@ data class CatalogCounts(
     val safetyGroups: Int,
     val safetySources: Int,
     val safetyRelations: Int,
+    val ingredientRelations: Int = 0,
 )
 
 data class CatalogCategoryRecord(
@@ -61,6 +64,17 @@ data class CatalogAliasRecord(
     val normalizedAlias: String,
     val languageCode: String,
     val aliasType: String,
+)
+
+data class CatalogIngredientRelationRecord(
+    val id: String,
+    val childIngredientId: String,
+    val parentIngredientId: String,
+    val relationType: String,
+    val reviewedAt: String,
+    val sourceReference: String? = null,
+    val notes: String? = null,
+    val isActive: Boolean = true,
 )
 
 data class CatalogSafetyGroupRecord(
@@ -102,6 +116,7 @@ data class IngredientCatalogBundle(
     val categories: List<CatalogCategoryRecord>,
     val ingredients: List<CatalogIngredientRecord>,
     val aliases: List<CatalogAliasRecord>,
+    val ingredientRelations: List<CatalogIngredientRelationRecord>,
     val safetyGroups: List<CatalogSafetyGroupRecord>,
     val safetySources: List<CatalogSafetySourceRecord>,
     val safetyRelations: List<CatalogSafetyRelationRecord>,
