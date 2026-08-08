@@ -1,6 +1,6 @@
 # 14 — LINEAGE GRAPH IMPLEMENTATION
 
-**Status:** IMPLEMENTED — local validation pending  
+**Status:** CLOSED — Room v3 validated and schema versioned  
 **Branch:** `program/ingredient-library-food-safety`  
 **Date:** 2026-08-08
 
@@ -23,7 +23,7 @@ No lineage edge may create, inherit or imply a food-safety relation.
 
 ## Room evolution
 
-The implementation evolves Room from v2 to v3 with an explicit non-destructive migration.
+Room evolves from v2 to v3 with an explicit non-destructive migration.
 
 New table:
 
@@ -41,46 +41,44 @@ catalog_ingredient_relations
 
 Both child and parent reference `catalog_ingredients`. A unique index protects `(childIngredientId,parentIngredientId,relationType)`.
 
-The migration also corrects a Phase-3 contract discrepancy in `custom_ingredient_safety_relations`: custom safety relations now require a `sourceId` just like shipped safety relations. Existing v2 rows, if present, are preserved through the deterministic migration source `LOCAL_USER_DECLARED_MIGRATED_V2`, and their former free-text `sourceDescription` is retained as `sourceDetails`.
+The migration also corrects the previous custom-safety provenance discrepancy: `custom_ingredient_safety_relations` now requires `sourceId`; legacy free-text `sourceDescription` is retained as `sourceDetails` and associated with deterministic source `LOCAL_USER_DECLARED_MIGRATED_V2`.
 
 No destructive migration or fallback is introduced.
 
 ## Catalog schema evolution
 
-Catalog schema v3 adds optional lineage files while remaining backward-compatible with catalog schema v1/v2.
+Catalog schema v3 adds optional lineage files while remaining backward-compatible with earlier catalog schemas.
 
-A future catalog version may use either:
+Supported declarations:
 
 ```text
 ingredientRelations: "ingredient-relations.json"
 ```
 
-or sharded files:
+or:
 
 ```text
 ingredientRelationShards: [ ... ]
 ```
 
-Older catalog versions have zero lineage relations.
-
-The active content bundle remains immutable catalog v4/schema v2 during the Room-v3 infrastructure gate. The first catalog containing actual lineage edges must be a new catalog version.
+Catalogs v1-v4 remain immutable historical bundles. Catalog v5 is the first bundle containing real persisted lineage edges.
 
 ## Import and repository support
 
-The importer now persists lineage relations in the same catalog replacement transaction as categories, ingredients, aliases and safety data.
+The importer persists lineage relations in the same transaction as categories, ingredients, aliases and safety data.
 
-The catalog repository exposes explicit traversal in both directions:
+Traversal is explicit in both directions:
 
 ```text
 getParentRelations(ingredientId)
 getChildRelations(ingredientId)
 ```
 
-The domain model uses a dedicated `IngredientLineageRelation` / `IngredientLineageType`; food-safety types are not reused.
+The domain uses dedicated `IngredientLineageRelation` / `IngredientLineageType`; food-safety types are not reused.
 
 ## Validation rules
 
-The catalog validator rejects:
+The validator rejects:
 
 - unknown child or parent ingredient IDs;
 - self-relations;
@@ -91,13 +89,11 @@ The catalog validator rejects:
 - lineage cycles;
 - lineage file declarations before catalog schema v3.
 
-Food-safety validation remains independent and unchanged.
+Food-safety validation remains independent.
 
-## Transitional editor compatibility fixed
+## Transitional editor compatibility
 
-The pre-library recipe editor still accepts free-text ingredient names. Before this change, a newly created free-text ingredient could reach persistence with both origin columns null, which conflicted with the intended origin invariant and could later break foreign-key-safe persistence.
-
-The transitional compatibility path now works as follows:
+The pre-library editor still accepts free-text ingredient names. A new free-text ingredient without explicit origin is normalized before persistence as:
 
 ```text
 free-text recipe ingredient without origin
@@ -106,42 +102,36 @@ free-text recipe ingredient without origin
     -> custom master upserted before IngredientEntity insert
 ```
 
-Existing `legacy:*`, real custom and catalog origins are preserved and are never rewritten by this compatibility mechanism. A dual origin (`catalogIngredientId` and `customIngredientId` both non-null) is rejected before persistence.
+Existing `legacy:*`, real custom and catalog origins are preserved. A dual origin is rejected before persistence.
 
-This keeps the old editor operational until the library-first/custom-ingredient UX replaces the transitional path in later phases.
+## Validation evidence
 
-## Automated evidence added
-
-Tests now cover:
-
-- schema-v3 lineage file parsing;
-- lineage reference/type/self/duplicate/cycle validation;
-- catalog v4 import under the lineage-capable importer with zero lineage edges;
-- Room v1 -> v3 chained migration;
-- Room v2 -> v3 preservation of existing custom safety source text;
-- creation/update of free-text recipe ingredients with an explicit compatibility custom origin and clean foreign keys.
-
-## Validation gate
-
-Before catalog content starts using lineage, run and verify:
+The completed Room-v3 gate produced:
 
 ```text
-Room v2 -> v3 migration
-Room v1 -> v3 chained migration
-schema 3.json export
-catalog v4 import under Room v3
-unit tests
-lint
-instrumented tests
-release build
+assembleDebug                  PASS
+testDebugUnitTest              PASS
+lintDebug                      PASS
+compileDebugAndroidTestKotlin  PASS
+connectedDebugAndroidTest      PASS — 39/39, 0 skipped, 0 failed
+assembleRelease                PASS
+Room schema export             PASS — 1.json, 2.json, 3.json
 ```
 
-Expected schema history after the build:
+The generated `3.json` was reviewed against entities and migration SQL and is now versioned in the program branch.
 
-```text
-1.json
-2.json
-3.json
-```
+Validated invariants include:
 
-`3.json` must be reviewed and versioned only after the gate passes.
+- v1 -> v3 chained migration;
+- v2 -> v3 direct migration;
+- preservation of custom safety source details;
+- lineage reference/type/cycle validation;
+- persistence and traversal of `CUT_OF`;
+- zero automatic safety propagation from lineage;
+- free-text editor compatibility with explicit custom origin.
+
+See `15_ROOM_V3_VALIDATION_GATE.md` and `16_ROOM_V3_SCHEMA_REVIEW.md`.
+
+## Closure
+
+Room v3 infrastructure is formally closed. Further culinary lineage content is introduced only through new immutable catalog versions; the Room schema does not need to change merely to add new edges.
