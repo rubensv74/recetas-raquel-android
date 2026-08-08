@@ -75,9 +75,9 @@ Fase 3 — Room v1 -> v2               CERRADA — 34/34 instrumented PASS
 Fase 4 — infraestructura catálogo    CERRADA — 36/36 instrumented PASS
 Catálogo regulatorio v2              VALIDADO
 Batch 01 culinario v3                VALIDADO — 36/36 instrumented PASS
-Batch 02 culinario v4                IMPLEMENTADO — gate combinado pendiente
+Batch 02 culinario v4                VALIDADO en gate combinado
 Decisión de linaje                   OPCIÓN B ACEPTADA
-Room v2 -> v3 + linaje               IMPLEMENTADO — validación local pendiente
+Room v2 -> v3 + linaje               EJECUCIÓN GREEN — 39/39; revisión/versionado 3.json pendiente
 Mapeo masivo no revisado             NO AUTORIZADO
 Merge a master                       NO AUTORIZADO todavía
 ```
@@ -122,7 +122,7 @@ Ver `docs/ingredient-library/11_CULINARY_CATALOG_BATCH_01.md`.
 
 `ingredient-catalog/v4/` es el bundle activo durante el gate de infraestructura de linaje. Añade 100 identidades culinarias simples —fuentes de carne y aves, semillas/especias, setas, hortalizas/tubérculos y frutas— y 98 alias conservadores.
 
-Estado implementado:
+Estado validado en el gate combinado:
 
 ```text
 catalogVersion           4
@@ -146,7 +146,7 @@ El grafo de linaje y el grafo de seguridad alimentaria son conceptos y tablas se
 
 Ver `docs/ingredient-library/13_ARCHITECTURAL_DECISION_INGREDIENT_LINEAGE.md` y ADR-025 en `DECISIONS.md`.
 
-### Room v3 — infraestructura de linaje implementada
+### Room v3 — infraestructura de linaje implementada y ejecución validada
 
 Room evoluciona explícitamente v2 -> v3 sin migración destructiva. Se añade `catalog_ingredient_relations`, se amplían importer/validator/DAO/repository y el catalog schema v3 admite ficheros de linaje únicos o fragmentados.
 
@@ -154,11 +154,21 @@ La misma migración corrige el contrato de `custom_ingredient_safety_relations`:
 
 También se ha cerrado el riesgo transitorio del editor antiguo: un ingrediente nuevo de texto libre sin origen explícito se persiste como un `CustomIngredient` dedicado `recipe-custom:<ingredientId>` antes de crear la FK del ingrediente de receta. Los orígenes `legacy:*`, catálogo y personalizados reales se preservan; un origen doble se rechaza.
 
-Pruebas añadidas cubren migración encadenada v1 -> v3, migración directa v2 -> v3 con preservación de fuente personalizada, validación de ciclos/referencias del grafo, importación de v4 con cero aristas y persistencia del editor libre sin fallo de FK.
+El gate combinado quedó verde en ejecución local:
 
-El gate local combinado está pendiente. Hasta superarlo no se crea un catálogo v5 con aristas reales de linaje y no se considera cerrado Room v3.
+```text
+assembleDebug                  PASS
+testDebugUnitTest              PASS
+lintDebug                      PASS
+compileDebugAndroidTestKotlin  PASS
+connectedDebugAndroidTest      PASS — 39/39
+assembleRelease                PASS
+Room schema export             PASS — 1.json, 2.json, 3.json
+```
 
-Ver `docs/ingredient-library/14_LINEAGE_GRAPH_IMPLEMENTATION.md`.
+El único cierre pendiente de Room v3 es revisar el `3.json` generado localmente contra entidades y SQL de migración y después versionarlo. Hasta completar esa revisión no se crea un catálogo v5 con aristas reales de linaje.
+
+Ver `docs/ingredient-library/14_LINEAGE_GRAPH_IMPLEMENTATION.md` y `15_ROOM_V3_VALIDATION_GATE.md`.
 
 ## Sprints futuros congelados
 
