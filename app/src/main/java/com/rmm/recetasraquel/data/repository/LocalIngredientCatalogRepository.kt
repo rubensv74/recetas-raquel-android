@@ -4,8 +4,11 @@ import com.rmm.recetasraquel.data.catalog.CatalogImportResult
 import com.rmm.recetasraquel.data.catalog.CatalogImporter
 import com.rmm.recetasraquel.data.local.dao.IngredientCatalogDao
 import com.rmm.recetasraquel.data.local.entity.CatalogIngredientRelationEntity
+import com.rmm.recetasraquel.data.local.entity.RegulatoryExemptionEntity
 import com.rmm.recetasraquel.domain.ingredient.IngredientLineageRelation
 import com.rmm.recetasraquel.domain.ingredient.IngredientLineageType
+import com.rmm.recetasraquel.domain.ingredient.RegulatoryEffect
+import com.rmm.recetasraquel.domain.ingredient.RegulatoryExemption
 import com.rmm.recetasraquel.domain.repository.IngredientCatalogImportSummary
 import com.rmm.recetasraquel.domain.repository.IngredientCatalogRepository
 
@@ -38,6 +41,10 @@ class LocalIngredientCatalogRepository(
         dao.getChildRelations(ingredientId).map { it.toDomain() }
     }
 
+    override suspend fun getRegulatoryExemptions(ingredientId: String): Result<List<RegulatoryExemption>> = runCatching {
+        dao.getRegulatoryExemptionsForIngredient(ingredientId).map { it.toDomain() }
+    }
+
     private fun CatalogIngredientRelationEntity.toDomain() = IngredientLineageRelation(
         id = id,
         childIngredientId = childIngredientId,
@@ -45,6 +52,20 @@ class LocalIngredientCatalogRepository(
         type = IngredientLineageType.valueOf(relationType),
         reviewedAt = reviewedAt,
         sourceReference = sourceReference,
+        notes = notes,
+    )
+
+    private fun RegulatoryExemptionEntity.toDomain() = RegulatoryExemption(
+        id = id,
+        ingredientId = ingredientId,
+        safetyGroupId = safetyGroupId,
+        jurisdiction = jurisdiction,
+        effect = RegulatoryEffect.valueOf(regulatoryEffect),
+        conditions = conditions,
+        sourceId = sourceId,
+        effectiveFrom = effectiveFrom,
+        effectiveTo = effectiveTo,
+        reviewedAt = reviewedAt,
         notes = notes,
     )
 }
