@@ -1,0 +1,12 @@
+[
+  {"id":"alias-wheat-flour-short","ingredientId":"ing-wheat-flour","alias":"Harina trigo","normalizedAlias":"harina trigo","languageCode":"es","aliasType":"COMMON"},
+  {"id":"alias-spelt-flour-short","ingredientId":"ing-spelt-flour","alias":"Harina espelta","normalizedAlias":"harina espelta","languageCode":"es","aliasType":"COMMON"},
+  {"id":"alias-khorasan-flour-kamut","ingredientId":"ing-khorasan-flour","alias":"Harina de kamut","normalizedAlias":"harina de kamut","languageCode":"es","aliasType":"COMMON"},
+  {"id":"alias-rye-flour-short","ingredientId":"ing-rye-flour","alias":"Harina centeno","normalizedAlias":"harina centeno","languageCode":"es","aliasType":"COMMON"},
+  {"id":"alias-barley-flour-short","ingredientId":"ing-barley-flour","alias":"Harina cebada","normalizedAlias":"harina cebada","languageCode":"es","aliasType":"COMMON"},
+  {"id":"alias-oats-flour-short","ingredientId":"ing-oats-flour","alias":"Harina avena","normalizedAlias":"harina avena","languageCode":"es","aliasType":"COMMON"},
+  {"id":"alias-rice-flour-short","ingredientId":"ing-rice-flour","alias":"Harina arroz","normalizedAlias":"harina arroz","languageCode":"es","aliasType":"COMMON"},
+  {"id":"alias-corn-flour-short","ingredientId":"ing-corn-flour","alias":"Harina maíz","normalizedAlias":"harina maiz","languageCode":"es","aliasType":"COMMON"},
+  {"id":"alias-chickpea-flour-short","ingredientId":"ing-chickpea-flour","alias":"Harina garbanzo","normalizedAlias":"harina garbanzo","languageCode":"es","aliasType":"COMMON"},
+  {"id":"alias-buckwheat-flour-short","ingredientId":"ing-buckwheat-flour","alias":"Harina trigo sarraceno","normalizedAlias":"harina trigo sarraceno","languageCode":"es","aliasType":"COMMON"}
+]
