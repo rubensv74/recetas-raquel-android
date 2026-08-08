@@ -56,6 +56,13 @@ interface IngredientCatalogDao {
     @Query("SELECT COUNT(*) FROM ingredient_safety_relations")
     suspend fun countSafetyRelations(): Int
 
+    @Query(
+        "SELECT * FROM ingredient_safety_relations " +
+            "WHERE ingredientId = :ingredientId " +
+            "ORDER BY safetyGroupId ASC, relationType ASC, id ASC",
+    )
+    suspend fun getSafetyRelationsForIngredient(ingredientId: String): List<IngredientSafetyRelationEntity>
+
     @Upsert
     suspend fun upsertCategories(items: List<IngredientCategoryEntity>)
 
