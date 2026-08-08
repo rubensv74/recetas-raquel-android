@@ -13,6 +13,12 @@ object IngredientLibraryMigrations {
         }
     }
 
+    val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            createRegulatoryExemptions(db)
+        }
+    }
+
     private fun createCatalogIngredientRelations(db: SupportSQLiteDatabase) {
         db.execSQL(
             """
@@ -104,6 +110,43 @@ object IngredientLibraryMigrations {
         )
         db.execSQL(
             "CREATE INDEX IF NOT EXISTS `index_custom_ingredient_safety_relations_sourceId` ON `custom_ingredient_safety_relations` (`sourceId`)",
+        )
+    }
+
+    private fun createRegulatoryExemptions(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `regulatory_exemptions` (
+                `id` TEXT NOT NULL,
+                `ingredientId` TEXT NOT NULL,
+                `safetyGroupId` TEXT NOT NULL,
+                `jurisdiction` TEXT NOT NULL,
+                `regulatoryEffect` TEXT NOT NULL,
+                `conditions` TEXT NOT NULL,
+                `sourceId` TEXT NOT NULL,
+                `effectiveFrom` TEXT,
+                `effectiveTo` TEXT,
+                `reviewedAt` TEXT NOT NULL,
+                `notes` TEXT,
+                `isActive` INTEGER NOT NULL,
+                PRIMARY KEY(`id`),
+                FOREIGN KEY(`ingredientId`) REFERENCES `catalog_ingredients`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION,
+                FOREIGN KEY(`safetyGroupId`) REFERENCES `food_safety_groups`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION,
+                FOREIGN KEY(`sourceId`) REFERENCES `safety_sources`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION
+            )
+            """.trimIndent(),
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_regulatory_exemptions_ingredientId` ON `regulatory_exemptions` (`ingredientId`)",
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_regulatory_exemptions_safetyGroupId` ON `regulatory_exemptions` (`safetyGroupId`)",
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_regulatory_exemptions_sourceId` ON `regulatory_exemptions` (`sourceId`)",
+        )
+        db.execSQL(
+            "CREATE UNIQUE INDEX IF NOT EXISTS `index_regulatory_exemptions_ingredientId_safetyGroupId_jurisdiction_regulatoryEffect` ON `regulatory_exemptions` (`ingredientId`, `safetyGroupId`, `jurisdiction`, `regulatoryEffect`)",
         )
     }
 }
