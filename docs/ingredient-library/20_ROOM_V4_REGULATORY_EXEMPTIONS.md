@@ -1,6 +1,6 @@
 # 20 — ROOM V4: CAPA DE EXENCIONES REGULATORIAS
 
-**Estado:** IMPLEMENTADO — validación local pendiente  
+**Estado:** IMPLEMENTADO — gate local en corrección  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-08
 
@@ -91,9 +91,9 @@ MIGRATION_2_3
 MIGRATION_3_4
 ```
 
-## 7. Prueba de migración
+## 7. Pruebas de migración
 
-`RecipeDatabaseMigrationTest` se amplía para validar el camino real:
+`RecipeDatabaseMigrationTest` valida el camino real:
 
 ```text
 Room v1 -> v2 -> v3 -> v4
@@ -108,6 +108,15 @@ Debe comprobar:
 - columnas regulatorias esperadas;
 - `PRAGMA foreign_key_check` sin errores;
 - `PRAGMA user_version = 4`.
+
+La prueba histórica `IngredientLibraryMigration23Test` también debe abrir correctamente una base física v2 con la versión actual de `RecipeDatabase`. Desde Room v4 eso requiere registrar la cadena completa:
+
+```text
+MIGRATION_2_3
+MIGRATION_3_4
+```
+
+La prueba conserva su objetivo original —verificar que el contrato `sourceId/sourceDetails` de v2 se preserva— y añade la comprobación de que la nueva tabla regulatoria queda vacía al llegar a v4.
 
 ## 8. Catálogo
 
@@ -125,7 +134,7 @@ La evolución del formato de catálogo para transportar exenciones se realizará
 
 ## 9. Gate local requerido
 
-Ejecutar:
+Gate completo:
 
 ```text
 clean assembleDebug
@@ -152,7 +161,38 @@ app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/4.json
 
 El archivo `4.json` deberá revisarse antes de versionarlo.
 
-## 10. Criterios de revisión de 4.json
+## 10. Primera ejecución del gate — 2026-08-08
+
+Resultados de producción/build:
+
+```text
+assembleDebug                  PASS
+testDebugUnitTest              PASS
+lintDebug                      PASS
+compileDebugAndroidTestKotlin  PASS
+assembleRelease                PASS
+Room schema export             PASS — 4.json generado
+```
+
+La suite instrumentada ejecutó 39 pruebas y terminó con **1 fallo**. El fallo no estaba en `MIGRATION_3_4`: la prueba histórica `IngredientLibraryMigration23Test` seguía construyendo la base actual con solo `MIGRATION_2_3`. Como `RecipeDatabase` ya tiene versión 4, Room solicitó correctamente una ruta completa `2 -> 4` y abortó con:
+
+```text
+A migration from 2 to 4 was required but not found
+```
+
+Corrección aplicada:
+
+```text
+IngredientLibraryMigration23Test
+  MIGRATION_2_3
+  MIGRATION_3_4
+  PRAGMA user_version = 4
+  regulatory_exemptions count = 0
+```
+
+No se ha modificado código de producción como consecuencia de este fallo; la corrección afecta únicamente al contrato de la prueba de migración histórica.
+
+## 11. Criterios de revisión de 4.json
 
 Debe existir `regulatory_exemptions` con:
 
@@ -162,7 +202,7 @@ Debe existir `regulatory_exemptions` con:
 - índice único conceptual sobre ingrediente + grupo + jurisdicción + efecto;
 - ausencia de cambios inesperados en las demás entidades.
 
-## 11. Siguiente paso tras gate verde
+## 12. Siguiente paso tras gate verde
 
 Después de revisar y versionar `4.json`:
 
