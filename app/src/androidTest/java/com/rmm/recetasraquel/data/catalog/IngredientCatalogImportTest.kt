@@ -31,17 +31,17 @@ class IngredientCatalogImportTest {
     }
 
     @Test
-    fun importsVersionedCulinaryBatch02AndIsIdempotent() = runBlocking {
+    fun importsVersionedLineageCatalogV5AndIsIdempotent() = runBlocking {
         val reader = IngredientCatalogAssetReader(AndroidAssetCatalogTextSource(context.assets))
         val bundle = reader.read()
 
-        assertEquals(2, bundle.manifest.schemaVersion)
-        assertEquals(4, bundle.manifest.catalogVersion)
+        assertEquals(3, bundle.manifest.schemaVersion)
+        assertEquals(5, bundle.manifest.catalogVersion)
         assertEquals("DRAFT", bundle.manifest.releaseStatus)
         assertEquals(20, bundle.categories.size)
-        assertEquals(227, bundle.ingredients.size)
-        assertEquals(220, bundle.aliases.size)
-        assertEquals(0, bundle.ingredientRelations.size)
+        assertEquals(242, bundle.ingredients.size)
+        assertEquals(235, bundle.aliases.size)
+        assertEquals(15, bundle.ingredientRelations.size)
         assertEquals(14, bundle.safetyGroups.size)
         assertEquals(3, bundle.safetySources.size)
         assertEquals(27, bundle.safetyRelations.size)
@@ -75,6 +75,13 @@ class IngredientCatalogImportTest {
             assertTrue(bundle.safetyRelations.none { it.ingredientId == ingredientId })
         }
 
+        val chickenBreast = bundle.ingredients.single { it.id == "ing-chicken-breast" }
+        assertEquals("REVIEW_REQUIRED", chickenBreast.verificationStatus)
+        val chickenBreastLineage = bundle.ingredientRelations.single { it.childIngredientId == "ing-chicken-breast" }
+        assertEquals("ing-chicken", chickenBreastLineage.parentIngredientId)
+        assertEquals("CUT_OF", chickenBreastLineage.relationType)
+        assertTrue(bundle.safetyRelations.none { it.ingredientId == "ing-chicken-breast" })
+
         val importer = CatalogImporter(
             reader = reader,
             dao = database.ingredientCatalogDao(),
@@ -84,23 +91,29 @@ class IngredientCatalogImportTest {
         val first = importer.ensureImported()
         assertTrue(first is CatalogImportResult.Imported)
         assertEquals(20, database.ingredientCatalogDao().countActiveCategories())
-        assertEquals(227, database.ingredientCatalogDao().countActiveIngredients())
-        assertEquals(220, database.ingredientCatalogDao().countAliases())
-        assertEquals(0, database.ingredientCatalogDao().countActiveIngredientRelations())
+        assertEquals(242, database.ingredientCatalogDao().countActiveIngredients())
+        assertEquals(235, database.ingredientCatalogDao().countAliases())
+        assertEquals(15, database.ingredientCatalogDao().countActiveIngredientRelations())
         assertEquals(14, database.ingredientCatalogDao().countActiveSafetyGroups())
         assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
 
+        val parents = database.ingredientCatalogDao().getParentRelations("ing-chicken-breast")
+        assertEquals(1, parents.size)
+        assertEquals("ing-chicken", parents.single().parentIngredientId)
+        assertEquals("CUT_OF", parents.single().relationType)
+        assertEquals(0, database.ingredientCatalogDao().getSafetyRelationsForIngredient("ing-chicken-breast").size)
+
         val metadata = requireNotNull(database.ingredientCatalogDao().getMetadata(CatalogImporter.METADATA_KEY))
-        assertEquals(4, metadata.catalogVersion)
+        assertEquals(5, metadata.catalogVersion)
         assertEquals("es-ES", metadata.locale)
         assertEquals("EU-ES", metadata.jurisdiction)
         assertEquals(1234L, metadata.importedAt)
 
         val second = importer.ensureImported()
         assertTrue(second is CatalogImportResult.AlreadyCurrent)
-        assertEquals(227, database.ingredientCatalogDao().countActiveIngredients())
-        assertEquals(220, database.ingredientCatalogDao().countAliases())
-        assertEquals(0, database.ingredientCatalogDao().countActiveIngredientRelations())
+        assertEquals(242, database.ingredientCatalogDao().countActiveIngredients())
+        assertEquals(235, database.ingredientCatalogDao().countAliases())
+        assertEquals(15, database.ingredientCatalogDao().countActiveIngredientRelations())
         assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
     }
 
@@ -138,7 +151,7 @@ class IngredientCatalogImportTest {
         realImporter.ensureImported()
 
         val brokenImporter = CatalogImporter(
-            reader = IngredientCatalogAssetReader(BrokenVersionFiveSource()),
+            reader = IngredientCatalogAssetReader(BrokenVersionSixSource()),
             dao = database.ingredientCatalogDao(),
             timeProvider = TimeProvider { 200L },
         )
@@ -146,11 +159,11 @@ class IngredientCatalogImportTest {
         val failure = runCatching { brokenImporter.ensureImported() }.exceptionOrNull()
         assertTrue(failure is CatalogValidationException)
         assertEquals(20, database.ingredientCatalogDao().countActiveCategories())
-        assertEquals(227, database.ingredientCatalogDao().countActiveIngredients())
-        assertEquals(220, database.ingredientCatalogDao().countAliases())
-        assertEquals(0, database.ingredientCatalogDao().countActiveIngredientRelations())
+        assertEquals(242, database.ingredientCatalogDao().countActiveIngredients())
+        assertEquals(235, database.ingredientCatalogDao().countAliases())
+        assertEquals(15, database.ingredientCatalogDao().countActiveIngredientRelations())
         assertEquals(27, database.ingredientCatalogDao().countSafetyRelations())
-        assertEquals(4, database.ingredientCatalogDao().getMetadata(CatalogImporter.METADATA_KEY)?.catalogVersion)
+        assertEquals(5, database.ingredientCatalogDao().getMetadata(CatalogImporter.METADATA_KEY)?.catalogVersion)
     }
 
     private class LineageBundleSource : CatalogTextSource {
@@ -201,13 +214,13 @@ class IngredientCatalogImportTest {
         override fun read(path: String): String = values[path] ?: error("Missing lineage test asset: $path")
     }
 
-    private class BrokenVersionFiveSource : CatalogTextSource {
+    private class BrokenVersionSixSource : CatalogTextSource {
         private val values = mapOf(
-            "ingredient-catalog/v4/manifest.json" to """
+            "ingredient-catalog/v5/manifest.json" to """
                 {
                   "catalogId":"broken",
                   "schemaVersion":1,
-                  "catalogVersion":5,
+                  "catalogVersion":6,
                   "releaseStatus":"INFRASTRUCTURE",
                   "locale":"es-ES",
                   "jurisdiction":"EU-ES",
@@ -231,12 +244,12 @@ class IngredientCatalogImportTest {
                   }
                 }
             """.trimIndent(),
-            "ingredient-catalog/v4/categories.json" to "[]",
-            "ingredient-catalog/v4/ingredients.json" to "[]",
-            "ingredient-catalog/v4/aliases.json" to "[]",
-            "ingredient-catalog/v4/safety-groups.json" to "[]",
-            "ingredient-catalog/v4/safety-sources.json" to "[]",
-            "ingredient-catalog/v4/safety-relations.json" to "[]",
+            "ingredient-catalog/v5/categories.json" to "[]",
+            "ingredient-catalog/v5/ingredients.json" to "[]",
+            "ingredient-catalog/v5/aliases.json" to "[]",
+            "ingredient-catalog/v5/safety-groups.json" to "[]",
+            "ingredient-catalog/v5/safety-sources.json" to "[]",
+            "ingredient-catalog/v5/safety-relations.json" to "[]",
         )
 
         override fun read(path: String): String = values[path] ?: error("Missing broken test asset: $path")
