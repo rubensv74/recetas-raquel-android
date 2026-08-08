@@ -95,3 +95,7 @@
 ## ADR-024 — El catálogo escalable admite shards manteniendo compatibilidad
 
 **Aceptada.** Desde `catalog schemaVersion = 2`, ingredientes y alias pueden declararse como listas ordenadas de shards en el manifiesto. El lector conserva compatibilidad explícita con los catálogos schema-v1 de fichero único. Los shards son una unidad de revisión y organización del contenido, no una relajación de las reglas de validación: una vez concatenados, el bundle completo sigue pasando los mismos controles de IDs, nombres normalizados, referencias, recuentos y evidencia antes de importarse transaccionalmente.
+
+## ADR-025 — Grafo de linaje de ingredientes separado de seguridad alimentaria
+
+**Aceptada.** Se adopta un grafo no clínico de linaje entre `CatalogIngredient` con relaciones `VARIANT_OF`, `CUT_OF`, `DERIVED_FROM` y `FORM_OF`. Room v3 persiste estas relaciones en una tabla independiente. El grafo debe ser acíclico, no admite auto-relaciones ni duplicados equivalentes y puede conservar metadatos de revisión de identidad. Ninguna arista de linaje propaga, crea ni hereda relaciones de seguridad alimentaria. El grafo de seguridad sigue exigiendo evidencia propia y trazable. La composición de productos/ingredientes compuestos permanece fuera de alcance hasta una decisión arquitectónica específica.
