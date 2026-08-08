@@ -56,7 +56,7 @@ Objetivos principales:
 - alertas no absolutas sobre alérgenos, derivados, PAL, reactividad cruzada e información desconocida;
 - migración conservadora con pérdida de datos = 0;
 - catálogo versionado independiente del esquema Room;
-- funcionamiento completamente offline;
+- funcionamiento offline-first;
 - dossier técnico de decisiones de seguridad alimentaria reutilizable como soporte de auditoría/registro;
 - proceso periódico y por eventos para revisar y actualizar conocimiento sensible.
 
@@ -79,9 +79,10 @@ Catálogo regulatorio v2              VALIDADO
 Batch 01 culinario v3                VALIDADO — 36/36 instrumented PASS
 Batch 02 culinario v4                VALIDADO en gate combinado
 Decisión de linaje                   OPCIÓN B ACEPTADA
-Room v2 -> v3 + linaje               EJECUCIÓN GREEN — 39/39; revisión/versionado 3.json pendiente
+Room v2 -> v3 + linaje               CERRADO — 39/39; 3.json revisado y versionado
+Catálogo v5 con linaje real          IMPLEMENTADO — validación local pendiente
 Dossier soporte regulatorio          BASE DOCUMENTAL CREADA — refresh oficial antes de uso externo
-Mantenimiento conocimiento sensible REQUISITO REGISTRADO — arquitectura de distribución pendiente
+Mantenimiento conocimiento sensible REQUISITO REGISTRADO — revisión anual + ADR distribución pendiente
 Mapeo masivo no revisado             NO AUTORIZADO
 Merge a master                       NO AUTORIZADO todavía
 ```
@@ -108,8 +109,6 @@ Ver `docs/ingredient-library/10_CONTROLLED_CATALOG_SEED.md`.
 
 `ingredient-catalog/v3/` permanece como versión histórica inmutable. Añadió 100 ingredientes culinarios de verduras, frutas, hierbas, especias, cereales y legumbres sin inferir relaciones de seguridad.
 
-Estado validado:
-
 ```text
 catalogVersion           3
 categorías               20
@@ -124,9 +123,7 @@ Ver `docs/ingredient-library/11_CULINARY_CATALOG_BATCH_01.md`.
 
 ### Batch 02 culinario v4
 
-`ingredient-catalog/v4/` es el bundle activo durante el gate de infraestructura de linaje. Añade 100 identidades culinarias simples —fuentes de carne y aves, semillas/especias, setas, hortalizas/tubérculos y frutas— y 98 alias conservadores.
-
-Estado validado en el gate combinado:
+`ingredient-catalog/v4/` permanece como versión histórica inmutable. Añadió otras 100 identidades culinarias simples —fuentes de carne/aves, semillas/especias, setas, hortalizas/tubérculos y frutas— y 98 alias conservadores.
 
 ```text
 catalogVersion           4
@@ -138,27 +135,30 @@ relaciones de linaje      0
 relaciones de seguridad  27
 ```
 
-Todos los nuevos registros están `REVIEW_REQUIRED`; las relaciones de seguridad permanecen exactamente en 27.
+Todos los nuevos registros permanecen `REVIEW_REQUIRED`.
 
 Ver `docs/ingredient-library/12_CULINARY_CATALOG_BATCH_02.md`.
 
 ### ADR aceptada — linaje, variantes y derivados
 
-Se ha aceptado la **Opción B: grafo de linaje no clínico**. Las relaciones iniciales son `VARIANT_OF`, `CUT_OF`, `DERIVED_FROM` y `FORM_OF`.
+Se adopta el **grafo de linaje no clínico** con tipos iniciales:
 
-El grafo de linaje y el grafo de seguridad alimentaria son conceptos y tablas separados. Ninguna relación de linaje crea, hereda o propaga una relación de seguridad.
+```text
+VARIANT_OF
+CUT_OF
+DERIVED_FROM
+FORM_OF
+```
+
+El grafo de linaje y el grafo de seguridad alimentaria permanecen separados. Ninguna relación de linaje crea, hereda o propaga una relación de seguridad.
 
 Ver `docs/ingredient-library/13_ARCHITECTURAL_DECISION_INGREDIENT_LINEAGE.md` y ADR-025 en `DECISIONS.md`.
 
-### Room v3 — infraestructura de linaje implementada y ejecución validada
+### Room v3 — CERRADO
 
-Room evoluciona explícitamente v2 -> v3 sin migración destructiva. Se añade `catalog_ingredient_relations`, se amplían importer/validator/DAO/repository y el catalog schema v3 admite ficheros de linaje únicos o fragmentados.
+Room v2 -> v3 se implementó mediante migración explícita no destructiva. Se añadió `catalog_ingredient_relations` y se corrigió la procedencia de `custom_ingredient_safety_relations` para exigir `sourceId` y preservar `sourceDetails`.
 
-La misma migración corrige el contrato de `custom_ingredient_safety_relations`: toda relación personalizada pasa a tener `sourceId`; el antiguo texto libre se conserva como `sourceDetails` mediante una fuente de migración determinista.
-
-También se ha cerrado el riesgo transitorio del editor antiguo: un ingrediente nuevo de texto libre sin origen explícito se persiste como un `CustomIngredient` dedicado `recipe-custom:<ingredientId>` antes de crear la FK del ingrediente de receta. Los orígenes `legacy:*`, catálogo y personalizados reales se preservan; un origen doble se rechaza.
-
-El gate combinado quedó verde en ejecución local:
+Gate final:
 
 ```text
 assembleDebug                  PASS
@@ -170,23 +170,52 @@ assembleRelease                PASS
 Room schema export             PASS — 1.json, 2.json, 3.json
 ```
 
-El único cierre pendiente de Room v3 es revisar el `3.json` generado localmente contra entidades y SQL de migración y después versionarlo. Hasta completar esa revisión no se crea un catálogo v5 con aristas reales de linaje.
+`3.json` fue revisado contra entidades y SQL de migración y está versionado. Room v3 ya no bloquea la evolución del catálogo.
 
-Ver `docs/ingredient-library/14_LINEAGE_GRAPH_IMPLEMENTATION.md` y `15_ROOM_V3_VALIDATION_GATE.md`.
+Ver `docs/ingredient-library/14_LINEAGE_GRAPH_IMPLEMENTATION.md`, `15_ROOM_V3_VALIDATION_GATE.md` y `16_ROOM_V3_SCHEMA_REVIEW.md`.
+
+### Catálogo v5 — primer contenido real de linaje
+
+`ingredient-catalog/v5/` es el primer bundle que usa catalog schema v3 con aristas reales.
+
+```text
+catalogVersion           5
+catalog schemaVersion    3
+categorías               20
+ingredientes canónicos  242
+alias                    235
+relaciones de linaje     15
+relaciones de seguridad  27
+```
+
+Delta desde v4:
+
+```text
++15 cortes de carne/aves
++15 alias conservadores
++15 relaciones CUT_OF
++0 relaciones de seguridad
+```
+
+La primera expansión se limita a cortes físicos de baja ambigüedad. El objetivo es validar en datos reales la arquitectura de linaje sin introducir derivados con consecuencias regulatorias o clínicas todavía no revisadas.
+
+`IngredientCatalogAssetReader` apunta ahora a v5. El test instrumentado valida recuentos, persistencia, recorrido `Pechuga de pollo -> Pollo`, idempotencia, rollback y que el linaje no genere relaciones de seguridad.
+
+Ver `docs/ingredient-library/17_CATALOG_V5_FIRST_LINEAGE_CONTENT.md`.
 
 ### Dossier técnico de seguridad alimentaria para soporte de registro
 
-Se ha creado `docs/food-safety/REGISTRATION_SUPPORT_FOOD_SAFETY_DOSSIER.md` como base consolidada de decisiones sobre los 14 grupos UE, papel de AESAN, separación alergia/intolerancia/celiaquía, evidencia, inferencias prohibidas, lenguaje seguro, trazabilidad y artefactos que deberían acompañar una futura auditoría o registro.
+`docs/food-safety/REGISTRATION_SUPPORT_FOOD_SAFETY_DOSSIER.md` consolida decisiones sobre los 14 grupos UE, papel de AESAN, separación alergia/intolerancia/celiaquía, evidencia, inferencias prohibidas, lenguaje seguro, trazabilidad y artefactos para una futura auditoría o registro.
 
 El dossier no afirma cumplimiento regulatorio por sí solo. Antes de cualquier uso externo debe realizarse un `regulatory refresh` con fuentes oficiales vigentes en la fecha de presentación.
 
 ### Mantenimiento periódico del conocimiento sensible
 
-Se ha registrado el requisito de revisar formalmente la información sensible al menos una vez al año y adicionalmente cuando existan cambios regulatorios, alertas o nueva evidencia oficial material.
+`docs/food-safety/SAFETY_KNOWLEDGE_MAINTENANCE_REQUIREMENTS.md` establece revisión formal anual y revisión por evento cuando existan cambios regulatorios, alertas o nueva evidencia oficial material. La revisión anual de AESAN, EFSA y normativa ya está programada.
 
-La actualización nunca será automática desde una publicación hacia una relación clínica: la evidencia debe pasar por revisión, clasificación, validación y una nueva versión inmutable del catálogo.
+Una publicación nueva nunca cambia automáticamente una relación clínica: la evidencia debe pasar por revisión, clasificación, validación y una nueva versión inmutable del catálogo.
 
-El mecanismo de distribución de esos catálogos actualizados **no está decidido**. Cuando llegue el momento se abrirá una ADR para comparar, como mínimo, actualización empaquetada con la app, catálogo remoto firmado o solución híbrida. Esta decisión será un gate arquitectónico porque afecta al principio offline-first, autenticidad, rollback y seguridad.
+El mecanismo de distribución de catálogos actualizados **no está decidido**. Cuando llegue el momento se abrirá una ADR para comparar actualización empaquetada con la app, catálogo remoto firmado o solución híbrida. Esta será una decisión arquitectónica por su impacto en offline-first, autenticidad, rollback y seguridad.
 
 Ver `docs/food-safety/SAFETY_KNOWLEDGE_MAINTENANCE_REQUIREMENTS.md` y `CATALOG_MAINTENANCE_GUIDE.md`.
 
