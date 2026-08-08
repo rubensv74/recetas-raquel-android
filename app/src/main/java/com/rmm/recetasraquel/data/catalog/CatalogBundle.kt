@@ -20,6 +20,8 @@ data class CatalogFiles(
     val aliasShards: List<String>? = null,
     val ingredientRelations: String? = null,
     val ingredientRelationShards: List<String>? = null,
+    val regulatoryExemptions: String? = null,
+    val regulatoryExemptionShards: List<String>? = null,
     val safetyGroups: String,
     val safetySources: String,
     val safetyRelations: String,
@@ -33,6 +35,7 @@ data class CatalogCounts(
     val safetySources: Int,
     val safetyRelations: Int,
     val ingredientRelations: Int = 0,
+    val regulatoryExemptions: Int = 0,
 )
 
 data class CatalogCategoryRecord(
@@ -111,6 +114,21 @@ data class CatalogSafetyRelationRecord(
     val reviewedAt: String,
 )
 
+data class CatalogRegulatoryExemptionRecord(
+    val id: String,
+    val ingredientId: String,
+    val safetyGroupId: String,
+    val jurisdiction: String,
+    val regulatoryEffect: String,
+    val conditions: String,
+    val sourceId: String,
+    val effectiveFrom: String? = null,
+    val effectiveTo: String? = null,
+    val reviewedAt: String,
+    val notes: String? = null,
+    val isActive: Boolean = true,
+)
+
 data class IngredientCatalogBundle(
     val manifest: CatalogManifest,
     val categories: List<CatalogCategoryRecord>,
@@ -120,4 +138,5 @@ data class IngredientCatalogBundle(
     val safetyGroups: List<CatalogSafetyGroupRecord>,
     val safetySources: List<CatalogSafetySourceRecord>,
     val safetyRelations: List<CatalogSafetyRelationRecord>,
+    val regulatoryExemptions: List<CatalogRegulatoryExemptionRecord> = emptyList(),
 )
