@@ -1,7 +1,7 @@
 {
   "catalogId": "rmm-es-eu",
   "schemaVersion": 4,
-  "catalogVersion": 9,
+  "catalogVersion": 10,
   "releaseStatus": "DRAFT",
   "locale": "es-ES",
   "jurisdiction": "EU-ES",
@@ -13,6 +13,7 @@
       "ingredients-regulatory-exemptions.json",
       "ingredients-reviewed-soy-exemptions.json",
       "ingredients-reviewed-soy-derivatives.json",
+      "ingredients-reviewed-cereal-exemptions.json",
       "ingredients-vegetables.json",
       "ingredients-fruits.json",
       "ingredients-herbs-spices.json",
@@ -39,7 +40,8 @@
       "ingredient-relations-flours.json",
       "ingredient-relations-regulatory-exemptions.json",
       "ingredient-relations-soy-exemptions.json",
-      "ingredient-relations-soy-derivatives.json"
+      "ingredient-relations-soy-derivatives.json",
+      "ingredient-relations-cereal-exemptions.json"
     ],
     "safetyGroups": "safety-groups.json",
     "safetySources": "safety-sources.json",
@@ -47,17 +49,18 @@
     "regulatoryExemptionShards": [
       "regulatory-exemptions.json",
       "regulatory-exemptions-soy.json",
-      "regulatory-exemptions-soy-derivatives.json"
+      "regulatory-exemptions-soy-derivatives.json",
+      "regulatory-exemptions-cereals.json"
     ]
   },
   "counts": {
     "categories": 20,
-    "ingredients": 262,
+    "ingredients": 266,
     "aliases": 245,
-    "ingredientRelations": 35,
+    "ingredientRelations": 39,
     "safetyGroups": 14,
     "safetySources": 3,
     "safetyRelations": 33,
-    "regulatoryExemptions": 10
+    "regulatoryExemptions": 14
   }
 }
