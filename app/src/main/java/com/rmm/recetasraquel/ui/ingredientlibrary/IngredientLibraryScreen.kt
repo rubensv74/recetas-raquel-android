@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogEntry
@@ -100,6 +101,7 @@ fun IngredientLibraryScreen(
                         selected = state.selectedCategoryId == category.id,
                         onClick = { onSelectCategory(category.id) },
                         label = { Text(category.name) },
+                        modifier = Modifier.testTag("ingredient_category_${category.id}"),
                     )
                 }
             }
@@ -111,11 +113,17 @@ fun IngredientLibraryScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                TextButton(onClick = onAddManualIngredient) {
+                TextButton(
+                    onClick = onAddManualIngredient,
+                    modifier = Modifier.testTag("ingredient_library_manual"),
+                ) {
                     Text("Introducir manualmente")
                 }
                 if (state.hasActiveSearch) {
-                    TextButton(onClick = onClearFilters) {
+                    TextButton(
+                        onClick = onClearFilters,
+                        modifier = Modifier.testTag("ingredient_library_clear"),
+                    ) {
                         Text("Limpiar")
                     }
                 }
@@ -198,7 +206,7 @@ private fun IngredientCatalogRow(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 6.dp)
             .testTag("ingredient_result_${ingredient.id}"),
     ) {
