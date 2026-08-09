@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.rmm.recetasraquel.data.local.dao.CustomIngredientDao
 import com.rmm.recetasraquel.data.local.dao.IngredientCatalogDao
 import com.rmm.recetasraquel.data.local.dao.RecipeDao
 import com.rmm.recetasraquel.data.local.entity.CatalogIngredientEntity
@@ -46,6 +47,7 @@ import com.rmm.recetasraquel.data.local.entity.SafetySourceEntity
 abstract class RecipeDatabase : RoomDatabase() {
     abstract fun recipeDao(): RecipeDao
     abstract fun ingredientCatalogDao(): IngredientCatalogDao
+    abstract fun customIngredientDao(): CustomIngredientDao
 
     companion object {
         const val DATABASE_NAME = "recipes.db"

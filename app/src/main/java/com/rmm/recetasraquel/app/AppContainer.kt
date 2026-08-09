@@ -6,9 +6,11 @@ import com.rmm.recetasraquel.data.catalog.CatalogImporter
 import com.rmm.recetasraquel.data.catalog.IngredientCatalogAssetReader
 import com.rmm.recetasraquel.data.local.RecipeDatabase
 import com.rmm.recetasraquel.data.photos.LocalRecipePhotoStorage
+import com.rmm.recetasraquel.data.repository.LocalCustomIngredientRepository
 import com.rmm.recetasraquel.data.repository.LocalIngredientCatalogRepository
 import com.rmm.recetasraquel.data.repository.LocalRecipeRepository
 import com.rmm.recetasraquel.domain.photos.RecipePhotoStorage
+import com.rmm.recetasraquel.domain.repository.CustomIngredientRepository
 import com.rmm.recetasraquel.domain.repository.DemoDataController
 import com.rmm.recetasraquel.domain.repository.IngredientCatalogRepository
 import com.rmm.recetasraquel.domain.repository.RecipeRepository
@@ -39,6 +41,11 @@ class AppContainer(context: Context) {
     val ingredientCatalogRepository: IngredientCatalogRepository = LocalIngredientCatalogRepository(
         importer = catalogImporter,
         dao = catalogDao,
+    )
+    val customIngredientRepository: CustomIngredientRepository = LocalCustomIngredientRepository(
+        dao = database.customIngredientDao(),
+        idGenerator = idGenerator,
+        timeProvider = timeProvider,
     )
     val photoStorage: RecipePhotoStorage = LocalRecipePhotoStorage(context)
     val saveRecipeUseCase: SaveRecipeOperation = SaveRecipeUseCase(recipeRepository, photoStorage)
