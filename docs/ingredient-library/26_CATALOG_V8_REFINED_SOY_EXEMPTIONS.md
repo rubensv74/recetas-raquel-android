@@ -1,6 +1,6 @@
 # 26 — CATÁLOGO V8: ACEITE Y GRASA DE SOJA TOTALMENTE REFINADOS
 
-**Estado:** IMPLEMENTADO EN STAGING — validación local pendiente  
+**Estado:** IMPLEMENTADO EN STAGING — revalidación local pendiente  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-08
 
@@ -53,8 +53,10 @@ Ambas usan:
 categoryId             cat-oils-fats
 verificationStatus     VERIFIED
 compositionVariability VARIABLE_BY_PREPARATION
-sourceUpdatedAt         2026-08-08
+sourceUpdatedAt         null
 ```
+
+`sourceUpdatedAt` es un `Long?` en el contrato de catálogo/Room. La fecha de revisión normativa no se fuerza dentro de ese campo: se conserva en `reviewedAt` de la exención y en la documentación de revisión. No se inventa una marca temporal numérica.
 
 La mención `totalmente refinado` forma parte de la identidad. No se crea una exención genérica para `aceite de soja` o `grasa de soja` sin esa condición.
 
@@ -157,6 +159,7 @@ La prueba debe demostrar:
 - 3 exenciones regulatorias;
 - ambas identidades `DERIVED_FROM -> ing-soybean`;
 - fuente `EU_FIC_1169_2011`;
+- `sourceUpdatedAt = null` para las nuevas identidades, coherente con el contrato `Long?`;
 - ausencia de relaciones de seguridad para las dos nuevas identidades;
 - persistencia de una exención por cada identidad;
 - conservación de la relación de seguridad de `ing-soybean`;
@@ -204,7 +207,34 @@ Room debe permanecer:
 
 No debe aparecer `5.json`.
 
-## 11. Criterio de aprobación
+## 11. Primera ejecución real del gate v8
+
+La primera ejecución que llegó a la suite instrumentada ejecutó 42 pruebas y detectó un único fallo en:
+
+```text
+CatalogV8SoyRegulatoryExemptionTest
+```
+
+Causa:
+
+```text
+JsonSyntaxException
+NumberFormatException: For input string: "2026-08-08"
+```
+
+El error no estaba en la exención regulatoria. Las dos nuevas identidades habían escrito una fecha ISO en `sourceUpdatedAt`, pero el contrato existente define ese campo como `Long?` tanto en `CatalogIngredientRecord` como en `CatalogIngredientEntity`.
+
+Corrección aplicada:
+
+```text
+sourceUpdatedAt = null
+```
+
+para ambas identidades. La fecha de revisión permanece correctamente en `reviewedAt = 2026-08-08` de las exenciones. Se añadió además una aserción de regresión en la prueba v8 para impedir que vuelva a introducirse una cadena ISO en ese campo.
+
+No se modifica Room, el schema de catálogo, las relaciones de seguridad ni la decisión ADR-026.
+
+## 12. Criterio de aprobación
 
 ```text
 CatalogValidator v8                  PASS
