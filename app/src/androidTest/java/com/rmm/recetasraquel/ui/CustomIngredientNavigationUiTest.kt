@@ -57,7 +57,7 @@ class CustomIngredientNavigationUiTest {
         composeRule.onNodeWithText("Nueva receta").assertIsDisplayed()
 
         composeRule.onNodeWithTag("add_ingredient").performScrollTo().performClick()
-        composeRule.onNodeWithTag("ingredient_library_manual").performScrollTo().performClick()
+        composeRule.onNodeWithTag("ingredient_library_manual").performClick()
 
         composeRule.onNodeWithText("Nuevo ingrediente personalizado").assertIsDisplayed()
         composeRule.onNodeWithTag("custom_name").performTextInput("Salsa de prueba")
