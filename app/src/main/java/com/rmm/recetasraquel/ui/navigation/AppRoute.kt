@@ -8,6 +8,12 @@ object AppRoute {
     const val NEW_RECIPE = "recipe/new"
     const val EDIT_RECIPE = "recipe/{$RECIPE_ID}/edit"
     const val COOK_RECIPE = "recipe/{$RECIPE_ID}/cook"
+    const val INGREDIENT_LIBRARY = "ingredient-library"
+
+    const val SELECTED_CATALOG_INGREDIENT_ID = "selectedCatalogIngredientId"
+    const val SELECTED_CATALOG_INGREDIENT_NAME = "selectedCatalogIngredientName"
+    const val SELECTED_CATALOG_INGREDIENT_UNIT = "selectedCatalogIngredientUnit"
+    const val ADD_MANUAL_INGREDIENT = "addManualIngredient"
 
     fun recipe(recipeId: String): String = "recipe/$recipeId"
     fun editRecipe(recipeId: String): String = "recipe/$recipeId/edit"
