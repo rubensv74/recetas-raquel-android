@@ -1,0 +1,72 @@
+[
+  {
+    "id": "rel-soy-natural-mixed-tocopherols-e306-soybean",
+    "childIngredientId": "ing-soy-natural-mixed-tocopherols-e306",
+    "parentIngredientId": "ing-soybean",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-09",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Linaje de origen regulatorio no clínico. No propaga relaciones de seguridad.",
+    "isActive": true
+  },
+  {
+    "id": "rel-soy-natural-d-alpha-tocopherol-soybean",
+    "childIngredientId": "ing-soy-natural-d-alpha-tocopherol",
+    "parentIngredientId": "ing-soybean",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-09",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Linaje de origen regulatorio no clínico. No propaga relaciones de seguridad.",
+    "isActive": true
+  },
+  {
+    "id": "rel-soy-natural-d-alpha-tocopherol-acetate-soybean",
+    "childIngredientId": "ing-soy-natural-d-alpha-tocopherol-acetate",
+    "parentIngredientId": "ing-soybean",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-09",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Linaje de origen regulatorio no clínico. No propaga relaciones de seguridad.",
+    "isActive": true
+  },
+  {
+    "id": "rel-soy-natural-d-alpha-tocopherol-succinate-soybean",
+    "childIngredientId": "ing-soy-natural-d-alpha-tocopherol-succinate",
+    "parentIngredientId": "ing-soybean",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-09",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Linaje de origen regulatorio no clínico. No propaga relaciones de seguridad.",
+    "isActive": true
+  },
+  {
+    "id": "rel-soy-phytosterols-soybean",
+    "childIngredientId": "ing-soy-phytosterols",
+    "parentIngredientId": "ing-soybean",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-09",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Linaje de origen regulatorio no clínico. No propaga relaciones de seguridad.",
+    "isActive": true
+  },
+  {
+    "id": "rel-soy-phytosterol-esters-soybean",
+    "childIngredientId": "ing-soy-phytosterol-esters",
+    "parentIngredientId": "ing-soybean",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-09",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Linaje de origen regulatorio no clínico. No propaga relaciones de seguridad.",
+    "isActive": true
+  },
+  {
+    "id": "rel-soy-plant-stanol-ester-phytosterols",
+    "childIngredientId": "ing-soy-plant-stanol-ester",
+    "parentIngredientId": "ing-soy-phytosterols",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-09",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "El Anexo II describe el éster de fitostanol como derivado de fitosteroles de aceite de soja. Linaje no clínico; no propaga seguridad.",
+    "isActive": true
+  }
+]
