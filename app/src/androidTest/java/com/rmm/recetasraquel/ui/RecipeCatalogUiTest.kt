@@ -121,7 +121,16 @@ class RecipeCatalogUiTest {
         val photoStorage = FakeUiPhotoStorage()
         val saveRecipeUseCase = SaveRecipeUseCase(repository, photoStorage)
         composeRule.setContent {
-            RecetasRaquelTheme { RecetasRaquelApp(repository, idGenerator = UuidIdGenerator(), photoStorage = photoStorage, saveRecipeUseCase = saveRecipeUseCase, demoDataController = null) }
+            RecetasRaquelTheme {
+                RecetasRaquelApp(
+                    repository = repository,
+                    ingredientCatalogRepository = FakeIngredientCatalogRepository,
+                    idGenerator = UuidIdGenerator(),
+                    photoStorage = photoStorage,
+                    saveRecipeUseCase = saveRecipeUseCase,
+                    demoDataController = null,
+                )
+            }
         }
     }
 
