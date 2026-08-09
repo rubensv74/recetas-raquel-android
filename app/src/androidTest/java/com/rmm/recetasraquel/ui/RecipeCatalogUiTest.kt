@@ -125,6 +125,7 @@ class RecipeCatalogUiTest {
                 RecetasRaquelApp(
                     repository = repository,
                     ingredientCatalogRepository = FakeIngredientCatalogRepository,
+                    customIngredientRepository = FakeCustomIngredientRepository(),
                     idGenerator = UuidIdGenerator(),
                     photoStorage = photoStorage,
                     saveRecipeUseCase = saveRecipeUseCase,
