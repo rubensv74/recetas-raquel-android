@@ -1,6 +1,6 @@
 # 28 — CATÁLOGO V9: DERIVADOS DE SOJA EXENTOS DE DECLARACIÓN
 
-**Estado:** ACTIVO — gate de staging superado; validación post-activación automatizada en GitHub Actions  
+**Estado:** CERRADO — VALIDADO Y ACTIVO  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-09
 
@@ -53,19 +53,7 @@ sourceUpdatedAt         null
 
 Se crean siete relaciones `DERIVED_FROM`.
 
-Seis identidades apuntan directamente a:
-
-```text
-ing-soybean
-```
-
-El éster de fitostanol apunta a:
-
-```text
-ing-soy-phytosterols
-```
-
-porque el texto normativo lo describe como derivado de fitosteroles de aceite de soja.
+Seis identidades apuntan directamente a `ing-soybean`. El éster de fitostanol apunta a `ing-soy-phytosterols`, porque el texto normativo lo describe como derivado de fitosteroles de aceite de soja.
 
 Todas las relaciones usan:
 
@@ -108,48 +96,17 @@ Ninguna exención puede convertirse automáticamente en mensajes como `sin soja`
 
 ## 7. Integridad histórica
 
-V9 se creó como fork exacto del árbol validado de v8 y después se añadieron únicamente:
-
-```text
-ingredients-reviewed-soy-derivatives.json
-ingredient-relations-soy-derivatives.json
-regulatory-exemptions-soy-derivatives.json
-```
-
-más el `manifest.json` de v9.
-
-Los bundles v1-v8 permanecen sin modificaciones. La prueba histórica de v8 lee ahora explícitamente `ingredient-catalog/v8` para que su cobertura no dependa del catálogo activo.
+V9 se creó como fork exacto del árbol validado de v8. Los bundles v1-v8 permanecen sin modificaciones. La prueba histórica de v8 lee explícitamente `ingredient-catalog/v8`, por lo que su cobertura no depende del catálogo activo.
 
 ## 8. Prueba instrumentada
 
-Se añade:
+`CatalogV9SoyDerivativeExemptionTest` comprueba schema/catalogVersion, conteos, identidades, linaje, exenciones, ausencia de relaciones de seguridad nuevas, persistencia Room y metadata final `catalogVersion = 9`.
 
-```text
-CatalogV9SoyDerivativeExemptionTest
-```
-
-Comprueba:
-
-- schema 4 / catalogVersion 9;
-- 262 ingredientes;
-- 245 alias;
-- 35 relaciones de linaje;
-- 33 relaciones de seguridad;
-- 10 exenciones regulatorias;
-- siete identidades nuevas verificadas;
-- `sourceUpdatedAt = null`;
-- siete exenciones con `sg-eu-soybeans`;
-- ausencia de relaciones de seguridad para las siete identidades;
-- seis relaciones directas a `ing-soybean`;
-- una relación del éster de fitostanol a `ing-soy-phytosterols`;
-- importación transaccional en Room v4;
-- metadata final `catalogVersion = 9`.
-
-Tras activación, la prueba usa el lector por defecto para demostrar que v9 es realmente el catálogo activo.
+Tras la activación, la prueba usa el lector por defecto para demostrar que v9 es realmente el catálogo activo.
 
 ## 9. Gate de staging
 
-El primer gate autónomo completo mediante GitHub Actions quedó verde:
+El gate autónomo mediante GitHub Actions quedó verde:
 
 ```text
 assembleDebug                     PASS
@@ -161,35 +118,15 @@ connectedDebugAndroidTest         PASS
 Room schemas 1..4                 PASS
 ```
 
-El job de calidad y el job instrumentado finalizaron correctamente en runners estándar de GitHub Actions.
-
 ## 10. Activación
 
-Se cambia:
+`IngredientCatalogAssetReader.DEFAULT_VERSION_DIRECTORY` cambió de `ingredient-catalog/v8` a `ingredient-catalog/v9`.
 
-```text
-IngredientCatalogAssetReader.DEFAULT_VERSION_DIRECTORY
-```
+La prueba histórica de v8 quedó fijada a v8 y la prueba de v9 pasó a utilizar el catálogo predeterminado.
 
-de:
+## 11. Gate post-activación — CERRADO
 
-```text
-ingredient-catalog/v8
-```
-
-a:
-
-```text
-ingredient-catalog/v9
-```
-
-La prueba histórica de v8 queda fijada a v8 y la prueba de v9 pasa a utilizar el catálogo predeterminado.
-
-## 11. Gate post-activación
-
-La activación dispara automáticamente `.github/workflows/android-ci.yml`.
-
-Criterio requerido:
+El gate post-activación ejecutado por `.github/workflows/android-ci.yml` finalizó completamente en verde:
 
 ```text
 assembleDebug                     PASS
@@ -201,4 +138,4 @@ connectedDebugAndroidTest         PASS
 Room schemas                      1.json..4.json únicamente
 ```
 
-No se considera cerrada definitivamente la activación si este gate post-activación falla.
+Resultado: v9 queda validado, activo e inmutable como versión histórica a partir de la preparación de v10.
