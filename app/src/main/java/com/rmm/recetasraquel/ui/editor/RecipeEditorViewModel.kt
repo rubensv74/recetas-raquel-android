@@ -47,6 +47,8 @@ data class EditorIngredientItem(
     val unit: String = "",
     val name: String = "",
     val notes: String = "",
+    val catalogIngredientId: String? = null,
+    val customIngredientId: String? = null,
 )
 
 data class EditorStepItem(
@@ -168,6 +170,8 @@ class RecipeEditorViewModel(
                         unit = ing.unit ?: "",
                         name = ing.name,
                         notes = ing.notes ?: "",
+                        catalogIngredientId = ing.catalogIngredientId,
+                        customIngredientId = ing.customIngredientId,
                     )
                 },
                 steps = steps,
@@ -230,6 +234,26 @@ class RecipeEditorViewModel(
         checkForUnsavedChanges()
     }
 
+    fun addCatalogIngredient(
+        catalogIngredientId: String,
+        canonicalName: String,
+        defaultUnit: String?,
+    ) {
+        require(catalogIngredientId.isNotBlank())
+        require(canonicalName.isNotBlank())
+        _uiState.update { state ->
+            state.copy(
+                ingredients = state.ingredients + EditorIngredientItem(
+                    name = canonicalName,
+                    unit = defaultUnit.orEmpty(),
+                    catalogIngredientId = catalogIngredientId,
+                    customIngredientId = null,
+                ),
+            )
+        }
+        checkForUnsavedChanges()
+    }
+
     fun updateIngredientQuantity(key: String, value: String) {
         _uiState.update { state ->
             state.copy(
@@ -255,8 +279,8 @@ class RecipeEditorViewModel(
     fun updateIngredientName(key: String, value: String) {
         _uiState.update { state ->
             state.copy(
-                ingredients = state.ingredients.map {
-                    if (it.key == key) it.copy(name = value) else it
+                ingredients = state.ingredients.map { item ->
+                    if (item.key == key && item.catalogIngredientId == null) item.copy(name = value) else item
                 },
                 ingredientErrors = state.ingredientErrors - key,
             )
@@ -504,7 +528,16 @@ class RecipeEditorViewModel(
             notes = state.notes.trim().ifEmpty { null },
             ingredients = state.ingredients
                 .filter { it.name.isNotBlank() }
-                .map { NormalizedIngredient(it.quantity.trim(), it.unit.trim(), it.name.trim(), it.notes.trim()) },
+                .map {
+                    NormalizedIngredient(
+                        quantity = it.quantity.trim(),
+                        unit = it.unit.trim(),
+                        name = it.name.trim(),
+                        notes = it.notes.trim(),
+                        catalogIngredientId = it.catalogIngredientId,
+                        customIngredientId = it.customIngredientId,
+                    )
+                },
             steps = state.steps
                 .filter { it.instruction.isNotBlank() || it.timerMinutes.isNotBlank() }
                 .map { NormalizedStep(it.instruction.trim(), it.timerMinutes.trim()) },
@@ -656,6 +689,8 @@ class RecipeEditorViewModel(
                         unit = item.unit.ifBlank { null },
                         name = item.name,
                         notes = item.notes.ifBlank { null },
+                        catalogIngredientId = item.catalogIngredientId,
+                        customIngredientId = item.customIngredientId,
                     )
                 },
             steps = state.steps
@@ -783,6 +818,8 @@ private data class NormalizedIngredient(
     val unit: String,
     val name: String,
     val notes: String,
+    val catalogIngredientId: String?,
+    val customIngredientId: String?,
 )
 
 private data class NormalizedStep(
