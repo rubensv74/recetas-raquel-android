@@ -40,6 +40,7 @@ class CatalogV8SoyRegulatoryExemptionTest {
                 val ingredient = bundle.ingredients.single { it.id == ingredientId }
                 assertEquals("VERIFIED", ingredient.verificationStatus)
                 assertEquals("VARIABLE_BY_PREPARATION", ingredient.compositionVariability)
+                assertTrue(ingredient.sourceUpdatedAt == null)
 
                 val lineage = bundle.ingredientRelations.single { it.childIngredientId == ingredientId }
                 assertEquals("ing-soybean", lineage.parentIngredientId)
