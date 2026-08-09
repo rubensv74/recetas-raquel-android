@@ -17,6 +17,7 @@ class MainActivity : ComponentActivity() {
                 RecetasRaquelApp(
                     repository = container.recipeRepository,
                     ingredientCatalogRepository = container.ingredientCatalogRepository,
+                    customIngredientRepository = container.customIngredientRepository,
                     idGenerator = container.idGenerator,
                     photoStorage = container.photoStorage,
                     saveRecipeUseCase = container.saveRecipeUseCase,
