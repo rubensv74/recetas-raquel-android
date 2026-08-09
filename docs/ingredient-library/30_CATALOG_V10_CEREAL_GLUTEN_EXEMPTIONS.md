@@ -1,18 +1,12 @@
 # 30 — CATÁLOGO V10: EXENCIONES DE CEREALES CON GLUTEN
 
-**Estado:** IMPLEMENTADO EN STAGING — validación automática pendiente  
+**Estado:** ACTIVO — staging validado; gate post-activación automático pendiente  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-09
 
 ## 1. Objetivo
 
-Incorporar de forma controlada cuatro identidades técnicas cubiertas por las excepciones del punto 1(a), 1(b) y 1(c) del Anexo II del Reglamento (UE) 1169/2011, según la revisión documentada en:
-
-```text
-docs/ingredient-library/29_REGULATORY_REFRESH_CEREAL_GLUTEN_EXEMPTIONS.md
-```
-
-V9 permanece como catálogo activo durante el gate de staging.
+Incorporar de forma controlada cuatro identidades técnicas cubiertas por las excepciones del punto 1(a), 1(b) y 1(c) del Anexo II del Reglamento (UE) 1169/2011, según la revisión documentada en `29_REGULATORY_REFRESH_CEREAL_GLUTEN_EXEMPTIONS.md`.
 
 ## 2. Delta desde v9
 
@@ -39,14 +33,7 @@ Maltodextrina a base de trigo
 Jarabe de glucosa a base de cebada
 ```
 
-Todas usan:
-
-```text
-categoryId             cat-prepared-compound
-verificationStatus     VERIFIED
-compositionVariability VARIABLE_BY_PREPARATION
-sourceUpdatedAt         null
-```
+Todas usan `cat-prepared-compound`, `VERIFIED`, `VARIABLE_BY_PREPARATION` y `sourceUpdatedAt = null`.
 
 No se crean alias genéricos para evitar que expresiones como `jarabe de glucosa`, `dextrosa` o `maltodextrina` se asignen silenciosamente a una procedencia cereal concreta.
 
@@ -58,8 +45,6 @@ ing-wheat-dextrose        DERIVED_FROM ing-wheat
 ing-wheat-maltodextrin    DERIVED_FROM ing-wheat
 ing-barley-glucose-syrup  DERIVED_FROM ing-barley
 ```
-
-Todas las relaciones usan `EU_FIC_1169_2011` y `reviewedAt = 2026-08-09`.
 
 El linaje no propaga relaciones de seguridad ni exenciones regulatorias.
 
@@ -78,9 +63,7 @@ reviewedAt        2026-08-09
 isActive          true
 ```
 
-Las tres identidades derivadas de trigo conservan además en `conditions` la limitación de la nota legal aplicable a productos derivados: no se extiende la excepción automáticamente si un proceso posterior pudiera aumentar la alergenicidad evaluada para el producto de origen.
-
-El catálogo no intenta evaluar procesos industriales ni propagar esa excepción a descendientes del grafo.
+Las tres identidades derivadas de trigo conservan en `conditions` la limitación de la nota legal aplicable a productos derivados. El catálogo no evalúa procesos industriales ni propaga la exención a descendientes del grafo.
 
 ## 6. Separación clínica
 
@@ -95,55 +78,36 @@ La exención es una regla de declaración regulatoria. No demuestra ausencia de 
 
 ## 7. Fuera de v10
 
-No se modela todavía la excepción del punto 1(d) para cereales utilizados en la elaboración de destilados alcohólicos. Su formulación depende del uso/proceso y no se representa como una identidad genérica para evitar una aplicación excesivamente amplia.
+No se modela la excepción del punto 1(d) para cereales utilizados en la elaboración de destilados alcohólicos. Su formulación depende del uso/proceso y no se representa como una identidad genérica para evitar una aplicación excesivamente amplia.
 
-Tampoco reciben exención:
-
-```text
-jarabe de glucosa genérico
-dextrosa genérica
-maltodextrina genérica
-productos derivados posteriores sin trazabilidad suficiente
-```
+Tampoco reciben exención los nombres genéricos sin procedencia cereal demostrada ni productos derivados posteriores sin trazabilidad suficiente.
 
 ## 8. Prueba instrumentada
 
-Se añade:
+`CatalogV10CerealRegulatoryExemptionTest` comprueba los conteos, las cuatro identidades, linaje, exenciones, ausencia de nuevas relaciones de seguridad, conservación de las relaciones de trigo/cebada, importación Room y metadata `catalogVersion = 10`.
+
+## 9. Gate de staging — SUPERADO
+
+GitHub Actions validó el staging completo:
 
 ```text
-CatalogV10CerealRegulatoryExemptionTest
+assembleDebug                     PASS
+testDebugUnitTest                 PASS
+lintDebug                         PASS
+compileDebugAndroidTestKotlin     PASS
+assembleRelease                   PASS
+connectedDebugAndroidTest         PASS
+Room schemas 1..4                 PASS
 ```
 
-Debe comprobar:
+## 10. Activación
 
-- schema 4 / catalogVersion 10;
-- 266 ingredientes;
-- 245 alias;
-- 39 relaciones de linaje;
-- 33 relaciones de seguridad;
-- 14 exenciones regulatorias;
-- cuatro identidades nuevas verificadas;
-- cuatro relaciones de linaje con los padres esperados;
-- cuatro exenciones con `sg-eu-cereals-gluten`;
-- ausencia de relaciones de seguridad en las cuatro identidades;
-- conservación de las relaciones de seguridad de trigo y cebada;
-- importación transaccional en Room v4;
-- metadata final `catalogVersion = 10`.
+Se cambió `IngredientCatalogAssetReader.DEFAULT_VERSION_DIRECTORY` de `ingredient-catalog/v9` a `ingredient-catalog/v10`.
 
-## 9. Gate automático
+La prueba histórica de v9 quedó fijada explícitamente a v9 y la prueba de v10 pasó a utilizar el lector/importador predeterminado.
 
-`.github/workflows/android-ci.yml` ejecuta automáticamente:
+## 11. Gate post-activación
 
-```text
-assembleDebug
-testDebugUnitTest
-lintDebug
-compileDebugAndroidTestKotlin
-assembleRelease
-connectedDebugAndroidTest
-Room schema guard
-```
+La activación dispara automáticamente `.github/workflows/android-ci.yml`.
 
-Con la nueva prueba se esperan 44 pruebas instrumentadas. Room debe permanecer exactamente en `1.json` a `4.json`.
-
-V10 no se activará hasta que el gate de staging quede completamente verde.
+Para cerrar v10 definitivamente deben volver a pasar build, unit, lint, compilación AndroidTest, release, pruebas instrumentadas y guard de Room con schemas exclusivamente `1.json` a `4.json`.
