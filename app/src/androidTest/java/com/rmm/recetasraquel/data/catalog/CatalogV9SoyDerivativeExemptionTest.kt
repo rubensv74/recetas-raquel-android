@@ -20,7 +20,7 @@ class CatalogV9SoyDerivativeExemptionTest {
 
         try {
             val reader = IngredientCatalogAssetReader(AndroidAssetCatalogTextSource(context.assets))
-            val bundle = reader.read("ingredient-catalog/v9")
+            val bundle = reader.read()
             val validation = CatalogValidator.validate(bundle)
 
             assertTrue(validation.errors.joinToString(separator = "\n"), validation.isValid)
@@ -86,7 +86,7 @@ class CatalogV9SoyDerivativeExemptionTest {
                 dao = database.ingredientCatalogDao(),
                 timeProvider = TimeProvider { 1000L },
             )
-            val result = importer.ensureImported("ingredient-catalog/v9")
+            val result = importer.ensureImported()
 
             assertTrue(result is CatalogImportResult.Imported)
             val dao = database.ingredientCatalogDao()
