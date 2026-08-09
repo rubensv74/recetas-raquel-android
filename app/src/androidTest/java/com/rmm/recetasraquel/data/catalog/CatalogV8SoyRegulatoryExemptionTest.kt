@@ -20,7 +20,7 @@ class CatalogV8SoyRegulatoryExemptionTest {
 
         try {
             val reader = IngredientCatalogAssetReader(AndroidAssetCatalogTextSource(context.assets))
-            val bundle = reader.read()
+            val bundle = reader.read("ingredient-catalog/v8")
             val validation = CatalogValidator.validate(bundle)
 
             assertTrue(validation.errors.joinToString(separator = "\n"), validation.isValid)
@@ -66,7 +66,7 @@ class CatalogV8SoyRegulatoryExemptionTest {
                 dao = database.ingredientCatalogDao(),
                 timeProvider = TimeProvider { 900L },
             )
-            val result = importer.ensureImported()
+            val result = importer.ensureImported("ingredient-catalog/v8")
 
             assertTrue(result is CatalogImportResult.Imported)
             val dao = database.ingredientCatalogDao()
