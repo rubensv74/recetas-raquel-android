@@ -12,12 +12,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.rmm.recetasraquel.domain.photos.RecipePhotoStorage
+import com.rmm.recetasraquel.domain.repository.CustomIngredientRepository
 import com.rmm.recetasraquel.domain.repository.DemoDataController
 import com.rmm.recetasraquel.domain.repository.IngredientCatalogRepository
 import com.rmm.recetasraquel.domain.repository.RecipeRepository
 import com.rmm.recetasraquel.domain.usecase.SaveRecipeOperation
 import com.rmm.recetasraquel.ui.cooking.CookingModeScreen
 import com.rmm.recetasraquel.ui.cooking.CookingModeViewModel
+import com.rmm.recetasraquel.ui.customingredient.CustomIngredientEditorEvent
+import com.rmm.recetasraquel.ui.customingredient.CustomIngredientEditorScreen
+import com.rmm.recetasraquel.ui.customingredient.CustomIngredientEditorViewModel
 import com.rmm.recetasraquel.ui.detail.RecipeDetailScreen
 import com.rmm.recetasraquel.ui.detail.RecipeDetailViewModel
 import com.rmm.recetasraquel.ui.editor.RecipeEditorScreen
@@ -35,6 +39,7 @@ import com.rmm.recetasraquel.util.IdGenerator
 fun RecetasRaquelApp(
     repository: RecipeRepository,
     ingredientCatalogRepository: IngredientCatalogRepository,
+    customIngredientRepository: CustomIngredientRepository,
     idGenerator: IdGenerator,
     photoStorage: RecipePhotoStorage,
     saveRecipeUseCase: SaveRecipeOperation,
@@ -114,10 +119,40 @@ fun RecetasRaquelApp(
                 backStackEntry = backStackEntry,
             )
         }
-        composable(AppRoute.INGREDIENT_LIBRARY) {
+        composable(AppRoute.INGREDIENT_LIBRARY) { libraryBackStackEntry ->
             val libraryViewModel: IngredientLibraryViewModel = viewModel(
                 factory = IngredientLibraryViewModel.factory(ingredientCatalogRepository),
             )
+            val selectedCustomIngredientId = libraryBackStackEntry.savedStateHandle
+                .getStateFlow<String?>(AppRoute.SELECTED_CUSTOM_INGREDIENT_ID, null)
+                .collectAsStateWithLifecycle().value
+            val selectedCustomIngredientName = libraryBackStackEntry.savedStateHandle
+                .getStateFlow<String?>(AppRoute.SELECTED_CUSTOM_INGREDIENT_NAME, null)
+                .collectAsStateWithLifecycle().value
+            val selectedCustomIngredientUnit = libraryBackStackEntry.savedStateHandle
+                .getStateFlow<String?>(AppRoute.SELECTED_CUSTOM_INGREDIENT_UNIT, null)
+                .collectAsStateWithLifecycle().value
+
+            LaunchedEffect(
+                selectedCustomIngredientId,
+                selectedCustomIngredientName,
+                selectedCustomIngredientUnit,
+            ) {
+                val ingredientId = selectedCustomIngredientId
+                val ingredientName = selectedCustomIngredientName
+                if (ingredientId != null && ingredientName != null) {
+                    navController.previousBackStackEntry?.savedStateHandle?.apply {
+                        set(AppRoute.SELECTED_CUSTOM_INGREDIENT_ID, ingredientId)
+                        set(AppRoute.SELECTED_CUSTOM_INGREDIENT_NAME, ingredientName)
+                        set(AppRoute.SELECTED_CUSTOM_INGREDIENT_UNIT, selectedCustomIngredientUnit.orEmpty())
+                    }
+                    libraryBackStackEntry.savedStateHandle[AppRoute.SELECTED_CUSTOM_INGREDIENT_ID] = null
+                    libraryBackStackEntry.savedStateHandle[AppRoute.SELECTED_CUSTOM_INGREDIENT_NAME] = null
+                    libraryBackStackEntry.savedStateHandle[AppRoute.SELECTED_CUSTOM_INGREDIENT_UNIT] = null
+                    navController.popBackStack()
+                }
+            }
+
             IngredientLibraryScreen(
                 state = libraryViewModel.uiState.collectAsStateWithLifecycle().value,
                 onQueryChange = libraryViewModel::setQuery,
@@ -132,14 +167,55 @@ fun RecetasRaquelApp(
                     navController.popBackStack()
                 },
                 onAddManualIngredient = {
-                    navController.previousBackStackEntry?.savedStateHandle?.set(
-                        AppRoute.ADD_MANUAL_INGREDIENT,
-                        true,
-                    )
-                    navController.popBackStack()
+                    navController.navigate(AppRoute.CUSTOM_INGREDIENT) { launchSingleTop = true }
                 },
                 onNavigateBack = { navController.popBackStack() },
                 onRetry = libraryViewModel::retry,
+            )
+        }
+        composable(AppRoute.CUSTOM_INGREDIENT) {
+            val customIngredientViewModel: CustomIngredientEditorViewModel = viewModel(
+                factory = CustomIngredientEditorViewModel.factory(customIngredientRepository),
+            )
+            val customIngredientState = customIngredientViewModel.uiState.collectAsStateWithLifecycle().value
+
+            LaunchedEffect(Unit) {
+                customIngredientViewModel.events.collect { event ->
+                    when (event) {
+                        is CustomIngredientEditorEvent.IngredientCreated -> {
+                            navController.previousBackStackEntry?.savedStateHandle?.apply {
+                                set(AppRoute.SELECTED_CUSTOM_INGREDIENT_ID, event.ingredientId)
+                                set(AppRoute.SELECTED_CUSTOM_INGREDIENT_NAME, event.name)
+                                set(AppRoute.SELECTED_CUSTOM_INGREDIENT_UNIT, event.defaultUnit ?: "")
+                            }
+                            navController.popBackStack()
+                        }
+                    }
+                }
+            }
+
+            CustomIngredientEditorScreen(
+                state = customIngredientState,
+                onNameChange = customIngredientViewModel::setName,
+                onTypeChange = customIngredientViewModel::setType,
+                onCategoryChange = customIngredientViewModel::setCategory,
+                onDefaultUnitChange = customIngredientViewModel::setDefaultUnit,
+                onAliasesChange = customIngredientViewModel::setAliasesText,
+                onBrandChange = customIngredientViewModel::setBrand,
+                onTradeNameChange = customIngredientViewModel::setTradeName,
+                onCompositionKnownChange = customIngredientViewModel::setCompositionKnown,
+                onLabelReadAtChange = customIngredientViewModel::setLabelReadAt,
+                onNotesChange = customIngredientViewModel::setNotes,
+                onAddSafetyRow = customIngredientViewModel::addSafetyRow,
+                onRemoveSafetyRow = customIngredientViewModel::removeSafetyRow,
+                onSafetyGroupChange = customIngredientViewModel::setSafetyGroup,
+                onSafetyRelationTypeChange = customIngredientViewModel::setSafetyRelationType,
+                onSafetyEvidenceChange = customIngredientViewModel::setSafetyEvidence,
+                onSafetySourceDetailsChange = customIngredientViewModel::setSafetySourceDetails,
+                onSafetyNotesChange = customIngredientViewModel::setSafetyNotes,
+                onSave = customIngredientViewModel::save,
+                onRetry = customIngredientViewModel::retry,
+                onNavigateBack = { navController.popBackStack() },
             )
         }
         composable(AppRoute.SETTINGS) {
@@ -173,8 +249,14 @@ private fun EditorRoute(
     val selectedIngredientUnit = backStackEntry.savedStateHandle
         .getStateFlow<String?>(AppRoute.SELECTED_CATALOG_INGREDIENT_UNIT, null)
         .collectAsStateWithLifecycle().value
-    val addManualIngredient = backStackEntry.savedStateHandle
-        .getStateFlow(AppRoute.ADD_MANUAL_INGREDIENT, false)
+    val selectedCustomIngredientId = backStackEntry.savedStateHandle
+        .getStateFlow<String?>(AppRoute.SELECTED_CUSTOM_INGREDIENT_ID, null)
+        .collectAsStateWithLifecycle().value
+    val selectedCustomIngredientName = backStackEntry.savedStateHandle
+        .getStateFlow<String?>(AppRoute.SELECTED_CUSTOM_INGREDIENT_NAME, null)
+        .collectAsStateWithLifecycle().value
+    val selectedCustomIngredientUnit = backStackEntry.savedStateHandle
+        .getStateFlow<String?>(AppRoute.SELECTED_CUSTOM_INGREDIENT_UNIT, null)
         .collectAsStateWithLifecycle().value
 
     LaunchedEffect(selectedIngredientId, selectedIngredientName, selectedIngredientUnit) {
@@ -192,10 +274,22 @@ private fun EditorRoute(
         }
     }
 
-    LaunchedEffect(addManualIngredient) {
-        if (addManualIngredient) {
-            viewModel.addIngredient()
-            backStackEntry.savedStateHandle[AppRoute.ADD_MANUAL_INGREDIENT] = false
+    LaunchedEffect(
+        selectedCustomIngredientId,
+        selectedCustomIngredientName,
+        selectedCustomIngredientUnit,
+    ) {
+        val ingredientId = selectedCustomIngredientId
+        val ingredientName = selectedCustomIngredientName
+        if (ingredientId != null && ingredientName != null) {
+            viewModel.addCustomIngredient(
+                customIngredientId = ingredientId,
+                name = ingredientName,
+                defaultUnit = selectedCustomIngredientUnit?.ifBlank { null },
+            )
+            backStackEntry.savedStateHandle[AppRoute.SELECTED_CUSTOM_INGREDIENT_ID] = null
+            backStackEntry.savedStateHandle[AppRoute.SELECTED_CUSTOM_INGREDIENT_NAME] = null
+            backStackEntry.savedStateHandle[AppRoute.SELECTED_CUSTOM_INGREDIENT_UNIT] = null
         }
     }
 
