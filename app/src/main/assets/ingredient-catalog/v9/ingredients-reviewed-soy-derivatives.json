@@ -1,0 +1,86 @@
+[
+  {
+    "id": "ing-soy-natural-mixed-tocopherols-e306",
+    "canonicalName": "Tocoferoles naturales mezclados (E306) derivados de soja",
+    "normalizedName": "tocoferoles naturales mezclados e306 derivados de soja",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria derivada de soja. Su exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-soy-natural-d-alpha-tocopherol",
+    "canonicalName": "D-alfa tocoferol natural derivado de soja",
+    "normalizedName": "d alfa tocoferol natural derivado de soja",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria derivada de soja. Su exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-soy-natural-d-alpha-tocopherol-acetate",
+    "canonicalName": "Acetato de D-alfa tocoferol natural derivado de soja",
+    "normalizedName": "acetato de d alfa tocoferol natural derivado de soja",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria derivada de soja. Su exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-soy-natural-d-alpha-tocopherol-succinate",
+    "canonicalName": "Succinato de D-alfa tocoferol natural derivado de soja",
+    "normalizedName": "succinato de d alfa tocoferol natural derivado de soja",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria derivada de soja. Su exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-soy-phytosterols",
+    "canonicalName": "Fitosteroles derivados de aceites vegetales de soja",
+    "normalizedName": "fitosteroles derivados de aceites vegetales de soja",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria de origen soja. Su exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-soy-phytosterol-esters",
+    "canonicalName": "Ésteres de fitosterol derivados de aceites vegetales de soja",
+    "normalizedName": "esteres de fitosterol derivados de aceites vegetales de soja",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria de origen soja. Su exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-soy-plant-stanol-ester",
+    "canonicalName": "Éster de fitostanol derivado de fitosteroles de aceite de soja",
+    "normalizedName": "ester de fitostanol derivado de fitosteroles de aceite de soja",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria derivada de fitosteroles de aceite de soja. Su exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  }
+]
