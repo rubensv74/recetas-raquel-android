@@ -19,6 +19,7 @@ import com.rmm.recetasraquel.domain.photos.RecipePhotoStorage
 import com.rmm.recetasraquel.domain.photos.StagedPhoto
 import com.rmm.recetasraquel.domain.repository.RecipeRepository
 import com.rmm.recetasraquel.domain.usecase.SaveRecipeUseCase
+import com.rmm.recetasraquel.ui.FakeCustomIngredientRepository
 import com.rmm.recetasraquel.ui.FakeIngredientCatalogRepository
 import com.rmm.recetasraquel.ui.theme.RecetasRaquelTheme
 import com.rmm.recetasraquel.util.UuidIdGenerator
@@ -42,6 +43,7 @@ class CookingNavigationUiTest {
                 RecetasRaquelApp(
                     repository = repository,
                     ingredientCatalogRepository = FakeIngredientCatalogRepository,
+                    customIngredientRepository = FakeCustomIngredientRepository(),
                     idGenerator = UuidIdGenerator(),
                     photoStorage = photoStorage,
                     saveRecipeUseCase = SaveRecipeUseCase(repository, photoStorage),
