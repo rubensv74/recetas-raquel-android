@@ -254,6 +254,26 @@ class RecipeEditorViewModel(
         checkForUnsavedChanges()
     }
 
+    fun addCustomIngredient(
+        customIngredientId: String,
+        name: String,
+        defaultUnit: String?,
+    ) {
+        require(customIngredientId.isNotBlank())
+        require(name.isNotBlank())
+        _uiState.update { state ->
+            state.copy(
+                ingredients = state.ingredients + EditorIngredientItem(
+                    name = name,
+                    unit = defaultUnit.orEmpty(),
+                    catalogIngredientId = null,
+                    customIngredientId = customIngredientId,
+                ),
+            )
+        }
+        checkForUnsavedChanges()
+    }
+
     fun updateIngredientQuantity(key: String, value: String) {
         _uiState.update { state ->
             state.copy(
@@ -280,7 +300,15 @@ class RecipeEditorViewModel(
         _uiState.update { state ->
             state.copy(
                 ingredients = state.ingredients.map { item ->
-                    if (item.key == key && item.catalogIngredientId == null) item.copy(name = value) else item
+                    if (
+                        item.key == key &&
+                        item.catalogIngredientId == null &&
+                        item.customIngredientId == null
+                    ) {
+                        item.copy(name = value)
+                    } else {
+                        item
+                    }
                 },
                 ingredientErrors = state.ingredientErrors - key,
             )
