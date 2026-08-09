@@ -1,0 +1,30 @@
+[
+  {
+    "id": "rex-eu-fully-refined-soybean-oil",
+    "ingredientId": "ing-fully-refined-soybean-oil",
+    "safetyGroupId": "sg-eu-soybeans",
+    "jurisdiction": "EU-ES",
+    "regulatoryEffect": "EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION",
+    "conditions": "La identidad debe corresponder específicamente a aceite de soja totalmente refinado conforme al punto 6(a) del Anexo II del Reglamento (UE) 1169/2011.",
+    "sourceId": "EU_FIC_1169_2011",
+    "effectiveFrom": null,
+    "effectiveTo": null,
+    "reviewedAt": "2026-08-08",
+    "notes": "Exención regulatoria de declaración obligatoria. No expresa ausencia de alérgeno, ausencia de riesgo ni aptitud clínica.",
+    "isActive": true
+  },
+  {
+    "id": "rex-eu-fully-refined-soybean-fat",
+    "ingredientId": "ing-fully-refined-soybean-fat",
+    "safetyGroupId": "sg-eu-soybeans",
+    "jurisdiction": "EU-ES",
+    "regulatoryEffect": "EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION",
+    "conditions": "La identidad debe corresponder específicamente a grasa de soja totalmente refinada conforme al punto 6(a) del Anexo II del Reglamento (UE) 1169/2011.",
+    "sourceId": "EU_FIC_1169_2011",
+    "effectiveFrom": null,
+    "effectiveTo": null,
+    "reviewedAt": "2026-08-08",
+    "notes": "Exención regulatoria de declaración obligatoria. No expresa ausencia de alérgeno, ausencia de riesgo ni aptitud clínica.",
+    "isActive": true
+  }
+]
