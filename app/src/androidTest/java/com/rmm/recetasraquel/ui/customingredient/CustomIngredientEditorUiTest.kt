@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToIndex
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientSafetyEvidence
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientSafetyRelationType
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientType
@@ -59,7 +60,8 @@ class CustomIngredientEditorUiTest {
             ),
         )
 
-        composeRule.onNodeWithText("Declaración del usuario").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("custom_ingredient_form").performScrollToIndex(9)
+        composeRule.onNodeWithText("Declaración del usuario").assertIsDisplayed()
         composeRule.onNodeWithText("No verificado").assertIsDisplayed()
     }
 
