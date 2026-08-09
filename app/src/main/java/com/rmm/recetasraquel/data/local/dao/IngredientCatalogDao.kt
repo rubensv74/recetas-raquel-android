@@ -17,6 +17,18 @@ import com.rmm.recetasraquel.data.local.entity.RegulatoryExemptionEntity
 import com.rmm.recetasraquel.data.local.entity.SafetySourceEntity
 import kotlinx.coroutines.flow.Flow
 
+data class CatalogIngredientSearchRow(
+    val id: String,
+    val canonicalName: String,
+    val categoryId: String,
+    val categoryName: String,
+    val defaultUnit: String?,
+    val verificationStatus: String,
+    val safetyRelationCount: Int,
+    val regulatoryExemptionCount: Int,
+    val searchRank: Int,
+)
+
 @Dao
 interface IngredientCatalogDao {
     @Query("SELECT * FROM catalog_metadata WHERE `key` = :key LIMIT 1")
@@ -24,6 +36,9 @@ interface IngredientCatalogDao {
 
     @Query("SELECT * FROM ingredient_categories WHERE isActive = 1 ORDER BY sortOrder ASC, name COLLATE NOCASE ASC")
     fun observeActiveCategories(): Flow<List<IngredientCategoryEntity>>
+
+    @Query("SELECT * FROM ingredient_categories WHERE isActive = 1 ORDER BY sortOrder ASC, name COLLATE NOCASE ASC")
+    suspend fun getActiveCategories(): List<IngredientCategoryEntity>
 
     @Query("SELECT COUNT(*) FROM ingredient_categories WHERE isActive = 1")
     suspend fun countActiveCategories(): Int
@@ -33,6 +48,76 @@ interface IngredientCatalogDao {
 
     @Query("SELECT COUNT(*) FROM ingredient_aliases")
     suspend fun countAliases(): Int
+
+    @Query(
+        """
+        SELECT
+            ci.id AS id,
+            ci.canonicalName AS canonicalName,
+            ci.categoryId AS categoryId,
+            category.name AS categoryName,
+            ci.defaultUnit AS defaultUnit,
+            ci.verificationStatus AS verificationStatus,
+            (SELECT COUNT(*) FROM ingredient_safety_relations safety WHERE safety.ingredientId = ci.id) AS safetyRelationCount,
+            (SELECT COUNT(*) FROM regulatory_exemptions exemption WHERE exemption.ingredientId = ci.id AND exemption.isActive = 1) AS regulatoryExemptionCount,
+            CASE
+                WHEN :normalizedQuery = '' THEN 0
+                WHEN ci.normalizedName = :normalizedQuery OR EXISTS (
+                    SELECT 1 FROM ingredient_aliases exactAlias
+                    WHERE exactAlias.ingredientId = ci.id AND exactAlias.normalizedAlias = :normalizedQuery
+                ) THEN 0
+                WHEN substr(ci.normalizedName, 1, length(:normalizedQuery)) = :normalizedQuery OR EXISTS (
+                    SELECT 1 FROM ingredient_aliases prefixAlias
+                    WHERE prefixAlias.ingredientId = ci.id
+                      AND substr(prefixAlias.normalizedAlias, 1, length(:normalizedQuery)) = :normalizedQuery
+                ) THEN 1
+                ELSE 2
+            END AS searchRank
+        FROM catalog_ingredients ci
+        INNER JOIN ingredient_categories category ON category.id = ci.categoryId
+        WHERE ci.isActive = 1
+          AND category.isActive = 1
+          AND (:categoryId IS NULL OR ci.categoryId = :categoryId)
+          AND (
+              :normalizedQuery = ''
+              OR instr(ci.normalizedName, :normalizedQuery) > 0
+              OR EXISTS (
+                  SELECT 1 FROM ingredient_aliases matchingAlias
+                  WHERE matchingAlias.ingredientId = ci.id
+                    AND instr(matchingAlias.normalizedAlias, :normalizedQuery) > 0
+              )
+          )
+        ORDER BY searchRank ASC, ci.canonicalName COLLATE NOCASE ASC, ci.id ASC
+        LIMIT :limit
+        """,
+    )
+    suspend fun searchActiveIngredients(
+        normalizedQuery: String,
+        categoryId: String?,
+        limit: Int,
+    ): List<CatalogIngredientSearchRow>
+
+    @Query(
+        """
+        SELECT
+            ci.id AS id,
+            ci.canonicalName AS canonicalName,
+            ci.categoryId AS categoryId,
+            category.name AS categoryName,
+            ci.defaultUnit AS defaultUnit,
+            ci.verificationStatus AS verificationStatus,
+            (SELECT COUNT(*) FROM ingredient_safety_relations safety WHERE safety.ingredientId = ci.id) AS safetyRelationCount,
+            (SELECT COUNT(*) FROM regulatory_exemptions exemption WHERE exemption.ingredientId = ci.id AND exemption.isActive = 1) AS regulatoryExemptionCount,
+            0 AS searchRank
+        FROM catalog_ingredients ci
+        INNER JOIN ingredient_categories category ON category.id = ci.categoryId
+        WHERE ci.id = :ingredientId
+          AND ci.isActive = 1
+          AND category.isActive = 1
+        LIMIT 1
+        """,
+    )
+    suspend fun getActiveIngredientSummary(ingredientId: String): CatalogIngredientSearchRow?
 
     @Query("SELECT COUNT(*) FROM catalog_ingredient_relations WHERE isActive = 1")
     suspend fun countActiveIngredientRelations(): Int
