@@ -1,0 +1,149 @@
+name: Android CI
+
+on:
+  push:
+    branches:
+      - "program/**"
+    paths:
+      - "app/**"
+      - "gradle/**"
+      - "*.gradle.kts"
+      - "gradle.properties"
+      - ".github/workflows/android-ci.yml"
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "app/**"
+      - "gradle/**"
+      - "*.gradle.kts"
+      - "gradle.properties"
+      - ".github/workflows/android-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GRADLE_USER_HOME: ${{ github.workspace }}/.gradle-ci
+
+jobs:
+  quality:
+    name: Build, unit tests, lint and Room guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+
+      - name: Install Android 36.1 platform
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-36.1"
+
+      - name: Assemble debug
+        run: ./gradlew --no-daemon clean assembleDebug
+
+      - name: Unit tests
+        run: ./gradlew --no-daemon testDebugUnitTest
+
+      - name: Lint
+        run: ./gradlew --no-daemon lintDebug
+
+      - name: Compile instrumented tests
+        run: ./gradlew --no-daemon compileDebugAndroidTestKotlin
+
+      - name: Assemble release
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: Guard Room schemas
+        shell: bash
+        run: |
+          set -euo pipefail
+          schema_dir="app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase"
+          actual="$(find "$schema_dir" -maxdepth 1 -type f -name '*.json' -printf '%f\n' | sort)"
+          expected="$(printf '1.json\n2.json\n3.json\n4.json\n')"
+
+          echo "Room schemas found:"
+          printf '%s\n' "$actual"
+
+          if [[ "$actual" != "$expected" ]]; then
+            echo "Unexpected Room schema set. Expected exactly 1.json through 4.json."
+            exit 1
+          fi
+
+          git diff --exit-code -- "$schema_dir"
+
+  instrumented:
+    name: Instrumented tests on Android emulator
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+
+      - name: Install Android 36.1 platform
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-36.1"
+
+      - name: Enable KVM access
+        shell: bash
+        run: |
+          if [[ -e /dev/kvm ]]; then
+            sudo chmod 666 /dev/kvm
+          fi
+
+      - name: Run connected Android tests
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: ./gradlew --no-daemon connectedDebugAndroidTest
+
+      - name: Guard Room schemas after instrumented tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          schema_dir="app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase"
+          actual="$(find "$schema_dir" -maxdepth 1 -type f -name '*.json' -printf '%f\n' | sort)"
+          expected="$(printf '1.json\n2.json\n3.json\n4.json\n')"
+
+          if [[ "$actual" != "$expected" ]]; then
+            echo "Unexpected Room schema set after instrumented tests."
+            printf '%s\n' "$actual"
+            exit 1
+          fi
+
+          git diff --exit-code -- "$schema_dir"
