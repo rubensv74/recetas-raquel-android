@@ -8,7 +8,7 @@
     "description": "Identidad técnica condicionada por el nivel de refinado; no equivale a una afirmación clínica de seguridad.",
     "verificationStatus": "VERIFIED",
     "compositionVariability": "VARIABLE_BY_PREPARATION",
-    "sourceUpdatedAt": "2026-08-08",
+    "sourceUpdatedAt": null,
     "isActive": true
   },
   {
@@ -20,7 +20,7 @@
     "description": "Identidad técnica condicionada por el nivel de refinado; no equivale a una afirmación clínica de seguridad.",
     "verificationStatus": "VERIFIED",
     "compositionVariability": "VARIABLE_BY_PREPARATION",
-    "sourceUpdatedAt": "2026-08-08",
+    "sourceUpdatedAt": null,
     "isActive": true
   }
 ]
