@@ -1,6 +1,6 @@
 # 28 — CATÁLOGO V9: DERIVADOS DE SOJA EXENTOS DE DECLARACIÓN
 
-**Estado:** IMPLEMENTADO EN STAGING — validación local pendiente  
+**Estado:** ACTIVO — gate de staging superado; validación post-activación automatizada en GitHub Actions  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-09
 
@@ -11,8 +11,6 @@ Incorporar de forma controlada las excepciones restantes del punto 6(b), 6(c) y 
 ```text
 docs/ingredient-library/27_REGULATORY_REFRESH_SOY_TOCOPHEROLS_PHYTOSTEROLS_STANOLS.md
 ```
-
-V8 permanece como catálogo activo mientras v9 está en staging.
 
 ## 2. Delta desde v8
 
@@ -110,7 +108,7 @@ Ninguna exención puede convertirse automáticamente en mensajes como `sin soja`
 
 ## 7. Integridad histórica
 
-V9 se ha creado como fork exacto del árbol validado de v8 y después se han añadido únicamente:
+V9 se creó como fork exacto del árbol validado de v8 y después se añadieron únicamente:
 
 ```text
 ingredients-reviewed-soy-derivatives.json
@@ -120,7 +118,7 @@ regulatory-exemptions-soy-derivatives.json
 
 más el `manifest.json` de v9.
 
-Los bundles v1-v8 permanecen sin modificaciones.
+Los bundles v1-v8 permanecen sin modificaciones. La prueba histórica de v8 lee ahora explícitamente `ingredient-catalog/v8` para que su cobertura no dependa del catálogo activo.
 
 ## 8. Prueba instrumentada
 
@@ -130,7 +128,7 @@ Se añade:
 CatalogV9SoyDerivativeExemptionTest
 ```
 
-Debe comprobar:
+Comprueba:
 
 - schema 4 / catalogVersion 9;
 - 262 ingredientes;
@@ -147,58 +145,60 @@ Debe comprobar:
 - importación transaccional en Room v4;
 - metadata final `catalogVersion = 9`.
 
-## 9. Catálogo activo durante el gate
+Tras activación, la prueba usa el lector por defecto para demostrar que v9 es realmente el catálogo activo.
 
-Debe permanecer:
+## 9. Gate de staging
 
-```text
-IngredientCatalogAssetReader.DEFAULT_VERSION_DIRECTORY = ingredient-catalog/v8
-```
-
-La prueba de v9 lee explícitamente `ingredient-catalog/v9`. V9 no se activará hasta superar el gate.
-
-## 10. Gate requerido
-
-Ejecutar:
+El primer gate autónomo completo mediante GitHub Actions quedó verde:
 
 ```text
-clean assembleDebug
-testDebugUnitTest
-lintDebug
-compileDebugAndroidTestKotlin
-connectedDebugAndroidTest
-assembleRelease
+assembleDebug                     PASS
+testDebugUnitTest                 PASS
+lintDebug                         PASS
+compileDebugAndroidTestKotlin     PASS
+assembleRelease                   PASS
+connectedDebugAndroidTest         PASS
+Room schemas 1..4                 PASS
 ```
 
-Con la nueva prueba se esperan:
+El job de calidad y el job instrumentado finalizaron correctamente en runners estándar de GitHub Actions.
+
+## 10. Activación
+
+Se cambia:
 
 ```text
-43 instrumented tests
-0 failed
-0 skipped
+IngredientCatalogAssetReader.DEFAULT_VERSION_DIRECTORY
 ```
 
-Room debe continuar exactamente con:
+de:
 
 ```text
-1.json
-2.json
-3.json
-4.json
+ingredient-catalog/v8
 ```
 
-No debe aparecer `5.json`.
-
-## 11. Criterio de aprobación
+a:
 
 ```text
-CatalogValidator v9                    PASS
-persistencia de 7 nuevas exenciones   PASS
-seguridad sin propagación              PASS
-suite instrumentada                    43/43 PASS
-build/unit/lint/release                PASS
-Room                                   sin cambios
-catálogo predeterminado                v8 durante staging
+ingredient-catalog/v9
 ```
 
-Solo después del gate verde podrá activarse v9.
+La prueba histórica de v8 queda fijada a v8 y la prueba de v9 pasa a utilizar el catálogo predeterminado.
+
+## 11. Gate post-activación
+
+La activación dispara automáticamente `.github/workflows/android-ci.yml`.
+
+Criterio requerido:
+
+```text
+assembleDebug                     PASS
+testDebugUnitTest                 PASS
+lintDebug                         PASS
+compileDebugAndroidTestKotlin     PASS
+assembleRelease                   PASS
+connectedDebugAndroidTest         PASS
+Room schemas                      1.json..4.json únicamente
+```
+
+No se considera cerrada definitivamente la activación si este gate post-activación falla.
