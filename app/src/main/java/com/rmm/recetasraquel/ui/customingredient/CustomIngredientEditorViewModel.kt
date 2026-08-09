@@ -126,6 +126,7 @@ class CustomIngredientEditorViewModel(
             return
         }
 
+        val isCommercialProduct = state.type == CustomIngredientType.COMMERCIAL_PRODUCT
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, errorMessage = null, validationMessage = null) }
             repository.createIngredient(
@@ -135,10 +136,10 @@ class CustomIngredientEditorViewModel(
                     defaultUnit = state.defaultUnit.trim().takeIf(String::isNotEmpty),
                     type = state.type,
                     aliases = state.aliasesText.split(',').map(String::trim).filter(String::isNotEmpty),
-                    brand = state.brand.trim().takeIf(String::isNotEmpty),
-                    tradeName = state.tradeName.trim().takeIf(String::isNotEmpty),
+                    brand = state.brand.trim().takeIf { isCommercialProduct && it.isNotEmpty() },
+                    tradeName = state.tradeName.trim().takeIf { isCommercialProduct && it.isNotEmpty() },
                     compositionKnown = compositionKnown,
-                    labelReadAt = state.labelReadAt.trim().takeIf(String::isNotEmpty),
+                    labelReadAt = state.labelReadAt.trim().takeIf { isCommercialProduct && it.isNotEmpty() },
                     notes = state.notes.trim().takeIf(String::isNotEmpty),
                     safetyDeclarations = state.safetyRows.map { row ->
                         CustomIngredientSafetyDeclaration(
