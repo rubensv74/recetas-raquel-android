@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -11,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.rmm.recetasraquel.domain.photos.RecipePhotoStorage
 import com.rmm.recetasraquel.domain.repository.DemoDataController
+import com.rmm.recetasraquel.domain.repository.IngredientCatalogRepository
 import com.rmm.recetasraquel.domain.repository.RecipeRepository
 import com.rmm.recetasraquel.domain.usecase.SaveRecipeOperation
 import com.rmm.recetasraquel.ui.cooking.CookingModeScreen
@@ -21,6 +24,8 @@ import com.rmm.recetasraquel.ui.editor.RecipeEditorScreen
 import com.rmm.recetasraquel.ui.editor.RecipeEditorViewModel
 import com.rmm.recetasraquel.ui.home.HomeScreen
 import com.rmm.recetasraquel.ui.home.RecipeCatalogViewModel
+import com.rmm.recetasraquel.ui.ingredientlibrary.IngredientLibraryScreen
+import com.rmm.recetasraquel.ui.ingredientlibrary.IngredientLibraryViewModel
 import com.rmm.recetasraquel.ui.navigation.AppRoute
 import com.rmm.recetasraquel.ui.settings.SettingsScreen
 import com.rmm.recetasraquel.ui.settings.SettingsViewModel
@@ -29,6 +34,7 @@ import com.rmm.recetasraquel.util.IdGenerator
 @Composable
 fun RecetasRaquelApp(
     repository: RecipeRepository,
+    ingredientCatalogRepository: IngredientCatalogRepository,
     idGenerator: IdGenerator,
     photoStorage: RecipePhotoStorage,
     saveRecipeUseCase: SaveRecipeOperation,
@@ -85,20 +91,56 @@ fun RecetasRaquelApp(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
-        composable(AppRoute.NEW_RECIPE) {
+        composable(AppRoute.NEW_RECIPE) { backStackEntry ->
             val editorViewModel: RecipeEditorViewModel = viewModel(
                 factory = RecipeEditorViewModel.factory(repository, idGenerator, photoStorage, saveRecipeUseCase),
             )
-            EditorRoute(viewModel = editorViewModel, navController = navController)
+            EditorRoute(
+                viewModel = editorViewModel,
+                navController = navController,
+                backStackEntry = backStackEntry,
+            )
         }
         composable(
             route = AppRoute.EDIT_RECIPE,
             arguments = listOf(navArgument(AppRoute.RECIPE_ID) { type = NavType.StringType }),
-        ) {
+        ) { backStackEntry ->
             val editorViewModel: RecipeEditorViewModel = viewModel(
                 factory = RecipeEditorViewModel.factory(repository, idGenerator, photoStorage, saveRecipeUseCase),
             )
-            EditorRoute(viewModel = editorViewModel, navController = navController)
+            EditorRoute(
+                viewModel = editorViewModel,
+                navController = navController,
+                backStackEntry = backStackEntry,
+            )
+        }
+        composable(AppRoute.INGREDIENT_LIBRARY) {
+            val libraryViewModel: IngredientLibraryViewModel = viewModel(
+                factory = IngredientLibraryViewModel.factory(ingredientCatalogRepository),
+            )
+            IngredientLibraryScreen(
+                state = libraryViewModel.uiState.collectAsStateWithLifecycle().value,
+                onQueryChange = libraryViewModel::setQuery,
+                onSelectCategory = libraryViewModel::selectCategory,
+                onClearFilters = libraryViewModel::clearFilters,
+                onSelectIngredient = { ingredient ->
+                    navController.previousBackStackEntry?.savedStateHandle?.apply {
+                        set(AppRoute.SELECTED_CATALOG_INGREDIENT_ID, ingredient.id)
+                        set(AppRoute.SELECTED_CATALOG_INGREDIENT_NAME, ingredient.canonicalName)
+                        set(AppRoute.SELECTED_CATALOG_INGREDIENT_UNIT, ingredient.defaultUnit ?: "")
+                    }
+                    navController.popBackStack()
+                },
+                onAddManualIngredient = {
+                    navController.previousBackStackEntry?.savedStateHandle?.set(
+                        AppRoute.ADD_MANUAL_INGREDIENT,
+                        true,
+                    )
+                    navController.popBackStack()
+                },
+                onNavigateBack = { navController.popBackStack() },
+                onRetry = libraryViewModel::retry,
+            )
         }
         composable(AppRoute.SETTINGS) {
             val settingsViewModel: SettingsViewModel = viewModel(
@@ -118,9 +160,45 @@ fun RecetasRaquelApp(
 @Composable
 private fun EditorRoute(
     viewModel: RecipeEditorViewModel,
-    navController: androidx.navigation.NavHostController,
+    navController: NavHostController,
+    backStackEntry: NavBackStackEntry,
 ) {
     val state = viewModel.uiState.collectAsStateWithLifecycle().value
+    val selectedIngredientId = backStackEntry.savedStateHandle
+        .getStateFlow<String?>(AppRoute.SELECTED_CATALOG_INGREDIENT_ID, null)
+        .collectAsStateWithLifecycle().value
+    val selectedIngredientName = backStackEntry.savedStateHandle
+        .getStateFlow<String?>(AppRoute.SELECTED_CATALOG_INGREDIENT_NAME, null)
+        .collectAsStateWithLifecycle().value
+    val selectedIngredientUnit = backStackEntry.savedStateHandle
+        .getStateFlow<String?>(AppRoute.SELECTED_CATALOG_INGREDIENT_UNIT, null)
+        .collectAsStateWithLifecycle().value
+    val addManualIngredient = backStackEntry.savedStateHandle
+        .getStateFlow(AppRoute.ADD_MANUAL_INGREDIENT, false)
+        .collectAsStateWithLifecycle().value
+
+    LaunchedEffect(selectedIngredientId, selectedIngredientName, selectedIngredientUnit) {
+        val ingredientId = selectedIngredientId
+        val ingredientName = selectedIngredientName
+        if (ingredientId != null && ingredientName != null) {
+            viewModel.addCatalogIngredient(
+                catalogIngredientId = ingredientId,
+                canonicalName = ingredientName,
+                defaultUnit = selectedIngredientUnit?.ifBlank { null },
+            )
+            backStackEntry.savedStateHandle[AppRoute.SELECTED_CATALOG_INGREDIENT_ID] = null
+            backStackEntry.savedStateHandle[AppRoute.SELECTED_CATALOG_INGREDIENT_NAME] = null
+            backStackEntry.savedStateHandle[AppRoute.SELECTED_CATALOG_INGREDIENT_UNIT] = null
+        }
+    }
+
+    LaunchedEffect(addManualIngredient) {
+        if (addManualIngredient) {
+            viewModel.addIngredient()
+            backStackEntry.savedStateHandle[AppRoute.ADD_MANUAL_INGREDIENT] = false
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.navigation.collect { event ->
             when (event) {
@@ -152,7 +230,7 @@ private fun EditorRoute(
         onPreparationMinutesChange = viewModel::updatePreparationMinutes,
         onCookingMinutesChange = viewModel::updateCookingMinutes,
         onNotesChange = viewModel::updateNotes,
-        onAddIngredient = viewModel::addIngredient,
+        onAddIngredient = { navController.navigate(AppRoute.INGREDIENT_LIBRARY) { launchSingleTop = true } },
         onIngredientQuantityChange = viewModel::updateIngredientQuantity,
         onIngredientUnitChange = viewModel::updateIngredientUnit,
         onIngredientNameChange = viewModel::updateIngredientName,
