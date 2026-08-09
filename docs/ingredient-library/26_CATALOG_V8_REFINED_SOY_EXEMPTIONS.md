@@ -1,8 +1,8 @@
 # 26 — CATÁLOGO V8: ACEITE Y GRASA DE SOJA TOTALMENTE REFINADOS
 
-**Estado:** IMPLEMENTADO EN STAGING — revalidación local pendiente  
+**Estado:** STAGING VALIDADO — V8 ACTIVO — gate post-activación pendiente  
 **Rama:** `program/ingredient-library-food-safety`  
-**Fecha:** 2026-08-08
+**Fecha:** 2026-08-09
 
 ## 1. Objetivo
 
@@ -18,8 +18,6 @@ La revisión normativa previa está documentada en:
 ```text
 docs/ingredient-library/25_REGULATORY_REFRESH_FULLY_REFINED_SOY_OIL_FAT.md
 ```
-
-V7 permanece como catálogo activo hasta que v8 supere el gate.
 
 ## 2. Delta desde v7
 
@@ -143,13 +141,13 @@ Los bundles v1-v7 permanecen sin modificaciones.
 
 ## 8. Prueba instrumentada específica
 
-Se añade:
+Se mantiene:
 
 ```text
 CatalogV8SoyRegulatoryExemptionTest
 ```
 
-La prueba debe demostrar:
+La prueba demuestra:
 
 - bundle schema 4 / catalogVersion 8 válido;
 - 255 ingredientes;
@@ -165,49 +163,7 @@ La prueba debe demostrar:
 - conservación de la relación de seguridad de `ing-soybean`;
 - metadata final `catalogVersion = 8`.
 
-## 9. Catálogo activo durante el gate
-
-El lector predeterminado continúa apuntando a:
-
-```text
-ingredient-catalog/v7
-```
-
-V8 solo se lee explícitamente desde su prueba de staging. No se activará antes de superar el gate.
-
-## 10. Gate requerido
-
-Ejecutar:
-
-```text
-clean assembleDebug
-testDebugUnitTest
-lintDebug
-compileDebugAndroidTestKotlin
-connectedDebugAndroidTest
-assembleRelease
-```
-
-Con la nueva prueba se esperan:
-
-```text
-42 instrumented tests
-0 failed
-0 skipped
-```
-
-Room debe permanecer:
-
-```text
-1.json
-2.json
-3.json
-4.json
-```
-
-No debe aparecer `5.json`.
-
-## 11. Primera ejecución real del gate v8
+## 9. Incidencia detectada durante el primer gate
 
 La primera ejecución que llegó a la suite instrumentada ejecutó 42 pruebas y detectó un único fallo en:
 
@@ -222,7 +178,7 @@ JsonSyntaxException
 NumberFormatException: For input string: "2026-08-08"
 ```
 
-El error no estaba en la exención regulatoria. Las dos nuevas identidades habían escrito una fecha ISO en `sourceUpdatedAt`, pero el contrato existente define ese campo como `Long?` tanto en `CatalogIngredientRecord` como en `CatalogIngredientEntity`.
+Las dos nuevas identidades habían escrito una fecha ISO en `sourceUpdatedAt`, pero el contrato existente define ese campo como `Long?` tanto en `CatalogIngredientRecord` como en `CatalogIngredientEntity`.
 
 Corrección aplicada:
 
@@ -230,19 +186,76 @@ Corrección aplicada:
 sourceUpdatedAt = null
 ```
 
-para ambas identidades. La fecha de revisión permanece correctamente en `reviewedAt = 2026-08-08` de las exenciones. Se añadió además una aserción de regresión en la prueba v8 para impedir que vuelva a introducirse una cadena ISO en ese campo.
+para ambas identidades. La fecha de revisión permanece correctamente en `reviewedAt = 2026-08-08` de las exenciones. Se añadió una aserción de regresión para impedir que vuelva a introducirse una cadena ISO en ese campo.
 
-No se modifica Room, el schema de catálogo, las relaciones de seguridad ni la decisión ADR-026.
+## 10. Gate de staging validado
 
-## 12. Criterio de aprobación
+Validación local confirmada el 2026-08-09:
+
+```text
+connectedDebugAndroidTest    42/42 PASS
+skipped                      0
+failed                       0
+assembleRelease              PASS
+Room schemas                 1.json, 2.json, 3.json, 4.json
+Room 5.json                  no generado
+```
+
+Las fases ejecutadas antes del tramo final también habían quedado en verde:
+
+```text
+assembleDebug                PASS
+testDebugUnitTest            PASS
+lintDebug                    PASS
+compileDebugAndroidTestKotlin PASS
+```
+
+Por tanto, el staging v8 queda aprobado.
+
+## 11. Activación
+
+Después del gate verde:
+
+```text
+IngredientCatalogAssetReader.DEFAULT_VERSION_DIRECTORY
+```
+
+pasa de:
+
+```text
+ingredient-catalog/v7
+```
+
+a:
+
+```text
+ingredient-catalog/v8
+```
+
+La prueba v7 queda fijada explícitamente a `ingredient-catalog/v7` como regresión histórica. La prueba v8 usa ahora la ruta predeterminada para demostrar que la aplicación resuelve realmente v8 como catálogo activo.
+
+## 12. Gate post-activación
+
+Pendiente una última validación después de activar el default:
+
+```text
+connectedDebugAndroidTest    42/42 PASS
+assembleRelease              PASS
+Room schemas                 1.json, 2.json, 3.json, 4.json
+```
+
+No debe generarse `5.json`.
+
+## 13. Criterio de cierre definitivo
 
 ```text
 CatalogValidator v8                  PASS
 persistencia de 2 nuevas exenciones PASS
 seguridad sin propagación            PASS
-suite instrumentada                  42/42 PASS
-build/unit/lint/release              PASS
+suite instrumentada                  42/42 PASS post-activación
+assembleRelease                      PASS post-activación
 Room                                 sin cambios
+catálogo predeterminado              v8
 ```
 
-Solo después del gate verde se podrá activar v8 como catálogo predeterminado.
+Solo después de ese gate post-activación v8 quedará cerrado definitivamente.
