@@ -1,6 +1,6 @@
 # 26 — CATÁLOGO V8: ACEITE Y GRASA DE SOJA TOTALMENTE REFINADOS
 
-**Estado:** STAGING VALIDADO — V8 ACTIVO — gate post-activación pendiente  
+**Estado:** VALIDADO Y ACTIVO  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-09
 
@@ -204,13 +204,13 @@ Room 5.json                  no generado
 Las fases ejecutadas antes del tramo final también habían quedado en verde:
 
 ```text
-assembleDebug                PASS
-testDebugUnitTest            PASS
-lintDebug                    PASS
+assembleDebug                 PASS
+testDebugUnitTest             PASS
+lintDebug                     PASS
 compileDebugAndroidTestKotlin PASS
 ```
 
-Por tanto, el staging v8 queda aprobado.
+Por tanto, el staging v8 quedó aprobado.
 
 ## 11. Activación
 
@@ -220,7 +220,7 @@ Después del gate verde:
 IngredientCatalogAssetReader.DEFAULT_VERSION_DIRECTORY
 ```
 
-pasa de:
+pasó de:
 
 ```text
 ingredient-catalog/v7
@@ -232,21 +232,25 @@ a:
 ingredient-catalog/v8
 ```
 
-La prueba v7 queda fijada explícitamente a `ingredient-catalog/v7` como regresión histórica. La prueba v8 usa ahora la ruta predeterminada para demostrar que la aplicación resuelve realmente v8 como catálogo activo.
+La prueba v7 quedó fijada explícitamente a `ingredient-catalog/v7` como regresión histórica. La prueba v8 usa la ruta predeterminada para demostrar que la aplicación resuelve realmente v8 como catálogo activo.
 
-## 12. Gate post-activación
+## 12. Gate post-activación validado
 
-Pendiente una última validación después de activar el default:
+Validación local final confirmada el 2026-08-09:
 
 ```text
 connectedDebugAndroidTest    42/42 PASS
+skipped                      0
+failed                       0
 assembleRelease              PASS
 Room schemas                 1.json, 2.json, 3.json, 4.json
+Room 5.json                  no generado
+git status                   limpio respecto al proyecto
 ```
 
-No debe generarse `5.json`.
+Los únicos cambios `.idea` detectados antes de la ejecución se restauraron/eliminaron antes del `git pull` y no forman parte del producto.
 
-## 13. Criterio de cierre definitivo
+## 13. Cierre definitivo
 
 ```text
 CatalogValidator v8                  PASS
@@ -258,4 +262,4 @@ Room                                 sin cambios
 catálogo predeterminado              v8
 ```
 
-Solo después de ese gate post-activación v8 quedará cerrado definitivamente.
+**V8 queda cerrada, validada y activa.**
