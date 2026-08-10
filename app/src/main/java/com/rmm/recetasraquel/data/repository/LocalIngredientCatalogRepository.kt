@@ -2,6 +2,7 @@ package com.rmm.recetasraquel.data.repository
 
 import com.rmm.recetasraquel.data.catalog.CatalogImportResult
 import com.rmm.recetasraquel.data.catalog.CatalogImporter
+import com.rmm.recetasraquel.data.local.dao.CatalogIngredientRelatedRow
 import com.rmm.recetasraquel.data.local.dao.CatalogIngredientSafetyRow
 import com.rmm.recetasraquel.data.local.dao.CatalogIngredientSearchRow
 import com.rmm.recetasraquel.data.local.dao.IngredientCatalogDao
@@ -9,8 +10,11 @@ import com.rmm.recetasraquel.data.local.entity.CatalogIngredientRelationEntity
 import com.rmm.recetasraquel.data.local.entity.RegulatoryExemptionEntity
 import com.rmm.recetasraquel.domain.ingredient.CatalogIngredientSafetyRecord
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogCategory
+import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogDetail
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogEntry
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogInformationStatus
+import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogRelatedPresentation
+import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogRelationDirection
 import com.rmm.recetasraquel.domain.ingredient.IngredientLineageRelation
 import com.rmm.recetasraquel.domain.ingredient.IngredientLineageType
 import com.rmm.recetasraquel.domain.ingredient.IngredientTextNormalizer
@@ -72,6 +76,24 @@ class LocalIngredientCatalogRepository(
         dao.getActiveIngredientSummary(ingredientId)?.toCatalogEntry()
     }
 
+    override suspend fun getIngredientDetail(ingredientId: String): Result<IngredientCatalogDetail> = runCatching {
+        requireCatalogReady()
+        IngredientCatalogDetail(
+            description = dao.getIngredientDescription(ingredientId),
+            aliases = dao.getIngredientAliases(ingredientId),
+            relatedPresentations = dao.getCulinaryRelatedPresentations(ingredientId)
+                .map { it.toRelatedPresentation() }
+                .distinctBy { related ->
+                    listOf(
+                        related.ingredientId,
+                        related.relationType.name,
+                        related.direction.name,
+                    ).joinToString("|")
+                }
+                .sortedWith(compareBy({ it.canonicalName.lowercase() }, { it.ingredientId })),
+        )
+    }
+
     override suspend fun getParentRelations(ingredientId: String): Result<List<IngredientLineageRelation>> = runCatching {
         dao.getParentRelations(ingredientId).map { it.toDomain() }
     }
@@ -116,6 +138,13 @@ class LocalIngredientCatalogRepository(
             regulatoryExemptionCount > 0 -> IngredientCatalogInformationStatus.REGULATORY_EXEMPTION_RECORDED
             else -> IngredientCatalogInformationStatus.NO_DIRECT_SAFETY_RELATION_RECORDED
         },
+    )
+
+    private fun CatalogIngredientRelatedRow.toRelatedPresentation() = IngredientCatalogRelatedPresentation(
+        ingredientId = ingredientId,
+        canonicalName = canonicalName,
+        relationType = IngredientLineageType.valueOf(relationType),
+        direction = IngredientCatalogRelationDirection.valueOf(direction),
     )
 
     private fun CatalogIngredientSafetyRow.toDomain() = CatalogIngredientSafetyRecord(
