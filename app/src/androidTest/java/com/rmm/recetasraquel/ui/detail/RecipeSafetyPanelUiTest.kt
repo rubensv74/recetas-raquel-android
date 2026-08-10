@@ -5,12 +5,16 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import com.rmm.recetasraquel.domain.ingredient.RecipeReviewNotice
 import com.rmm.recetasraquel.domain.ingredient.RecipeSafetyGroupSummary
 import com.rmm.recetasraquel.domain.ingredient.RecipeSafetyObservation
 import com.rmm.recetasraquel.domain.ingredient.RecipeSafetyPresentationState
 import com.rmm.recetasraquel.domain.ingredient.RecipeSafetyRelationType
 import com.rmm.recetasraquel.domain.ingredient.RecipeSafetySummary
+import com.rmm.recetasraquel.domain.ingredient.RegulatoryEffect
+import com.rmm.recetasraquel.domain.ingredient.RegulatoryExemption
+import com.rmm.recetasraquel.domain.model.Ingredient
 import com.rmm.recetasraquel.domain.model.Recipe
 import com.rmm.recetasraquel.ui.theme.RecetasRaquelTheme
 import org.junit.Rule
@@ -78,7 +82,62 @@ class RecipeSafetyPanelUiTest {
         ).assertIsDisplayed()
     }
 
-    private fun setDetail(summary: RecipeSafetySummary) {
+    @Test
+    fun regulatoryExemptionUsesSeparateLabelingPanelWithoutSafeClaim() {
+        val catalogIngredientId = "ing-soy-oil-fully-refined"
+        val summary = RecipeSafetySummary(
+            groups = emptyList(),
+            reviewNotices = emptyList(),
+            regulatoryExemptions = listOf(
+                RegulatoryExemption(
+                    id = "rex-soy-oil",
+                    ingredientId = catalogIngredientId,
+                    safetyGroupId = "sg-eu-soybeans",
+                    jurisdiction = "EU-ES",
+                    effect = RegulatoryEffect.EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION,
+                    conditions = "Exclusivamente aceite y grasa de semilla de soja totalmente refinados.",
+                    sourceId = "EU_FIC_1169_2011",
+                    effectiveFrom = null,
+                    effectiveTo = null,
+                    reviewedAt = "2026-08-10",
+                    notes = null,
+                ),
+            ),
+        )
+        val ingredients = listOf(
+            Ingredient(
+                id = "recipe-ing-1",
+                recipeId = "recipe-1",
+                quantity = null,
+                unit = null,
+                name = "Aceite de soja totalmente refinado",
+                notes = null,
+                sortOrder = 0,
+                catalogIngredientId = catalogIngredientId,
+                customIngredientId = null,
+            ),
+        )
+
+        setDetail(summary, ingredients)
+
+        composeRule.onNodeWithTag("recipe_regulatory_panel").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Información regulatoria de etiquetado").assertIsDisplayed()
+        composeRule.onNodeWithText("Aceite de soja totalmente refinado").assertIsDisplayed()
+        composeRule.onNodeWithText(
+            "Condiciones: Exclusivamente aceite y grasa de semilla de soja totalmente refinados.",
+        ).assertIsDisplayed()
+        composeRule.onNodeWithText(
+            "Fuente: Unión Europea · Reglamento (UE) n.º 1169/2011 · Anexo II",
+        ).assertIsDisplayed()
+        composeRule.onNodeWithText(
+            "Esta información se refiere a obligaciones de etiquetado. No significa que el alérgeno esté ausente, que no exista riesgo ni que el alimento sea apto para una persona alérgica o intolerante.",
+        ).assertIsDisplayed()
+    }
+
+    private fun setDetail(
+        summary: RecipeSafetySummary,
+        ingredients: List<Ingredient> = emptyList(),
+    ) {
         composeRule.setContent {
             RecetasRaquelTheme {
                 RecipeDetailScreen(
@@ -94,7 +153,7 @@ class RecipeSafetyPanelUiTest {
                             notes = null,
                             isFavorite = false,
                             coverPhotoPath = null,
-                            ingredients = emptyList(),
+                            ingredients = ingredients,
                             steps = emptyList(),
                             createdAt = 1,
                             updatedAt = 2,
