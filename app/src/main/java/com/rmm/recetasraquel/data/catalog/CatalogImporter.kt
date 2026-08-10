@@ -44,13 +44,16 @@ class CatalogImporter(
             }
         }
 
+        val incomingSafetySources = bundle.safetySources.map { it.toEntity() }
+        requireStableSafetySources(incomingSafetySources)
+
         dao.replaceShippedCatalog(
             categories = bundle.categories.map { it.toEntity() },
             ingredients = bundle.ingredients.map { it.toEntity(manifest.catalogVersion) },
             aliases = bundle.aliases.map { it.toEntity() },
             ingredientRelations = bundle.ingredientRelations.map { it.toEntity() },
             safetyGroups = bundle.safetyGroups.map { it.toEntity() },
-            safetySources = bundle.safetySources.map { it.toEntity() },
+            safetySources = incomingSafetySources,
             safetyRelations = bundle.safetyRelations.map { it.toEntity() },
             regulatoryExemptions = bundle.regulatoryExemptions.map { it.toEntity(manifest.catalogVersion) },
             metadata = CatalogMetadataEntity(
@@ -64,6 +67,22 @@ class CatalogImporter(
         )
 
         return CatalogImportResult.Imported(manifest.catalogVersion)
+    }
+
+    private suspend fun requireStableSafetySources(incoming: List<SafetySourceEntity>) {
+        if (incoming.isEmpty()) return
+
+        val existingById = dao
+            .getSafetySourcesByIds(incoming.map { it.id })
+            .associateBy { it.id }
+
+        incoming.forEach { next ->
+            val previous = existingById[next.id] ?: return@forEach
+            require(previous == next) {
+                "Safety source '${next.id}' changed after publication. " +
+                    "Historical provenance is immutable; publish changed source metadata under a new source id."
+            }
+        }
     }
 
     private fun CatalogCategoryRecord.toEntity() = IngredientCategoryEntity(
