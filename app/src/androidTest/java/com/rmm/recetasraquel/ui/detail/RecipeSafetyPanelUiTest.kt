@@ -2,7 +2,11 @@ package com.rmm.recetasraquel.ui.detail
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNode
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
@@ -122,7 +126,10 @@ class RecipeSafetyPanelUiTest {
 
         composeRule.onNodeWithTag("recipe_regulatory_panel").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Información regulatoria de etiquetado").assertIsDisplayed()
-        composeRule.onNodeWithText("Aceite de soja totalmente refinado").assertIsDisplayed()
+        composeRule.onNode(
+            hasText("Aceite de soja totalmente refinado") and
+                hasAnyAncestor(hasTestTag("recipe_regulatory_panel")),
+        ).assertIsDisplayed()
         composeRule.onNodeWithText(
             "Condiciones: Exclusivamente aceite y grasa de semilla de soja totalmente refinados.",
         ).assertIsDisplayed()
