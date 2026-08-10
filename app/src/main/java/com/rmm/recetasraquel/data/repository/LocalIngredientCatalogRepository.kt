@@ -121,6 +121,7 @@ class LocalIngredientCatalogRepository(
     private fun CatalogIngredientSafetyRow.toDomain() = CatalogIngredientSafetyRecord(
         safetyGroupId = safetyGroupId,
         safetyGroupName = safetyGroupName,
+        jurisdiction = safetyGroupJurisdiction,
         relationType = relationType,
         evidenceLevel = evidenceLevel,
         sourceId = sourceId,
