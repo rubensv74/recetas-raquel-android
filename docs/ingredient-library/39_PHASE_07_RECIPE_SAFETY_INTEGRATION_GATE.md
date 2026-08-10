@@ -16,7 +16,7 @@ Lectura evidencia catálogo           implementada con grupo + fuente
 Lectura evidencia personalizada      reutiliza declaraciones persistidas
 Agregación por receta                implementada
 Avisos de identidad/composición      implementados
-Exenciones regulatorias              conservadas en canal separado
+Exenciones regulatorias              canal separado + vigencia contextual
 RecipeDetailViewModel                integrado
 RecipeDetailScreen                   panel de seguridad integrado
 Pruebas unitarias                    añadidas
@@ -30,11 +30,13 @@ Pruebas Compose UI                   añadidas
 3. Una identidad no resoluble genera revisión; no se intenta adivinar el ingrediente.
 4. `compositionKnown = false` en un ingrediente personalizado genera aviso global de revisión.
 5. Las exenciones regulatorias no eliminan observaciones de seguridad.
-6. El mismo grupo se presenta una sola vez, conservando todas las observaciones.
-7. La UI muestra texto, no solo color, y dispone de descripción semántica para el panel.
-8. Si no existen coincidencias se usa: `No se han detectado coincidencias en los datos registrados.`
-9. La UI recuerda que la información disponible puede ser incompleta.
-10. No se emiten afirmaciones de receta segura, apta para alérgicos, libre de alérgenos o sin riesgo.
+6. Solo llegan al resumen las exenciones aplicables a la identidad exacta, jurisdicción configurada y fecha regulatoria actual.
+7. La fecha regulatoria se obtiene mediante `TimeProvider`; la configuración por defecto es `EU-ES` con zona `Europe/Madrid`, por lo que la lógica es determinista y testeable.
+8. El mismo grupo se presenta una sola vez, conservando todas las observaciones.
+9. La UI muestra texto, no solo color, y dispone de descripción semántica para el panel.
+10. Si no existen coincidencias se usa: `No se han detectado coincidencias en los datos registrados.`
+11. La UI recuerda que la información disponible puede ser incompleta.
+12. No se emiten afirmaciones de receta segura, apta para alérgicos, libre de alérgenos o sin riesgo.
 
 ## Archivos principales
 
@@ -52,6 +54,10 @@ app/src/main/java/com/rmm/recetasraquel/ui/detail/RecipeDetailScreen.kt
 app/src/test/java/com/rmm/recetasraquel/domain/usecase/BuildRecipeSafetySummaryUseCaseTest.kt
 app/src/androidTest/java/com/rmm/recetasraquel/ui/detail/RecipeSafetyPanelUiTest.kt
 ```
+
+## Cobertura añadida
+
+La batería comprueba además que una exención fuera de jurisdicción, futura o caducada no llega al resumen de receta. La existencia de una exención aplicable tampoco crea por sí misma una relación de seguridad ni modifica las observaciones explícitas.
 
 ## Gate local requerido
 
