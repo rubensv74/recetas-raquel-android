@@ -16,6 +16,7 @@ import com.rmm.recetasraquel.domain.repository.CustomIngredientRepository
 import com.rmm.recetasraquel.domain.repository.DemoDataController
 import com.rmm.recetasraquel.domain.repository.IngredientCatalogRepository
 import com.rmm.recetasraquel.domain.repository.RecipeRepository
+import com.rmm.recetasraquel.domain.usecase.RecipeSafetySummaryResolver
 import com.rmm.recetasraquel.domain.usecase.SaveRecipeOperation
 import com.rmm.recetasraquel.ui.cooking.CookingModeScreen
 import com.rmm.recetasraquel.ui.cooking.CookingModeViewModel
@@ -44,6 +45,7 @@ fun RecetasRaquelApp(
     photoStorage: RecipePhotoStorage,
     saveRecipeUseCase: SaveRecipeOperation,
     demoDataController: DemoDataController?,
+    recipeSafetySummaryResolver: RecipeSafetySummaryResolver? = null,
 ) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = AppRoute.CATALOG) {
@@ -69,7 +71,7 @@ fun RecetasRaquelApp(
             arguments = listOf(navArgument(AppRoute.RECIPE_ID) { type = NavType.StringType }),
         ) {
             val detailViewModel: RecipeDetailViewModel = viewModel(
-                factory = RecipeDetailViewModel.factory(repository),
+                factory = RecipeDetailViewModel.factory(repository, recipeSafetySummaryResolver),
             )
             RecipeDetailScreen(
                 state = detailViewModel.uiState.collectAsStateWithLifecycle().value,
