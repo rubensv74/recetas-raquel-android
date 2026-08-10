@@ -1,6 +1,6 @@
 # 41 — ROOM v5: HISTORIAL REGULATORIO — GATE
 
-**Estado:** IMPLEMENTADO — VALIDACIÓN CI EN CURSO  
+**Estado:** VALIDADO  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-10  
 **ADR:** ADR-028
@@ -145,17 +145,17 @@ El workflow de CI exige exactamente:
 
 y falla si Room genera diferencias respecto a esos archivos versionados.
 
-## Gate CI
+## Gate CI definitivo
 
 Ejecución de cierre:
 
 ```text
 Workflow: Android CI
-Run:      31373881075
-Code SHA: 546a532b5ef820a887456aa89f72bf722f4ce57f
+Run:      31376760612
+Code SHA: 71ee4d38b3dba77831ae850a7c496af68942af4c
 ```
 
-Estado confirmado hasta el momento de redactar este gate:
+Resultado:
 
 ```text
 assembleDebug                  PASS
@@ -164,11 +164,19 @@ lintDebug                      PASS
 compileDebugAndroidTestKotlin  PASS
 assembleRelease                PASS
 Room schema guard              PASS
-connectedDebugAndroidTest      EN CURSO
-Room guard post-emulador       PENDIENTE
+connectedDebugAndroidTest      PASS — 63/63
+Room guard post-emulador       PASS
 ```
 
-El gate no se considera cerrado hasta que los dos últimos controles estén en verde.
+La ejecución instrumentada finalizó con:
+
+```text
+Starting 63 tests on emulator-5554 - 16
+Finished 63 tests on emulator-5554 - 16
+BUILD SUCCESSFUL
+```
+
+Durante el cierre, el CI detectó una prueba de navegación antigua que asumía que dos elementos de formularios `LazyColumn` permanecían visibles sin desplazamiento. La corrección se realizó exclusivamente en la prueba: primero se desplaza el formulario personalizado hasta `save_custom_ingredient` y, tras volver al editor de receta, `editor_content` se desplaza hasta el ingrediente creado. No fue necesario modificar el flujo de producto.
 
 ## Semántica de seguridad no modificada
 
@@ -184,6 +192,6 @@ exención regulatoria != aptitud clínica
 
 Una exención se mantiene en un canal legal separado. No elimina ni rebaja automáticamente una observación de seguridad, y el grafo culinario tampoco propaga exenciones.
 
-## Criterio de cierre
+## Cierre
 
-Este documento podrá marcarse `VALIDADO` únicamente cuando el job de emulador y el guard posterior de Room finalicen con `success` en la ejecución indicada.
+ADR-028 queda validada. Room v5 es el contrato vigente de persistencia regulatoria y el histórico está protegido tanto frente a sustitución de snapshots como frente a reescritura silenciosa de fuentes.
