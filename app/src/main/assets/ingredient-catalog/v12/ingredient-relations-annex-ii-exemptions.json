@@ -1,0 +1,42 @@
+[
+  {
+    "id": "rel-fish-gelatine-vitamin-carotenoid-carrier-fish",
+    "childIngredientId": "ing-fish-gelatine-vitamin-carotenoid-carrier",
+    "parentIngredientId": "ing-fish",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-10",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Linaje de origen regulatorio no clínico. No propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "rel-fish-gelatine-isinglass-fining-fish",
+    "childIngredientId": "ing-fish-gelatine-isinglass-beer-wine-fining",
+    "parentIngredientId": "ing-fish",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-10",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Linaje de origen regulatorio no clínico. No propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "rel-whey-alcoholic-distillates-milk",
+    "childIngredientId": "ing-whey-alcoholic-distillates",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-10",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Linaje de origen regulatorio no clínico. No propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "rel-lactitol-milk",
+    "childIngredientId": "ing-lactitol",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-10",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Linaje de origen regulatorio no clínico. No propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  }
+]

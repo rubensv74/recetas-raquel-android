@@ -1,0 +1,16 @@
+[
+  {
+    "id": "rex-eu-mustard-behenic-acid-2024-2512",
+    "ingredientId": "ing-mustard-behenic-acid",
+    "safetyGroupId": "sg-eu-mustard",
+    "jurisdiction": "EU-ES",
+    "regulatoryEffect": "EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION",
+    "conditions": "Pureza de ácido behénico igual o superior al 85 %; dos fases de destilación; uso como materia prima para fabricar exclusivamente los emulgentes E470a, E471 y E477.",
+    "sourceId": "EU_MUSTARD_2024_2512",
+    "effectiveFrom": "2025-04-01",
+    "effectiveTo": null,
+    "reviewedAt": "2026-08-08",
+    "notes": "Exención regulatoria del punto 10 del Anexo II. No expresa ausencia de alérgeno, ausencia de riesgo ni aptitud clínica.",
+    "isActive": true
+  }
+]

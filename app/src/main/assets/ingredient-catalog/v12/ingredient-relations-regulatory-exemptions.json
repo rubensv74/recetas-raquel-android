@@ -1,0 +1,12 @@
+[
+  {
+    "id": "lineage-mustard-behenic-acid",
+    "childIngredientId": "ing-mustard-behenic-acid",
+    "parentIngredientId": "ing-mustard",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-08",
+    "sourceReference": "EU_MUSTARD_2024_2512",
+    "notes": "Origen regulatorio documentado. Esta relación de linaje no crea ni propaga una relación de seguridad alimentaria.",
+    "isActive": true
+  }
+]
