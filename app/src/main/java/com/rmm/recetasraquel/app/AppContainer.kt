@@ -14,6 +14,8 @@ import com.rmm.recetasraquel.domain.repository.CustomIngredientRepository
 import com.rmm.recetasraquel.domain.repository.DemoDataController
 import com.rmm.recetasraquel.domain.repository.IngredientCatalogRepository
 import com.rmm.recetasraquel.domain.repository.RecipeRepository
+import com.rmm.recetasraquel.domain.usecase.BuildRecipeSafetySummaryUseCase
+import com.rmm.recetasraquel.domain.usecase.RecipeSafetySummaryResolver
 import com.rmm.recetasraquel.domain.usecase.SaveRecipeOperation
 import com.rmm.recetasraquel.domain.usecase.SaveRecipeUseCase
 import com.rmm.recetasraquel.util.IdGenerator
@@ -46,6 +48,10 @@ class AppContainer(context: Context) {
         dao = database.customIngredientDao(),
         idGenerator = idGenerator,
         timeProvider = timeProvider,
+    )
+    val recipeSafetySummaryResolver: RecipeSafetySummaryResolver = BuildRecipeSafetySummaryUseCase(
+        catalogRepository = ingredientCatalogRepository,
+        customIngredientRepository = customIngredientRepository,
     )
     val photoStorage: RecipePhotoStorage = LocalRecipePhotoStorage(context)
     val saveRecipeUseCase: SaveRecipeOperation = SaveRecipeUseCase(recipeRepository, photoStorage)
