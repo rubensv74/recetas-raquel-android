@@ -194,6 +194,16 @@ interface IngredientCatalogDao {
     )
     suspend fun getRegulatoryExemptionsForIngredient(ingredientId: String): List<RegulatoryExemptionEntity>
 
+    @Query(
+        "SELECT * FROM regulatory_exemptions " +
+            "WHERE ingredientId = :ingredientId AND jurisdiction = :jurisdiction AND isActive = 1 " +
+            "ORDER BY safetyGroupId ASC, regulatoryEffect ASC, id ASC",
+    )
+    suspend fun getRegulatoryExemptionsForIngredientAndJurisdiction(
+        ingredientId: String,
+        jurisdiction: String,
+    ): List<RegulatoryExemptionEntity>
+
     @Upsert
     suspend fun upsertCategories(items: List<IngredientCategoryEntity>)
 
