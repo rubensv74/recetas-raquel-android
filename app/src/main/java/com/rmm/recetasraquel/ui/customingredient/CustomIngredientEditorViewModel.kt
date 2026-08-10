@@ -33,6 +33,11 @@ data class CustomIngredientSafetyRow(
     val notes: String = "",
 )
 
+internal fun hasDuplicateCustomSafetyRelation(rows: List<CustomIngredientSafetyRow>): Boolean {
+    val seen = mutableSetOf<Pair<String, CustomIngredientSafetyRelationType>>()
+    return rows.any { row -> !seen.add(row.safetyGroupId to row.relationType) }
+}
+
 data class CustomIngredientEditorUiState(
     val name: String = "",
     val type: CustomIngredientType = CustomIngredientType.SIMPLE,
@@ -126,12 +131,7 @@ class CustomIngredientEditorViewModel(
             _uiState.update { it.copy(validationMessage = "Selecciona un grupo para cada declaración de seguridad.") }
             return
         }
-        val duplicateSafetyRelation = state.safetyRows
-            .groupingBy { row -> row.safetyGroupId to row.relationType }
-            .eachCount()
-            .values
-            .any { count -> count > 1 }
-        if (duplicateSafetyRelation) {
+        if (hasDuplicateCustomSafetyRelation(state.safetyRows)) {
             _uiState.update {
                 it.copy(validationMessage = "No repitas el mismo grupo y tipo de relación de seguridad.")
             }
