@@ -88,6 +88,18 @@ class LocalIngredientCatalogRepository(
         dao.getRegulatoryExemptionsForIngredient(ingredientId).map { it.toDomain() }
     }
 
+    override suspend fun getApplicableRegulatoryExemptions(
+        ingredientId: String,
+        jurisdiction: String,
+        asOfDate: String,
+    ): Result<List<RegulatoryExemption>> = runCatching {
+        dao.getApplicableRegulatoryExemptionsForIngredient(
+            ingredientId = ingredientId,
+            jurisdiction = jurisdiction,
+            asOfDate = asOfDate,
+        ).map { it.toDomain() }
+    }
+
     private suspend fun requireCatalogReady() {
         ensureCatalogImported().getOrThrow()
     }
