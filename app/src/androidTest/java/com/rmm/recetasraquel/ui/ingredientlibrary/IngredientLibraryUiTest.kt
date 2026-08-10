@@ -1,7 +1,6 @@
 package com.rmm.recetasraquel.ui.ingredientlibrary
 
 import androidx.activity.ComponentActivity
-import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -102,13 +101,13 @@ class IngredientLibraryUiTest {
         )
 
         composeRule.onNodeWithTag("ingredient_library_info_dialog").assertIsDisplayed()
-        composeRule.onNodeWithText("Información de seguridad alimentaria").assertExists()
-        composeRule.onNodeWithText("Cereales que contienen gluten").assertExists()
-        composeRule.onNodeWithText("Relación: Fuente inherente del grupo").assertExists()
-        composeRule.onNodeWithText("Evidencia: Fuente jurídica de la Unión Europea").assertExists()
-        composeRule.onNodeWithText("Ámbito: Unión Europea / España").assertExists()
-        composeRule.onNodeWithText("Fuente: Unión Europea · Reglamento (UE) n.º 1169/2011 · Anexo II").assertExists()
-        composeRule.onNodeWithText("Revisado: 2026-08-08").assertExists()
+        composeRule.onNodeWithText("Información de seguridad alimentaria").fetchSemanticsNode()
+        composeRule.onNodeWithText("Cereales que contienen gluten").fetchSemanticsNode()
+        composeRule.onNodeWithText("Relación: Fuente inherente del grupo").fetchSemanticsNode()
+        composeRule.onNodeWithText("Evidencia: Fuente jurídica de la Unión Europea").fetchSemanticsNode()
+        composeRule.onNodeWithText("Ámbito: Unión Europea / España").fetchSemanticsNode()
+        composeRule.onNodeWithText("Fuente: Unión Europea · Reglamento (UE) n.º 1169/2011 · Anexo II").fetchSemanticsNode()
+        composeRule.onNodeWithText("Revisado: 2026-08-08").fetchSemanticsNode()
     }
 
     @Test
@@ -142,10 +141,10 @@ class IngredientLibraryUiTest {
             ),
         )
 
-        composeRule.onNodeWithTag("ingredient_library_no_direct_safety").assertExists()
-        composeRule.onNodeWithText("Información regulatoria de etiquetado").assertExists()
-        composeRule.onNodeWithText("Condiciones: Solo bajo las condiciones concretas definidas por el Anexo II.").assertExists()
-        composeRule.onNodeWithTag("ingredient_library_regulatory_disclaimer").assertExists()
+        composeRule.onNodeWithTag("ingredient_library_no_direct_safety").fetchSemanticsNode()
+        composeRule.onNodeWithText("Información regulatoria de etiquetado").fetchSemanticsNode()
+        composeRule.onNodeWithText("Condiciones: Solo bajo las condiciones concretas definidas por el Anexo II.").fetchSemanticsNode()
+        composeRule.onNodeWithTag("ingredient_library_regulatory_disclaimer").fetchSemanticsNode()
     }
 
     @Test
