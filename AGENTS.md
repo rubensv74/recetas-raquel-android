@@ -28,6 +28,22 @@ No crear archivos o capas vacías para anticipar trabajo futuro.
 
 - Mantener flujo de datos unidireccional y estado observable e inmutable desde la UI.
 - Añadir o actualizar pruebas relevantes para cada cambio.
-- Antes de entregar, ejecutar `./gradlew assembleDebug`, `./gradlew testDebugUnitTest` y `./gradlew lintDebug`.
+- Antes de entregar, ejecutar localmente `./gradlew assembleDebug`, `./gradlew testDebugUnitTest` y `./gradlew lintDebug`.
+- Cuando un incremento afecte UI, persistencia, navegación, integración Android o comportamiento dependiente de dispositivo/emulador, ejecutar también localmente las pruebas instrumentadas relevantes antes de considerar el incremento validado.
 - No hacer commit, push, merge ni publicar APK sin autorización expresa.
 - Actualizar la documentación y los ADR cuando cambie una decisión estructural.
+
+## GitHub Actions — Local First / Remote Gate
+
+GitHub Actions es un recurso de validación remota y debe utilizarse solo cuando aporte un gate que no sea razonable repetir en cada cambio local.
+
+- No crear ni ampliar workflows que se ejecuten automáticamente en cada `push` de ramas de trabajo salvo necesidad técnica documentada.
+- Compilación debug, unit tests y lint se validan localmente durante el desarrollo.
+- El gate remoto ordinario se reserva al Pull Request hacia `master` o a una ejecución manual deliberada.
+- Tests instrumentados con emulador remoto, `assembleRelease` y validaciones costosas se reservan para `workflow_dispatch`, release candidate o un gate que las necesite expresamente.
+- Todo workflow debe usar filtros por rutas cuando sea posible y `concurrency` con cancelación de ejecuciones obsoletas cuando puedan solaparse.
+- No usar `clean` en CI salvo que la limpieza sea parte explícita de la prueba.
+- No generar artifacts remotos si no van a consumirse.
+- Antes de añadir un job o trigger remoto, justificar: qué riesgo detecta, por qué no basta la validación local y cuál es el momento mínimo en el que debe ejecutarse.
+
+Principio obligatorio: **validar localmente primero; ejecutar GitHub Actions solo como gate remoto necesario.**
