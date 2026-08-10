@@ -19,8 +19,8 @@ import com.rmm.recetasraquel.domain.repository.CustomIngredientRepository
 import com.rmm.recetasraquel.util.IdGenerator
 import com.rmm.recetasraquel.util.TimeProvider
 import java.time.Instant
-import java.time.ZoneOffset
 import java.time.LocalDate
+import java.time.ZoneOffset
 
 class LocalCustomIngredientRepository(
     private val dao: CustomIngredientDao,
@@ -110,7 +110,10 @@ class LocalCustomIngredientRepository(
             requireNotNull(dao.getActiveCategory(categoryId)) { "Unknown or inactive category: $categoryId" }
         }
 
-        val labelReadAt = input.labelReadAt?.trim()?.takeIf(String::isNotEmpty)
+        val isCommercialProduct = input.type == CustomIngredientType.COMMERCIAL_PRODUCT
+        val brand = if (isCommercialProduct) input.brand.cleaned() else null
+        val tradeName = if (isCommercialProduct) input.tradeName.cleaned() else null
+        val labelReadAt = if (isCommercialProduct) input.labelReadAt.cleaned() else null
         if (labelReadAt != null) LocalDate.parse(labelReadAt)
 
         val aliases = input.aliases
@@ -148,8 +151,8 @@ class LocalCustomIngredientRepository(
                 categoryId = categoryId,
                 defaultUnit = input.defaultUnit.cleaned(),
                 ingredientType = input.type.name,
-                brand = input.brand.cleaned(),
-                tradeName = input.tradeName.cleaned(),
+                brand = brand,
+                tradeName = tradeName,
                 compositionKnown = input.compositionKnown,
                 labelReadAt = labelReadAt,
                 notes = input.notes.cleaned(),
