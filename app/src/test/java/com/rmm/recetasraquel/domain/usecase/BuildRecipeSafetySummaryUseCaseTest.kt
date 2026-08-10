@@ -59,6 +59,7 @@ class BuildRecipeSafetySummaryUseCaseTest {
                     CatalogIngredientSafetyRecord(
                         safetyGroupId = glutenGroup.id,
                         safetyGroupName = glutenGroup.displayName,
+                        jurisdiction = glutenGroup.jurisdiction,
                         relationType = "CONTAINS",
                         evidenceLevel = "EU_LEGAL",
                         sourceId = "EU_FIC_1169_2011",
