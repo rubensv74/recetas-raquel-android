@@ -149,6 +149,42 @@ fun IngredientLibraryScreen(
                     Button(onClick = onRetry) { Text("Reintentar") }
                 }
 
+                !state.hasActiveSearch && state.frequentIngredients.isNotEmpty() -> LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag("ingredient_library_frequent"),
+                ) {
+                    item {
+                        Column(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Text(
+                                text = "Frecuentes",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                text = "Ingredientes presentes en varias de tus recetas guardadas.",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+                    items(state.frequentIngredients, key = { it.ingredient.id }) { frequent ->
+                        IngredientCatalogRow(
+                            ingredient = frequent.ingredient,
+                            usageText = if (frequent.recipeCount == 1) {
+                                "Usado en 1 receta"
+                            } else {
+                                "Usado en ${frequent.recipeCount} recetas"
+                            },
+                            onClick = { onSelectIngredient(frequent.ingredient) },
+                            onShowInfo = { onShowIngredientInfo(frequent.ingredient) },
+                        )
+                        HorizontalDivider()
+                    }
+                }
+
                 !state.hasActiveSearch -> LibraryCenteredState {
                     Text(
                         text = "Busca un ingrediente o elige una categoría.",
@@ -213,6 +249,7 @@ private fun LibraryCenteredState(content: @Composable ColumnScope.() -> Unit) {
 @Composable
 private fun IngredientCatalogRow(
     ingredient: IngredientCatalogEntry,
+    usageText: String? = null,
     onClick: () -> Unit,
     onShowInfo: () -> Unit,
 ) {
@@ -236,6 +273,13 @@ private fun IngredientCatalogRow(
                 text = ingredient.categoryName,
                 style = MaterialTheme.typography.bodyMedium,
             )
+            usageText?.let { text ->
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
             ingredient.defaultUnit?.takeIf { it.isNotBlank() }?.let { unit ->
                 Text(
                     text = "Unidad habitual: $unit",
