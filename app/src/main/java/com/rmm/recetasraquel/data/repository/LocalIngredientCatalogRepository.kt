@@ -2,6 +2,7 @@ package com.rmm.recetasraquel.data.repository
 
 import com.rmm.recetasraquel.data.catalog.CatalogImportResult
 import com.rmm.recetasraquel.data.catalog.CatalogImporter
+import com.rmm.recetasraquel.data.local.dao.CatalogIngredientFrequencyRow
 import com.rmm.recetasraquel.data.local.dao.CatalogIngredientRelatedRow
 import com.rmm.recetasraquel.data.local.dao.CatalogIngredientSafetyRow
 import com.rmm.recetasraquel.data.local.dao.CatalogIngredientSearchRow
@@ -9,6 +10,7 @@ import com.rmm.recetasraquel.data.local.dao.IngredientCatalogDao
 import com.rmm.recetasraquel.data.local.entity.CatalogIngredientRelationEntity
 import com.rmm.recetasraquel.data.local.entity.RegulatoryExemptionEntity
 import com.rmm.recetasraquel.domain.ingredient.CatalogIngredientSafetyRecord
+import com.rmm.recetasraquel.domain.ingredient.FrequentIngredientCatalogEntry
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogCategory
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogDetail
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogEntry
@@ -69,6 +71,22 @@ class LocalIngredientCatalogRepository(
             categoryId = categoryId,
             limit = limit.coerceIn(MIN_SEARCH_LIMIT, MAX_SEARCH_LIMIT),
         ).map { it.toCatalogEntry() }
+    }
+
+    override suspend fun getFrequentIngredients(
+        minimumRecipeCount: Int,
+        limit: Int,
+    ): Result<List<FrequentIngredientCatalogEntry>> = runCatching {
+        requireCatalogReady()
+        dao.getFrequentCulinaryIngredients(
+            minimumRecipeCount = minimumRecipeCount.coerceAtLeast(2),
+            limit = limit.coerceIn(1, MAX_FREQUENT_LIMIT),
+        ).map { row ->
+            FrequentIngredientCatalogEntry(
+                ingredient = row.toCatalogEntry(),
+                recipeCount = row.recipeCount,
+            )
+        }
     }
 
     override suspend fun getIngredient(ingredientId: String): Result<IngredientCatalogEntry?> = runCatching {
@@ -133,12 +151,27 @@ class LocalIngredientCatalogRepository(
         categoryName = categoryName,
         defaultUnit = defaultUnit,
         verificationStatus = verificationStatus,
-        informationStatus = when {
-            safetyRelationCount > 0 -> IngredientCatalogInformationStatus.SAFETY_RELATIONS_RECORDED
-            regulatoryExemptionCount > 0 -> IngredientCatalogInformationStatus.REGULATORY_EXEMPTION_RECORDED
-            else -> IngredientCatalogInformationStatus.NO_DIRECT_SAFETY_RELATION_RECORDED
-        },
+        informationStatus = informationStatus(safetyRelationCount, regulatoryExemptionCount),
     )
+
+    private fun CatalogIngredientFrequencyRow.toCatalogEntry() = IngredientCatalogEntry(
+        id = id,
+        canonicalName = canonicalName,
+        categoryId = categoryId,
+        categoryName = categoryName,
+        defaultUnit = defaultUnit,
+        verificationStatus = verificationStatus,
+        informationStatus = informationStatus(safetyRelationCount, regulatoryExemptionCount),
+    )
+
+    private fun informationStatus(
+        safetyRelationCount: Int,
+        regulatoryExemptionCount: Int,
+    ): IngredientCatalogInformationStatus = when {
+        safetyRelationCount > 0 -> IngredientCatalogInformationStatus.SAFETY_RELATIONS_RECORDED
+        regulatoryExemptionCount > 0 -> IngredientCatalogInformationStatus.REGULATORY_EXEMPTION_RECORDED
+        else -> IngredientCatalogInformationStatus.NO_DIRECT_SAFETY_RELATION_RECORDED
+    }
 
     private fun CatalogIngredientRelatedRow.toRelatedPresentation() = IngredientCatalogRelatedPresentation(
         ingredientId = ingredientId,
@@ -189,5 +222,6 @@ class LocalIngredientCatalogRepository(
     companion object {
         private const val MIN_SEARCH_LIMIT = 1
         private const val MAX_SEARCH_LIMIT = 200
+        private const val MAX_FREQUENT_LIMIT = 12
     }
 }
