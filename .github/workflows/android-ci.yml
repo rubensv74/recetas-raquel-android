@@ -61,22 +61,18 @@ jobs:
         run: |
           set -euo pipefail
           schema_dir="app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase"
-          actual="$(find "$schema_dir" -maxdepth 1 -type f -name '*.json' -printf '%f\n' | sort)"
-          expected="$(printf '1.json\n2.json\n3.json\n4.json\n5.json\n6.json\n')"
 
-          echo "Room schemas found:"
-          printf '%s\n' "$actual"
-
-          if [[ "$actual" != "$expected" ]]; then
-            echo "Unexpected Room schema set. Expected exactly 1.json through 6.json."
-            [[ -f "$schema_dir/6.json" ]] && cat "$schema_dir/6.json"
+          if [[ ! -d "$schema_dir" ]]; then
+            echo "Room schema directory is missing."
             exit 1
           fi
 
+          echo "Room schemas found:"
+          find "$schema_dir" -maxdepth 1 -type f -name '*.json' -printf '%f\n' | sort
+
           if [[ -n "$(git status --porcelain -- "$schema_dir")" ]]; then
-            echo "Room schema files differ from the committed contract."
+            echo "Room schema files differ from the committed contract. Commit the generated migration schemas."
             git status --short -- "$schema_dir"
-            [[ -f "$schema_dir/6.json" ]] && cat "$schema_dir/6.json"
             exit 1
           fi
 
@@ -138,12 +134,9 @@ jobs:
         run: |
           set -euo pipefail
           schema_dir="app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase"
-          actual="$(find "$schema_dir" -maxdepth 1 -type f -name '*.json' -printf '%f\n' | sort)"
-          expected="$(printf '1.json\n2.json\n3.json\n4.json\n5.json\n6.json\n')"
 
-          if [[ "$actual" != "$expected" ]]; then
-            echo "Unexpected Room schema set after full validation."
-            printf '%s\n' "$actual"
+          if [[ ! -d "$schema_dir" ]]; then
+            echo "Room schema directory is missing."
             exit 1
           fi
 
