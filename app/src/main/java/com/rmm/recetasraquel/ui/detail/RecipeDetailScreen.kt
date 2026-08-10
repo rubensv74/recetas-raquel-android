@@ -110,6 +110,11 @@ private fun RecipeContent(
     onStartCooking: (String) -> Unit,
     modifier: Modifier,
 ) {
+    val regulatoryExemptions = safetySummary?.regulatoryExemptions.orEmpty()
+    val ingredientNamesByCatalogId = recipe.ingredients.mapNotNull { ingredient ->
+        ingredient.catalogIngredientId?.let { catalogIngredientId -> catalogIngredientId to ingredient.name }
+    }.toMap()
+
     LazyColumn(
         modifier = modifier.fillMaxSize().padding(horizontal = 20.dp).testTag("recipe_detail"),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -157,6 +162,14 @@ private fun RecipeContent(
                 RecipeSafetyPanel(
                     summary = safetySummary,
                     loadMessage = safetyMessage,
+                )
+            }
+        }
+        if (regulatoryExemptions.isNotEmpty()) {
+            item {
+                RecipeRegulatoryPanel(
+                    exemptions = regulatoryExemptions,
+                    ingredientNamesByCatalogId = ingredientNamesByCatalogId,
                 )
             }
         }
