@@ -94,20 +94,26 @@ class CatalogImporter(
         isActive = isActive,
     )
 
-    private fun CatalogIngredientRecord.toEntity(catalogVersion: Int) = CatalogIngredientEntity(
-        id = id,
-        canonicalName = canonicalName,
-        normalizedName = normalizedName,
-        categoryId = categoryId,
-        defaultUnit = defaultUnit,
-        description = description,
-        catalogVersion = catalogVersion,
-        verificationStatus = verificationStatus,
-        compositionVariability = compositionVariability,
-        catalogRole = catalogRole ?: DEFAULT_CATALOG_ROLE,
-        sourceUpdatedAt = sourceUpdatedAt,
-        isActive = isActive,
-    )
+    private fun CatalogIngredientRecord.toEntity(catalogVersion: Int): CatalogIngredientEntity {
+        val role = catalogRole ?: DEFAULT_CATALOG_ROLE
+        require(role in SUPPORTED_CATALOG_ROLES) {
+            "Ingredient '$id' has unsupported catalogRole '$role'."
+        }
+        return CatalogIngredientEntity(
+            id = id,
+            canonicalName = canonicalName,
+            normalizedName = normalizedName,
+            categoryId = categoryId,
+            defaultUnit = defaultUnit,
+            description = description,
+            catalogVersion = catalogVersion,
+            verificationStatus = verificationStatus,
+            compositionVariability = compositionVariability,
+            catalogRole = role,
+            sourceUpdatedAt = sourceUpdatedAt,
+            isActive = isActive,
+        )
+    }
 
     private fun CatalogAliasRecord.toEntity() = IngredientAliasEntity(
         id = id,
@@ -182,5 +188,6 @@ class CatalogImporter(
     companion object {
         const val METADATA_KEY = "master"
         const val DEFAULT_CATALOG_ROLE = "CULINARY"
+        val SUPPORTED_CATALOG_ROLES = setOf("CULINARY", "REGULATORY_TECHNICAL")
     }
 }
