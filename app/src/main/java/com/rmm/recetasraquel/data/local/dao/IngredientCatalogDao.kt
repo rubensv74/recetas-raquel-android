@@ -196,12 +196,17 @@ interface IngredientCatalogDao {
 
     @Query(
         "SELECT * FROM regulatory_exemptions " +
-            "WHERE ingredientId = :ingredientId AND jurisdiction = :jurisdiction AND isActive = 1 " +
+            "WHERE ingredientId = :ingredientId " +
+            "AND jurisdiction = :jurisdiction " +
+            "AND isActive = 1 " +
+            "AND (effectiveFrom IS NULL OR effectiveFrom <= :asOfDate) " +
+            "AND (effectiveTo IS NULL OR effectiveTo >= :asOfDate) " +
             "ORDER BY safetyGroupId ASC, regulatoryEffect ASC, id ASC",
     )
-    suspend fun getRegulatoryExemptionsForIngredientAndJurisdiction(
+    suspend fun getApplicableRegulatoryExemptionsForIngredient(
         ingredientId: String,
         jurisdiction: String,
+        asOfDate: String,
     ): List<RegulatoryExemptionEntity>
 
     @Upsert
