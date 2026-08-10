@@ -43,6 +43,7 @@ data class CatalogIngredientEntity(
     val catalogVersion: Int,
     val verificationStatus: String,
     val compositionVariability: String,
+    val catalogRole: String = "CULINARY",
     val sourceUpdatedAt: Long?,
     val isActive: Boolean = true,
 )
