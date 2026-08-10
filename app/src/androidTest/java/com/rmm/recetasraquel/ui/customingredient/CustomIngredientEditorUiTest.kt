@@ -1,7 +1,6 @@
 package com.rmm.recetasraquel.ui.customingredient
 
 import androidx.activity.ComponentActivity
-import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -12,6 +11,7 @@ import com.rmm.recetasraquel.domain.ingredient.CustomIngredientSafetyEvidence
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientSafetyRelationType
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientType
 import com.rmm.recetasraquel.ui.theme.RecetasRaquelTheme
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -59,9 +59,9 @@ class CustomIngredientEditorUiTest {
             ),
         )
 
-        composeRule.onNodeWithTag("custom_brand").assertDoesNotExist()
-        composeRule.onNodeWithTag("custom_trade_name").assertDoesNotExist()
-        composeRule.onNodeWithTag("custom_label_read_at").assertDoesNotExist()
+        assertTagDoesNotExist("custom_brand")
+        assertTagDoesNotExist("custom_trade_name")
+        assertTagDoesNotExist("custom_label_read_at")
     }
 
     @Test
@@ -83,6 +83,13 @@ class CustomIngredientEditorUiTest {
         composeRule.onNodeWithTag("custom_ingredient_form").performScrollToIndex(9)
         composeRule.onNodeWithText("Declaración del usuario").assertIsDisplayed()
         composeRule.onNodeWithText("No verificado").assertIsDisplayed()
+    }
+
+    private fun assertTagDoesNotExist(tag: String) {
+        val lookup = runCatching {
+            composeRule.onNodeWithTag(tag).fetchSemanticsNode()
+        }
+        assertTrue("Expected no semantics node with tag '$tag'", lookup.isFailure)
     }
 
     private fun setScreen(state: CustomIngredientEditorUiState) {
