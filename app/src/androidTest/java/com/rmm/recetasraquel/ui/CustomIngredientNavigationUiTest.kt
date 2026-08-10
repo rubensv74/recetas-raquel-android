@@ -3,6 +3,7 @@ package com.rmm.recetasraquel.ui
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -70,9 +71,12 @@ class CustomIngredientNavigationUiTest {
 
         composeRule.waitUntil(timeoutMillis = 5_000) {
             runCatching {
-                composeRule.onNodeWithText("Salsa de prueba").fetchSemanticsNode()
+                composeRule.onNodeWithTag("editor_content").fetchSemanticsNode()
             }.isSuccess
         }
+        composeRule.onNodeWithText("Nueva receta").assertIsDisplayed()
+        composeRule.onNodeWithTag("editor_content")
+            .performScrollToNode(hasText("Salsa de prueba"))
         composeRule.onNodeWithText("Salsa de prueba").assertIsDisplayed()
 
         composeRule.runOnIdle {
