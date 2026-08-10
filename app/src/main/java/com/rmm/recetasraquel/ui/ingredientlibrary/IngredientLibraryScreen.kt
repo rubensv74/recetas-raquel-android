@@ -46,6 +46,9 @@ fun IngredientLibraryScreen(
     onSelectCategory: (String?) -> Unit,
     onClearFilters: () -> Unit,
     onSelectIngredient: (IngredientCatalogEntry) -> Unit,
+    onShowIngredientInfo: (IngredientCatalogEntry) -> Unit,
+    onDismissIngredientInfo: () -> Unit,
+    onRetryIngredientInfo: () -> Unit,
     onAddManualIngredient: () -> Unit,
     onNavigateBack: () -> Unit,
     onRetry: () -> Unit,
@@ -177,12 +180,21 @@ fun IngredientLibraryScreen(
                         IngredientCatalogRow(
                             ingredient = ingredient,
                             onClick = { onSelectIngredient(ingredient) },
+                            onShowInfo = { onShowIngredientInfo(ingredient) },
                         )
                         HorizontalDivider()
                     }
                 }
             }
         }
+    }
+
+    state.ingredientInfo?.let { infoState ->
+        IngredientLibraryInfoDialog(
+            state = infoState,
+            onDismiss = onDismissIngredientInfo,
+            onRetry = onRetryIngredientInfo,
+        )
     }
 }
 
@@ -202,6 +214,7 @@ private fun LibraryCenteredState(content: @Composable ColumnScope.() -> Unit) {
 private fun IngredientCatalogRow(
     ingredient: IngredientCatalogEntry,
     onClick: () -> Unit,
+    onShowInfo: () -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -234,6 +247,12 @@ private fun IngredientCatalogRow(
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Medium,
             )
+            TextButton(
+                onClick = onShowInfo,
+                modifier = Modifier.testTag("ingredient_info_${ingredient.id}"),
+            ) {
+                Text("Ver información")
+            }
         }
     }
 }
