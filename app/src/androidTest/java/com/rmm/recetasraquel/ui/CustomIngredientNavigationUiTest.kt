@@ -2,12 +2,14 @@ package com.rmm.recetasraquel.ui
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import com.rmm.recetasraquel.app.RecetasRaquelApp
 import com.rmm.recetasraquel.domain.model.Recipe
@@ -62,7 +64,9 @@ class CustomIngredientNavigationUiTest {
         composeRule.onNodeWithText("Nuevo ingrediente personalizado").assertIsDisplayed()
         composeRule.onNodeWithTag("custom_name").performTextInput("Salsa de prueba")
         composeRule.onNodeWithTag("composition_known").performClick()
-        composeRule.onNodeWithTag("save_custom_ingredient").performScrollTo().performClick()
+        composeRule.onNodeWithTag("custom_ingredient_form")
+            .performScrollToNode(hasTestTag("save_custom_ingredient"))
+        composeRule.onNodeWithTag("save_custom_ingredient").performClick()
 
         composeRule.waitUntil(timeoutMillis = 5_000) {
             runCatching {
