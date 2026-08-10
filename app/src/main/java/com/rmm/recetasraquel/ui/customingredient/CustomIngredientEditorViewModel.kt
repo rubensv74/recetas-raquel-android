@@ -126,6 +126,17 @@ class CustomIngredientEditorViewModel(
             _uiState.update { it.copy(validationMessage = "Selecciona un grupo para cada declaración de seguridad.") }
             return
         }
+        val duplicateSafetyRelation = state.safetyRows
+            .groupingBy { row -> row.safetyGroupId to row.relationType }
+            .eachCount()
+            .values
+            .any { count -> count > 1 }
+        if (duplicateSafetyRelation) {
+            _uiState.update {
+                it.copy(validationMessage = "No repitas el mismo grupo y tipo de relación de seguridad.")
+            }
+            return
+        }
 
         val isCommercialProduct = state.type == CustomIngredientType.COMMERCIAL_PRODUCT
         val labelReadAt = state.labelReadAt.trim()
