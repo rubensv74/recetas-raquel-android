@@ -1,9 +1,9 @@
 # Gate 50 — Endurecimiento del formulario de ingrediente personalizado
 
-**Estado:** IMPLEMENTADO — GATE MANUAL DE CI PENDIENTE  
-**Fecha:** 2026-08-10  
+**Estado:** IMPLEMENTADO — REPETICIÓN DE GATE MANUAL PENDIENTE  
+**Fecha:** 2026-08-11  
 **Rama:** `program/ingredient-library-food-safety`  
-**HEAD funcional auditado:** `7f10556c053a4a33acd0b98b273837be5d5ebfc8`
+**HEAD funcional corregido:** `53a2a24fe1578ccb1abf43fd77b0801b8d007757`
 
 ## 1. Objetivo
 
@@ -128,28 +128,55 @@ No aparece un nuevo gate de arquitectura en este bloque.
 
 La composición estructurada por componentes, códigos de barras, OCR de etiquetas u otros datos de producto siguen fuera de alcance y requerirían una decisión arquitectónica independiente.
 
-## 7. Estado del gate técnico
+## 7. Resultado de Android CI #150
 
-El diff funcional desde `9a8340dc0fc6aa083ad5dc51782016c75c24bd3f` hasta `7f10556c053a4a33acd0b98b273837be5d5ebfc8` está limitado a código y pruebas del formulario personalizado.
+El gate manual se ejecutó sobre el commit documental `abc155a2240c37e5badca650ed0878b932e0418a`.
 
-No existe una pull request abierta para esta rama, por lo que los commits intermedios no han consumido Android CI. El workflow está configurado para validación automática de PR hacia `master` y para ejecución completa mediante `workflow_dispatch`.
+### Fase de calidad
 
-En la sesión actual, el conector de GitHub no expone la acción `workflow_dispatch` y el entorno no dispone de `gh`. Por ese motivo no se fuerza una PR artificial ni se altera el workflow para lanzar CI.
+Resultado: **PASS**.
 
-Hasta ejecutar el gate manual, este documento debe permanecer en estado **IMPLEMENTADO — GATE MANUAL DE CI PENDIENTE** y no debe considerarse `VALIDADO`.
+- debug build: PASS;
+- unit tests: PASS;
+- lint: PASS;
+- guard Room: PASS.
 
-## 8. Criterio de cierre
+### Fase manual completa
 
-Para cambiar el estado a `VALIDADO`, el gate manual debe confirmar al menos:
+- `assembleRelease`: PASS;
+- arranque del emulador: PASS;
+- compilación de tests instrumentados: **FAIL**.
+
+El fallo no correspondía a código de producción ni a Room. La causa fue una incompatibilidad de la prueba `CustomIngredientEditorUiTest` con la versión actual de Compose Test:
+
+```text
+Unresolved reference 'assertDoesNotExist'
+```
+
+La prueba utilizaba una API que no está disponible en la versión de Compose Test del proyecto.
+
+## 8. Corrección aplicada
+
+Commit de corrección:
+
+`53a2a24fe1578ccb1abf43fd77b0801b8d007757`
+
+Se eliminaron las llamadas a `assertDoesNotExist()` y se sustituyeron por una comprobación negativa basada en `fetchSemanticsNode()`, API que ya ha compilado correctamente en gates anteriores del proyecto.
+
+No se ha modificado código de producción.
+
+## 9. Criterio de cierre
+
+El Gate 50 continúa pendiente de una nueva ejecución manual sobre el HEAD corregido. Para cambiar el estado a `VALIDADO`, el nuevo run debe confirmar:
 
 ```text
 assembleDebug                    PASS
 testDebugUnitTest                PASS
 lintDebug                        PASS
-compileDebugAndroidTestKotlin    PASS
+Room schema guard                PASS
 assembleRelease                  PASS
 connectedDebugAndroidTest        PASS
-Room schema guard                PASS
+Room schema guard posterior      PASS
 ```
 
 Tras ese resultado se registrarán el commit exacto, el run de GitHub Actions y el número final de pruebas instrumentadas.
