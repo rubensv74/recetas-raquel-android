@@ -1,6 +1,7 @@
 package com.rmm.recetasraquel.ui.customingredient
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -31,7 +32,7 @@ class CustomIngredientEditorUiTest {
     }
 
     @Test
-    fun commercialProductShowsBrandAndTradeNameFields() {
+    fun commercialProductShowsOnlyItsAdditionalMetadataFields() {
         setScreen(
             CustomIngredientEditorUiState(
                 type = CustomIngredientType.COMMERCIAL_PRODUCT,
@@ -42,6 +43,25 @@ class CustomIngredientEditorUiTest {
 
         composeRule.onNodeWithTag("custom_brand").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag("custom_trade_name").assertIsDisplayed()
+        composeRule.onNodeWithTag("custom_label_read_at").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun simpleIngredientHidesCommercialOnlyMetadataFields() {
+        setScreen(
+            CustomIngredientEditorUiState(
+                type = CustomIngredientType.SIMPLE,
+                brand = "Marca residual",
+                tradeName = "Nombre residual",
+                labelReadAt = "2026-08-09",
+                compositionKnown = true,
+                isLoading = false,
+            ),
+        )
+
+        composeRule.onNodeWithTag("custom_brand").assertDoesNotExist()
+        composeRule.onNodeWithTag("custom_trade_name").assertDoesNotExist()
+        composeRule.onNodeWithTag("custom_label_read_at").assertDoesNotExist()
     }
 
     @Test
