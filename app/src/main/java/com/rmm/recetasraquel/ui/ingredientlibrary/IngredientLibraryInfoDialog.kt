@@ -22,6 +22,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rmm.recetasraquel.domain.ingredient.CatalogIngredientSafetyRecord
+import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogRelatedPresentation
+import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogRelationDirection
+import com.rmm.recetasraquel.domain.ingredient.IngredientLineageType
 import com.rmm.recetasraquel.domain.ingredient.RegulatoryEffect
 import com.rmm.recetasraquel.domain.ingredient.RegulatoryExemption
 
@@ -51,7 +54,7 @@ internal fun IngredientLibraryInfoDialog(
                     .verticalScroll(rememberScrollState())
                     .testTag("ingredient_library_info_dialog")
                     .semantics {
-                        contentDescription = "Información de seguridad y regulación del ingrediente"
+                        contentDescription = "Información de identidad, seguridad y regulación del ingrediente"
                     },
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
@@ -95,6 +98,53 @@ private fun IngredientInformationContent(state: IngredientLibraryInfoUiState) {
         style = MaterialTheme.typography.bodyMedium,
     )
 
+    state.catalogDetail.description?.takeIf(String::isNotBlank)?.let { description ->
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.testTag("ingredient_library_description"),
+        )
+    }
+
+    if (state.catalogDetail.aliases.isNotEmpty()) {
+        Column(
+            modifier = Modifier.testTag("ingredient_library_aliases"),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
+            Text(
+                text = "También puede aparecer como",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = state.catalogDetail.aliases.joinToString(separator = " · "),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+
+    if (state.catalogDetail.relatedPresentations.isNotEmpty()) {
+        HorizontalDivider()
+        Text(
+            text = "Presentaciones relacionadas",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+        )
+        state.catalogDetail.relatedPresentations.forEach { related ->
+            Text(
+                text = "${related.relationshipLabel()}: ${related.canonicalName}",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.testTag("ingredient_library_related_${related.ingredientId}"),
+            )
+        }
+        Text(
+            text = "Estas relaciones describen identidad culinaria. No heredan ni generan información de seguridad alimentaria.",
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.testTag("ingredient_library_lineage_disclaimer"),
+        )
+    }
+
+    HorizontalDivider()
     Text(
         text = "Información de seguridad alimentaria",
         style = MaterialTheme.typography.titleSmall,
@@ -194,6 +244,21 @@ private fun RegulatoryRecordBlock(exemption: RegulatoryExemption) {
         exemption.notes?.takeIf(String::isNotBlank)?.let { notes ->
             Text(notes, style = MaterialTheme.typography.bodySmall)
         }
+    }
+}
+
+private fun IngredientCatalogRelatedPresentation.relationshipLabel(): String = when (direction) {
+    IngredientCatalogRelationDirection.PARENT -> when (relationType) {
+        IngredientLineageType.DERIVED_FROM -> "Derivado de"
+        IngredientLineageType.VARIANT_OF -> "Variante de"
+        IngredientLineageType.CUT_OF -> "Corte de"
+        IngredientLineageType.FORM_OF -> "Forma de"
+    }
+    IngredientCatalogRelationDirection.CHILD -> when (relationType) {
+        IngredientLineageType.DERIVED_FROM -> "Derivado relacionado"
+        IngredientLineageType.VARIANT_OF -> "Variante relacionada"
+        IngredientLineageType.CUT_OF -> "Corte relacionado"
+        IngredientLineageType.FORM_OF -> "Forma relacionada"
     }
 }
 
