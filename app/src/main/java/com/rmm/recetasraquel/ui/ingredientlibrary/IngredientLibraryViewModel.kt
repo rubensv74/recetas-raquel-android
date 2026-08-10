@@ -5,8 +5,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.rmm.recetasraquel.domain.ingredient.CatalogIngredientSafetyRecord
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogCategory
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogEntry
+import com.rmm.recetasraquel.domain.ingredient.RegulatoryExemption
 import com.rmm.recetasraquel.domain.repository.IngredientCatalogRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -16,6 +18,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+data class IngredientLibraryInfoUiState(
+    val ingredient: IngredientCatalogEntry,
+    val safetyRelations: List<CatalogIngredientSafetyRecord> = emptyList(),
+    val regulatoryExemptions: List<RegulatoryExemption> = emptyList(),
+    val isLoading: Boolean = true,
+    val errorMessage: String? = null,
+)
+
 data class IngredientLibraryUiState(
     val query: String = "",
     val categories: List<IngredientCatalogCategory> = emptyList(),
@@ -24,6 +34,7 @@ data class IngredientLibraryUiState(
     val isLoading: Boolean = true,
     val isSearching: Boolean = false,
     val errorMessage: String? = null,
+    val ingredientInfo: IngredientLibraryInfoUiState? = null,
 ) {
     val hasActiveSearch: Boolean
         get() = query.isNotBlank() || selectedCategoryId != null
@@ -36,6 +47,7 @@ class IngredientLibraryViewModel(
     val uiState: StateFlow<IngredientLibraryUiState> = _uiState.asStateFlow()
 
     private var searchJob: Job? = null
+    private var infoJob: Job? = null
 
     init {
         loadLibrary()
@@ -67,6 +79,19 @@ class IngredientLibraryViewModel(
                 errorMessage = null,
             )
         }
+    }
+
+    fun showIngredientInfo(ingredient: IngredientCatalogEntry) {
+        loadIngredientInfo(ingredient)
+    }
+
+    fun dismissIngredientInfo() {
+        infoJob?.cancel()
+        _uiState.update { it.copy(ingredientInfo = null) }
+    }
+
+    fun retryIngredientInfo() {
+        _uiState.value.ingredientInfo?.ingredient?.let(::loadIngredientInfo)
     }
 
     fun retry() {
@@ -131,6 +156,54 @@ class IngredientLibraryViewModel(
                             isSearching = false,
                             errorMessage = "No se pudieron buscar ingredientes.",
                         )
+                    }
+                },
+            )
+        }
+    }
+
+    private fun loadIngredientInfo(ingredient: IngredientCatalogEntry) {
+        infoJob?.cancel()
+        _uiState.update {
+            it.copy(
+                ingredientInfo = IngredientLibraryInfoUiState(
+                    ingredient = ingredient,
+                    isLoading = true,
+                ),
+            )
+        }
+
+        infoJob = viewModelScope.launch {
+            runCatching {
+                val safetyRelations = repository.getSafetyRelations(ingredient.id).getOrThrow()
+                val regulatoryExemptions = repository.getRegulatoryExemptions(ingredient.id).getOrThrow()
+                safetyRelations to regulatoryExemptions
+            }.fold(
+                onSuccess = { (safetyRelations, regulatoryExemptions) ->
+                    if (_uiState.value.ingredientInfo?.ingredient?.id == ingredient.id) {
+                        _uiState.update {
+                            it.copy(
+                                ingredientInfo = IngredientLibraryInfoUiState(
+                                    ingredient = ingredient,
+                                    safetyRelations = safetyRelations,
+                                    regulatoryExemptions = regulatoryExemptions,
+                                    isLoading = false,
+                                ),
+                            )
+                        }
+                    }
+                },
+                onFailure = {
+                    if (_uiState.value.ingredientInfo?.ingredient?.id == ingredient.id) {
+                        _uiState.update {
+                            it.copy(
+                                ingredientInfo = IngredientLibraryInfoUiState(
+                                    ingredient = ingredient,
+                                    isLoading = false,
+                                    errorMessage = "No se pudo cargar la información de este ingrediente.",
+                                ),
+                            )
+                        }
                     }
                 },
             )
