@@ -1,6 +1,6 @@
 # 19 — DECISIÓN ARQUITECTÓNICA: EXENCIONES REGULATORIAS
 
-**Estado:** ACEPTADA — OPCIÓN B  
+**Estado:** ACEPTADA — OPCIÓN B · EVOLUCIONADA POR ADR-028  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-08
 
@@ -105,43 +105,64 @@ Ninguna de las tres capas crea, hereda o propaga automáticamente datos hacia ot
 7. La UI no podrá traducir una exención a expresiones como `seguro`, `apto`, `sin riesgo` o equivalentes.
 8. Los cambios regulatorios posteriores deben producir nuevas revisiones/versiones; no se reescribe silenciosamente la historia.
 
-## 6. Persistencia
+## 6. Persistencia inicial y evolución
 
-La implementación inicial usa Room v4 y una tabla independiente:
+ADR-026 introdujo inicialmente `regulatory_exemptions` en Room v4 como tabla separada. Ese diseño resolvió la separación semántica, pero su clave única inicial solo permitía una fotografía de cada regla.
 
-```text
-regulatory_exemptions
-```
+La auditoría posterior detectó que esa restricción no satisfacía completamente la regla 8: una actualización de catálogo podía reemplazar la fotografía anterior.
 
-La clave técnica es `id`. Además se impide duplicar la misma combinación activa conceptual mediante un índice único sobre:
+Por ello **ADR-028 evoluciona la persistencia a Room v5** y añade `catalogVersion` como dimensión histórica. La identidad del snapshot pasa a ser:
 
 ```text
-ingredientId + safetyGroupId + jurisdiction + regulatoryEffect
+id + catalogVersion
 ```
 
-Las referencias a ingrediente, grupo y fuente usan claves foráneas con `NO ACTION`, porque forman parte de la trazabilidad y no deben desaparecer en cascada.
+La unicidad conceptual se aplica dentro de cada versión:
 
-## 7. Versionado de catálogo
+```text
+ingredientId + safetyGroupId + jurisdiction + regulatoryEffect + catalogVersion
+```
 
-Room v4 introduce únicamente la capacidad de persistencia. El catálogo activo v6 permanece inmutable y no se reescribe.
+Las referencias a ingrediente, grupo y fuente continúan usando claves foráneas con `NO ACTION`.
 
-La incorporación de exenciones reales se hará en una versión posterior del catálogo, con una evolución explícita del formato del catálogo y validaciones propias. Hasta superar el gate de Room v4 no se añadirán datos regulatorios reales a esta nueva tabla.
+## 7. Versionado y vigencia
+
+Desde Room v5 se distinguen explícitamente dos ejes:
+
+```text
+catalogVersion              -> fotografía conocida por la app
+effectiveFrom / effectiveTo -> vigencia jurídica
+```
+
+Las consultas operativas leen únicamente el snapshot correspondiente a `catalog_metadata.master.catalogVersion` y después aplican jurisdicción y fechas de efecto. Los snapshots anteriores permanecen disponibles solo para auditoría.
+
+El importador ya no borra el registro regulatorio histórico. Cada nueva versión de catálogo incorpora su propia fotografía.
 
 ## 8. Consecuencias
 
-La decisión permite modelar posteriormente, entre otros casos, derivados cuya situación legal depende del proceso o pureza, sin confundir la excepción con evidencia clínica.
+La decisión permite modelar derivados cuya situación legal depende del proceso o pureza sin confundir la excepción con evidencia clínica, y permite además reconstruir el estado regulatorio conocido por versiones anteriores del catálogo.
 
-También mejora el futuro mecanismo de actualización anual: una revisión regulatoria podrá detectar cambios de vigencia, condiciones o fuentes en una capa específicamente diseñada para ello.
+La actualización regulatoria deja de reescribir silenciosamente la historia local. Si una regla desaparece de un catálogo posterior, su snapshot histórico permanece, pero no participa en las consultas operativas actuales.
 
 ## 9. Estado de implementación
 
 ```text
-Decisión                         ACEPTADA — B
-Entidad RegulatoryExemption     IMPLEMENTADA
-Migración Room 3 -> 4            IMPLEMENTADA
-Schema Room v4                  PENDIENTE DE GENERACIÓN/REVISIÓN LOCAL
-Catálogo con exenciones reales  NO INICIADO
-Propagación automática          PROHIBIDA
+Decisión ADR-026                         ACEPTADA — B
+Separación regulatoria                   IMPLEMENTADA
+Entidad RegulatoryExemption              IMPLEMENTADA
+Room v4 inicial                          IMPLEMENTADO
+Evolución histórica ADR-028              ACEPTADA — B
+Room v5                                  IMPLEMENTADO EN CÓDIGO
+Migración Room 4 -> 5                    IMPLEMENTADA
+Snapshots por catalogVersion             IMPLEMENTADOS
+Filtro por snapshot actual               IMPLEMENTADO
+Filtro por jurisdicción + vigencia        IMPLEMENTADO
+Catálogo con exenciones reales           IMPLEMENTADO hasta v10
+Propagación automática                   PROHIBIDA
+Schema Room v5 / gate CI                 EN VALIDACIÓN
 ```
 
-Ver también `docs/ingredient-library/20_ROOM_V4_REGULATORY_EXEMPTIONS.md`.
+Ver también:
+
+- `20_ROOM_V4_REGULATORY_EXEMPTIONS.md` — implementación inicial histórica.
+- `40_ARCHITECTURAL_DECISION_REGULATORY_HISTORY.md` — ADR-028, diseño vigente del historial regulatorio.
