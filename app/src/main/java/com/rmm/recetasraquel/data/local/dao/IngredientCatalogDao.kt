@@ -43,6 +43,13 @@ data class CatalogIngredientSafetyRow(
     val reviewedAt: String,
 )
 
+data class CatalogIngredientRelatedRow(
+    val ingredientId: String,
+    val canonicalName: String,
+    val relationType: String,
+    val direction: String,
+)
+
 @Dao
 interface IngredientCatalogDao {
     @Query("SELECT * FROM catalog_metadata WHERE `key` = :key LIMIT 1")
@@ -152,6 +159,45 @@ interface IngredientCatalogDao {
         """,
     )
     suspend fun getActiveIngredientSummary(ingredientId: String): CatalogIngredientSearchRow?
+
+    @Query("SELECT description FROM catalog_ingredients WHERE id = :ingredientId AND isActive = 1 LIMIT 1")
+    suspend fun getIngredientDescription(ingredientId: String): String?
+
+    @Query(
+        "SELECT alias FROM ingredient_aliases " +
+            "WHERE ingredientId = :ingredientId " +
+            "ORDER BY alias COLLATE NOCASE ASC, id ASC",
+    )
+    suspend fun getIngredientAliases(ingredientId: String): List<String>
+
+    @Query(
+        """
+        SELECT
+            related.id AS ingredientId,
+            related.canonicalName AS canonicalName,
+            relation.relationType AS relationType,
+            'PARENT' AS direction
+        FROM catalog_ingredient_relations relation
+        INNER JOIN catalog_ingredients related ON related.id = relation.parentIngredientId
+        WHERE relation.childIngredientId = :ingredientId
+          AND relation.isActive = 1
+          AND related.isActive = 1
+          AND related.catalogRole = 'CULINARY'
+        UNION ALL
+        SELECT
+            related.id AS ingredientId,
+            related.canonicalName AS canonicalName,
+            relation.relationType AS relationType,
+            'CHILD' AS direction
+        FROM catalog_ingredient_relations relation
+        INNER JOIN catalog_ingredients related ON related.id = relation.childIngredientId
+        WHERE relation.parentIngredientId = :ingredientId
+          AND relation.isActive = 1
+          AND related.isActive = 1
+          AND related.catalogRole = 'CULINARY'
+        """,
+    )
+    suspend fun getCulinaryRelatedPresentations(ingredientId: String): List<CatalogIngredientRelatedRow>
 
     @Query("SELECT COUNT(*) FROM catalog_ingredient_relations WHERE isActive = 1")
     suspend fun countActiveIngredientRelations(): Int
