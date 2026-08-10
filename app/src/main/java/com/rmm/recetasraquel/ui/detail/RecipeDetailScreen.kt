@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -29,6 +30,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.rmm.recetasraquel.domain.ingredient.RecipeSafetyGroupSummary
+import com.rmm.recetasraquel.domain.ingredient.RecipeSafetyObservation
+import com.rmm.recetasraquel.domain.ingredient.RecipeSafetyPresentationState
+import com.rmm.recetasraquel.domain.ingredient.RecipeSafetyRelationType
+import com.rmm.recetasraquel.domain.ingredient.RecipeSafetySummary
 import com.rmm.recetasraquel.domain.model.Recipe
 import com.rmm.recetasraquel.ui.components.formatIngredient
 import com.rmm.recetasraquel.ui.components.formatTotalTime
@@ -85,6 +91,8 @@ fun RecipeDetailScreen(
             )
             is DetailUiState.Content -> RecipeContent(
                 recipe = state.recipe,
+                safetySummary = state.safetySummary,
+                safetyMessage = state.safetyMessage,
                 actionMessage = state.actionMessage,
                 onStartCooking = onStartCooking,
                 modifier = Modifier.padding(padding),
@@ -96,6 +104,8 @@ fun RecipeDetailScreen(
 @Composable
 private fun RecipeContent(
     recipe: Recipe,
+    safetySummary: RecipeSafetySummary?,
+    safetyMessage: String?,
     actionMessage: String?,
     onStartCooking: (String) -> Unit,
     modifier: Modifier,
@@ -142,6 +152,14 @@ private fun RecipeContent(
                 }
             }
         }
+        if (safetySummary != null || safetyMessage != null) {
+            item {
+                RecipeSafetyPanel(
+                    summary = safetySummary,
+                    loadMessage = safetyMessage,
+                )
+            }
+        }
         if (recipe.ingredients.isNotEmpty()) {
             item { SectionTitle("Ingredientes") }
             items(recipe.ingredients.sortedBy { it.sortOrder }, key = { it.id }) { ingredient ->
@@ -176,6 +194,140 @@ private fun RecipeContent(
             }
         }
     }
+}
+
+@Composable
+private fun RecipeSafetyPanel(
+    summary: RecipeSafetySummary?,
+    loadMessage: String?,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("recipe_safety_panel")
+            .semantics { contentDescription = "Información sobre seguridad alimentaria" },
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = "⚠ Información sobre seguridad alimentaria",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+
+            if (loadMessage != null) {
+                Text(loadMessage, style = MaterialTheme.typography.bodyMedium)
+            } else if (summary != null) {
+                if (summary.groups.isEmpty() && summary.reviewNotices.isEmpty()) {
+                    Text(
+                        "No se han detectado coincidencias en los datos registrados.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+
+                summary.groups.forEach { group ->
+                    SafetyGroupBlock(group)
+                }
+
+                if (summary.reviewNotices.isNotEmpty()) {
+                    Column(
+                        modifier = Modifier.testTag("recipe_safety_review"),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(
+                            "Requiere revisión",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        summary.reviewNotices.forEach { notice ->
+                            val ingredientPrefix = notice.ingredientName?.let { "$it: " }.orEmpty()
+                            Text(
+                                "• $ingredientPrefix${notice.message}",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+                }
+            }
+
+            Text(
+                "La información disponible puede ser incompleta. Comprueba las etiquetas y la información del fabricante cuando corresponda.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SafetyGroupBlock(group: RecipeSafetyGroupSummary) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("recipe_safety_group_${group.safetyGroupId}"),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            group.safetyGroupName,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            group.presentationState.presentationLabel(),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        group.observations.forEach { observation ->
+            SafetyObservationLine(observation)
+        }
+    }
+}
+
+@Composable
+private fun SafetyObservationLine(observation: RecipeSafetyObservation) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+            "• ${observation.ingredientName}: ${observation.relationType.relationLabel()} · ${observation.evidenceLevel.evidenceLabel()}",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        observation.sourceDetails?.takeIf(String::isNotBlank)?.let { source ->
+            Text("Fuente: $source", style = MaterialTheme.typography.bodySmall)
+        }
+        observation.reviewedAt?.takeIf(String::isNotBlank)?.let { reviewedAt ->
+            Text("Revisado: $reviewedAt", style = MaterialTheme.typography.bodySmall)
+        }
+        observation.notes?.takeIf(String::isNotBlank)?.let { notes ->
+            Text(notes, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+private fun RecipeSafetyPresentationState.presentationLabel(): String = when (this) {
+    RecipeSafetyPresentationState.PRESENCIA_IDENTIFICADA -> "Presencia identificada"
+    RecipeSafetyPresentationState.DERIVADO_IDENTIFICADO -> "Derivado identificado"
+    RecipeSafetyPresentationState.PUEDE_CONTENER_DECLARADO -> "Puede contener declarado"
+    RecipeSafetyPresentationState.POSIBLE_REACTIVIDAD_CRUZADA -> "Posible reactividad cruzada"
+    RecipeSafetyPresentationState.REQUIERE_REVISION -> "Requiere revisión"
+}
+
+private fun RecipeSafetyRelationType.relationLabel(): String = when (this) {
+    RecipeSafetyRelationType.INHERENT_SOURCE -> "fuente inherente"
+    RecipeSafetyRelationType.CONTAINS -> "contiene"
+    RecipeSafetyRelationType.DERIVED_FROM -> "derivado de"
+    RecipeSafetyRelationType.REGULATED_COMPONENT -> "componente regulado"
+    RecipeSafetyRelationType.DECLARED_MAY_CONTAIN -> "puede contener declarado"
+    RecipeSafetyRelationType.POSSIBLE_CROSS_REACTIVITY -> "posible reactividad cruzada"
+    RecipeSafetyRelationType.UNKNOWN -> "información no determinada"
+}
+
+private fun String.evidenceLabel(): String = when (this) {
+    "EU_LEGAL" -> "evidencia normativa UE"
+    "OFFICIAL_SCIENTIFIC" -> "evidencia científica oficial"
+    "OFFICIAL_HEALTH_AUTHORITY" -> "autoridad sanitaria oficial"
+    "MANUFACTURER_LABEL" -> "etiqueta del fabricante"
+    "USER_DECLARED" -> "declarado por el usuario"
+    "UNVERIFIED" -> "sin verificar"
+    else -> "evidencia: $this"
 }
 
 @Composable
