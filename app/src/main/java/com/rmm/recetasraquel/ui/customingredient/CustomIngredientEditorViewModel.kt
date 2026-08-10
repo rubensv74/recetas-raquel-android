@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientDraft
+import com.rmm.recetasraquel.domain.ingredient.CustomIngredientLabelDateValidator
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientSafetyDeclaration
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientSafetyEvidence
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientSafetyRelationType
@@ -81,7 +82,7 @@ class CustomIngredientEditorViewModel(
     fun setBrand(value: String) = update { copy(brand = value) }
     fun setTradeName(value: String) = update { copy(tradeName = value) }
     fun setCompositionKnown(value: Boolean) = update { copy(compositionKnown = value, validationMessage = null) }
-    fun setLabelReadAt(value: String) = update { copy(labelReadAt = value) }
+    fun setLabelReadAt(value: String) = update { copy(labelReadAt = value, validationMessage = null) }
     fun setNotes(value: String) = update { copy(notes = value) }
 
     fun addSafetyRow() {
@@ -127,6 +128,14 @@ class CustomIngredientEditorViewModel(
         }
 
         val isCommercialProduct = state.type == CustomIngredientType.COMMERCIAL_PRODUCT
+        val labelReadAt = state.labelReadAt.trim()
+        if (isCommercialProduct && !CustomIngredientLabelDateValidator.isValid(labelReadAt)) {
+            _uiState.update {
+                it.copy(validationMessage = "La fecha de lectura de etiqueta debe ser una fecha válida con formato AAAA-MM-DD.")
+            }
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, errorMessage = null, validationMessage = null) }
             repository.createIngredient(
@@ -139,7 +148,7 @@ class CustomIngredientEditorViewModel(
                     brand = state.brand.trim().takeIf { isCommercialProduct && it.isNotEmpty() },
                     tradeName = state.tradeName.trim().takeIf { isCommercialProduct && it.isNotEmpty() },
                     compositionKnown = compositionKnown,
-                    labelReadAt = state.labelReadAt.trim().takeIf { isCommercialProduct && it.isNotEmpty() },
+                    labelReadAt = labelReadAt.takeIf { isCommercialProduct && it.isNotEmpty() },
                     notes = state.notes.trim().takeIf(String::isNotEmpty),
                     safetyDeclarations = state.safetyRows.map { row ->
                         CustomIngredientSafetyDeclaration(
