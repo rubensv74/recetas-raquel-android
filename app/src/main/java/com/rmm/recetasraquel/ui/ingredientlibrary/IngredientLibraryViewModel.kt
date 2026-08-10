@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.rmm.recetasraquel.domain.ingredient.CatalogIngredientSafetyRecord
+import com.rmm.recetasraquel.domain.ingredient.FrequentIngredientCatalogEntry
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogCategory
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogDetail
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogEntry
@@ -32,6 +33,7 @@ data class IngredientLibraryUiState(
     val query: String = "",
     val categories: List<IngredientCatalogCategory> = emptyList(),
     val selectedCategoryId: String? = null,
+    val frequentIngredients: List<FrequentIngredientCatalogEntry> = emptyList(),
     val results: List<IngredientCatalogEntry> = emptyList(),
     val isLoading: Boolean = true,
     val isSearching: Boolean = false,
@@ -106,9 +108,14 @@ class IngredientLibraryViewModel(
             _uiState.update { it.copy(isLoading = true, isSearching = false, errorMessage = null) }
             repository.getCategories().fold(
                 onSuccess = { categories ->
+                    val frequentIngredients = repository.getFrequentIngredients(
+                        minimumRecipeCount = MIN_FREQUENT_RECIPE_COUNT,
+                        limit = FREQUENT_RESULT_LIMIT,
+                    ).getOrDefault(emptyList())
                     _uiState.update {
                         it.copy(
                             categories = categories,
+                            frequentIngredients = frequentIngredients,
                             isLoading = false,
                             errorMessage = null,
                         )
@@ -217,6 +224,8 @@ class IngredientLibraryViewModel(
     companion object {
         private const val SEARCH_DEBOUNCE_MS = 150L
         private const val RESULT_LIMIT = 120
+        private const val MIN_FREQUENT_RECIPE_COUNT = 2
+        private const val FREQUENT_RESULT_LIMIT = 6
 
         fun factory(repository: IngredientCatalogRepository): ViewModelProvider.Factory = viewModelFactory {
             initializer { IngredientLibraryViewModel(repository) }
