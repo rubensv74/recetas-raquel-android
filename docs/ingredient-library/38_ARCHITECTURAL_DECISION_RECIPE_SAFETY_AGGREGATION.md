@@ -17,7 +17,7 @@ exenciones regulatorias
 
 La Fase 7 debe construir la información de seguridad de una receta completa a partir de todos sus ingredientes de catálogo y personalizados.
 
-El diseño funcional ya exige:
+El diseño funcional exige:
 
 - agrupar por grupo de seguridad;
 - evitar duplicar visualmente el mismo grupo;
@@ -88,7 +88,7 @@ Cualquier futura regla que pretendiese modificar una advertencia clínica en fun
 
 ## 5. Contrato de dominio implementado
 
-La primera pieza de Fase 7 queda implementada como lógica pura de dominio:
+La lógica pura de dominio queda implementada mediante:
 
 ```text
 RecipeSafetyAggregator
@@ -115,35 +115,83 @@ El agregador:
 - transporta las exenciones regulatorias en una colección independiente;
 - ordena el resultado de forma determinista para facilitar pruebas y presentación estable.
 
-## 6. Pruebas implementadas
+## 6. Resolución de evidencia implementada
 
-Se añadió:
+La integración de datos se realiza mediante:
 
 ```text
-app/src/test/java/com/rmm/recetasraquel/domain/ingredient/RecipeSafetyAggregatorTest.kt
+BuildRecipeSafetySummaryUseCase
+RecipeSafetySummaryResolver
 ```
 
-La batería cubre inicialmente:
+El resolver:
 
-- `CONTAINS` prevalece visualmente sobre `DECLARED_MAY_CONTAIN` y `POSSIBLE_CROSS_REACTIVITY`, sin perder observaciones;
-- `DERIVED_FROM` conserva un estado propio;
-- reactividad cruzada no se convierte en presencia;
-- `UNKNOWN` produce `REQUIERE_REVISION`;
-- composición/información no asignable puede permanecer como aviso global;
-- una exención regulatoria no suprime una observación de seguridad;
-- orden determinista de grupos.
+- fuerza la disponibilidad del catálogo versionado antes de leer evidencia;
+- consulta únicamente relaciones de seguridad explícitas del ingrediente exacto de catálogo;
+- consulta declaraciones explícitas de ingredientes personalizados;
+- conserva grupo, relación, evidencia, fuente, notas y fecha de revisión;
+- conserva exenciones regulatorias en el canal separado definido por ADR-026;
+- genera avisos globales si una identidad no puede resolverse o si la composición personalizada está marcada como desconocida;
+- nunca consulta el grafo de linaje para inferir seguridad.
 
-## 7. Estado de implementación
+El DAO incorpora una lectura con `JOIN` a grupo y fuente para que la UI no pierda la procedencia de la evidencia de catálogo.
+
+## 7. Presentación en RecipeDetail
+
+`RecipeDetailViewModel` resuelve el resumen para la receta observada y entrega a la pantalla:
+
+```text
+safetySummary
+safetyMessage
+```
+
+`RecipeDetailScreen` muestra el panel `⚠ Información sobre seguridad alimentaria` con:
+
+- grupo y estado principal;
+- ingrediente que origina cada observación;
+- tipo de relación;
+- nivel de evidencia;
+- fuente y fecha de revisión cuando están disponibles;
+- avisos de revisión globales;
+- texto neutral cuando no hay coincidencias;
+- recordatorio de que la información disponible puede ser incompleta.
+
+No se muestran certificados verdes ni expresiones de seguridad absoluta.
+
+Las exenciones regulatorias se conservan en el resumen, pero esta primera UI no las mezcla con la advertencia clínica. Una futura presentación legal detallada deberá mantener el canal visual separado.
+
+## 8. Pruebas implementadas
+
+La batería cubre:
+
+- precedencia de presentación sin pérdida de observaciones;
+- `DERIVED_FROM` como estado propio;
+- reactividad cruzada separada de presencia;
+- `UNKNOWN` como revisión;
+- avisos globales sin grupos inventados;
+- exenciones regulatorias sin supresión de alertas;
+- orden determinista;
+- combinación de evidencia de catálogo y personalizada;
+- composición desconocida como aviso global;
+- ingrediente sin identidad como revisión, sin inferencia;
+- identidad de catálogo no disponible como revisión;
+- renderizado del panel de seguridad;
+- lenguaje neutral cuando no se detectan coincidencias.
+
+## 9. Estado de implementación
 
 ```text
 Decisión ADR-027                ACEPTADA — B
 Modelo de dominio Fase 7        IMPLEMENTADO
 Agregador puro                  IMPLEMENTADO
-Pruebas deterministas           IMPLEMENTADAS
+Adaptador catálogo              IMPLEMENTADO
+Adaptador custom                IMPLEMENTADO
+Integración con RecipeDetail    IMPLEMENTADA
+UI de información/alertas       IMPLEMENTADA
+Pruebas unitarias               IMPLEMENTADAS
+Pruebas UI                      IMPLEMENTADAS
 Gate Gradle local               PENDIENTE
-Adaptadores catálogo/custom     PENDIENTE
-Integración con RecipeDetail    PENDIENTE
-UI final de alertas              PENDIENTE
+Room schema                     SIN CAMBIOS — debe permanecer v4
 ```
 
 No se ha introducido ninguna puntuación clínica, inferencia por linaje ni supresión automática basada en exenciones.
