@@ -27,6 +27,7 @@ data class IngredientCatalogEntry(
 data class CatalogIngredientSafetyRecord(
     val safetyGroupId: String,
     val safetyGroupName: String,
+    val jurisdiction: String,
     val relationType: String,
     val evidenceLevel: String,
     val sourceId: String,
