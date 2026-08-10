@@ -23,3 +23,14 @@ data class IngredientCatalogEntry(
     val verificationStatus: String,
     val informationStatus: IngredientCatalogInformationStatus,
 )
+
+data class CatalogIngredientSafetyRecord(
+    val safetyGroupId: String,
+    val safetyGroupName: String,
+    val relationType: String,
+    val evidenceLevel: String,
+    val sourceId: String,
+    val sourceDetails: String?,
+    val notes: String?,
+    val reviewedAt: String,
+)
