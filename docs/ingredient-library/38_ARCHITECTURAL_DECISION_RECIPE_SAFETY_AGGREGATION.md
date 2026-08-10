@@ -1,6 +1,6 @@
 # 38 — DECISIÓN ARQUITECTÓNICA: AGREGACIÓN DE SEGURIDAD EN RECETA
 
-**Estado:** ABIERTA — decisión necesaria antes de implementar Fase 7  
+**Estado:** ACEPTADA — OPCIÓN B  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-09  
 **ADR:** ADR-027
@@ -157,17 +157,27 @@ warning = warning - exemption
 
 Cualquier futura regla que pretendiese modificar una advertencia clínica en función de una exención requeriría una ADR independiente y evidencia específica.
 
-## 7. Recomendación
+## 7. Decisión
 
-**Opción B.**
+**Se adopta la Opción B.**
 
-Es la que mejor equilibra claridad y fidelidad: ofrece un resumen por grupo sin perder ninguna observación subyacente y evita una puntuación clínica artificial.
+La Fase 7 utilizará un estado principal determinista **solo para presentación**, conservando siempre el conjunto completo de observaciones y su trazabilidad.
 
-El estado principal se definiría como una propiedad de presentación determinista. No equivaldría a severidad médica, probabilidad de reacción ni recomendación de consumo.
+La precedencia aprobada es:
+
+```text
+PRESENCIA_IDENTIFICADA
+DERIVADO_IDENTIFICADO
+PUEDE_CONTENER_DECLARADO
+POSIBLE_REACTIVIDAD_CRUZADA
+REQUIERE_REVISION
+```
+
+Esta precedencia no representa gravedad médica, probabilidad de reacción ni recomendación de consumo.
 
 ## 8. Consecuencia de la decisión
 
-Si se acepta B, la Fase 7 implementará inicialmente:
+La Fase 7 implementará inicialmente:
 
 ```text
 RecipeSafetyAggregator        función pura de dominio
@@ -181,10 +191,12 @@ Las exenciones regulatorias se transportarán en una colección/canal separado y
 
 La UI y el wording se diseñarán después sobre este contrato, manteniendo las expresiones de seguridad ya aprobadas.
 
-## 9. Decisión solicitada
+## 9. Estado de implementación
 
 ```text
-A — todos los estados independientes dentro de cada grupo
-B — estado principal de presentación + evidencia completa conservada (RECOMENDADA)
-C — puntuación/semáforo de riesgo (NO RECOMENDADA)
+Decisión ADR-027                ACEPTADA — B
+Modelo de dominio Fase 7        PENDIENTE
+Agregador puro                  PENDIENTE
+Pruebas deterministas           PENDIENTE
+Integración UI                   PENDIENTE
 ```
