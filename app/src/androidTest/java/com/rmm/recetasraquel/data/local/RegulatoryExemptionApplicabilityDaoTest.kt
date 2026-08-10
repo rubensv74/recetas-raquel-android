@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.rmm.recetasraquel.data.local.entity.CatalogIngredientEntity
+import com.rmm.recetasraquel.data.local.entity.CatalogMetadataEntity
 import com.rmm.recetasraquel.data.local.entity.FoodSafetyGroupEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientCategoryEntity
 import com.rmm.recetasraquel.data.local.entity.RegulatoryExemptionEntity
@@ -33,7 +34,7 @@ class RegulatoryExemptionApplicabilityDaoTest {
     }
 
     @Test
-    fun queryReturnsOnlyActiveExemptionsApplicableToJurisdictionAndDate() = runBlocking {
+    fun queryReturnsOnlyCurrentSnapshotApplicableToJurisdictionAndDate() = runBlocking {
         val dao = database.ingredientCatalogDao()
         dao.upsertCategories(listOf(category()))
         dao.upsertSafetyGroups(
@@ -47,10 +48,20 @@ class RegulatoryExemptionApplicabilityDaoTest {
         )
         dao.upsertSafetySources(listOf(source()))
         dao.upsertIngredients(listOf(ingredient()))
-        dao.insertRegulatoryExemptions(
+        dao.upsertMetadata(metadata(CURRENT_CATALOG_VERSION))
+        dao.upsertRegulatoryExemptions(
             listOf(
                 exemption(
+                    id = "historical-valid",
+                    catalogVersion = PREVIOUS_CATALOG_VERSION,
+                    safetyGroupId = "sg-valid",
+                    jurisdiction = "EU-ES",
+                    effectiveFrom = "2025-04-01",
+                    effectiveTo = null,
+                ),
+                exemption(
                     id = "valid",
+                    catalogVersion = CURRENT_CATALOG_VERSION,
                     safetyGroupId = "sg-valid",
                     jurisdiction = "EU-ES",
                     effectiveFrom = "2025-04-01",
@@ -58,6 +69,7 @@ class RegulatoryExemptionApplicabilityDaoTest {
                 ),
                 exemption(
                     id = "foreign",
+                    catalogVersion = CURRENT_CATALOG_VERSION,
                     safetyGroupId = "sg-foreign",
                     jurisdiction = "US",
                     effectiveFrom = null,
@@ -65,6 +77,7 @@ class RegulatoryExemptionApplicabilityDaoTest {
                 ),
                 exemption(
                     id = "future",
+                    catalogVersion = CURRENT_CATALOG_VERSION,
                     safetyGroupId = "sg-future",
                     jurisdiction = "EU-ES",
                     effectiveFrom = "2027-01-01",
@@ -72,6 +85,7 @@ class RegulatoryExemptionApplicabilityDaoTest {
                 ),
                 exemption(
                     id = "expired",
+                    catalogVersion = CURRENT_CATALOG_VERSION,
                     safetyGroupId = "sg-expired",
                     jurisdiction = "EU-ES",
                     effectiveFrom = null,
@@ -79,6 +93,7 @@ class RegulatoryExemptionApplicabilityDaoTest {
                 ),
                 exemption(
                     id = "inactive",
+                    catalogVersion = CURRENT_CATALOG_VERSION,
                     safetyGroupId = "sg-inactive",
                     jurisdiction = "EU-ES",
                     effectiveFrom = null,
@@ -95,6 +110,14 @@ class RegulatoryExemptionApplicabilityDaoTest {
         )
 
         assertEquals(listOf("valid"), applicable.map { it.id })
+        assertEquals(6, dao.countRegulatoryExemptionSnapshots())
+        assertEquals(
+            listOf("historical-valid"),
+            dao.getRegulatoryExemptionsForIngredientAtCatalogVersion(
+                ingredientId = INGREDIENT_ID,
+                catalogVersion = PREVIOUS_CATALOG_VERSION,
+            ).map { it.id },
+        )
     }
 
     private fun category() = IngredientCategoryEntity(
@@ -134,14 +157,24 @@ class RegulatoryExemptionApplicabilityDaoTest {
         categoryId = CATEGORY_ID,
         defaultUnit = null,
         description = null,
-        catalogVersion = 10,
+        catalogVersion = CURRENT_CATALOG_VERSION,
         verificationStatus = "REVIEWED",
         compositionVariability = "LOW",
         sourceUpdatedAt = null,
     )
 
+    private fun metadata(catalogVersion: Int) = CatalogMetadataEntity(
+        key = "master",
+        catalogVersion = catalogVersion,
+        locale = "es-ES",
+        jurisdiction = "EU-ES",
+        reviewedAt = "2026-08-10",
+        importedAt = 1L,
+    )
+
     private fun exemption(
         id: String,
+        catalogVersion: Int,
         safetyGroupId: String,
         jurisdiction: String,
         effectiveFrom: String?,
@@ -149,6 +182,7 @@ class RegulatoryExemptionApplicabilityDaoTest {
         isActive: Boolean = true,
     ) = RegulatoryExemptionEntity(
         id = id,
+        catalogVersion = catalogVersion,
         ingredientId = INGREDIENT_ID,
         safetyGroupId = safetyGroupId,
         jurisdiction = jurisdiction,
@@ -166,5 +200,7 @@ class RegulatoryExemptionApplicabilityDaoTest {
         const val CATEGORY_ID = "cat-test"
         const val INGREDIENT_ID = "ing-test"
         const val SOURCE_ID = "source-test"
+        const val PREVIOUS_CATALOG_VERSION = 10
+        const val CURRENT_CATALOG_VERSION = 11
     }
 }
