@@ -29,6 +29,18 @@ data class CatalogIngredientSearchRow(
     val searchRank: Int,
 )
 
+data class CatalogIngredientFrequencyRow(
+    val id: String,
+    val canonicalName: String,
+    val categoryId: String,
+    val categoryName: String,
+    val defaultUnit: String?,
+    val verificationStatus: String,
+    val safetyRelationCount: Int,
+    val regulatoryExemptionCount: Int,
+    val recipeCount: Int,
+)
+
 data class CatalogIngredientSafetyRow(
     val safetyGroupId: String,
     val safetyGroupName: String,
@@ -129,6 +141,50 @@ interface IngredientCatalogDao {
         categoryId: String?,
         limit: Int,
     ): List<CatalogIngredientSearchRow>
+
+    @Query(
+        """
+        SELECT
+            ci.id AS id,
+            ci.canonicalName AS canonicalName,
+            ci.categoryId AS categoryId,
+            category.name AS categoryName,
+            ci.defaultUnit AS defaultUnit,
+            ci.verificationStatus AS verificationStatus,
+            (SELECT COUNT(*) FROM ingredient_safety_relations safety WHERE safety.ingredientId = ci.id) AS safetyRelationCount,
+            (
+                SELECT COUNT(*)
+                FROM regulatory_exemptions exemption
+                WHERE exemption.ingredientId = ci.id
+                  AND exemption.catalogVersion = (
+                      SELECT catalogVersion FROM catalog_metadata WHERE `key` = 'master' LIMIT 1
+                  )
+                  AND exemption.isActive = 1
+            ) AS regulatoryExemptionCount,
+            COUNT(DISTINCT used.recipeId) AS recipeCount
+        FROM ingredients used
+        INNER JOIN catalog_ingredients ci ON ci.id = used.catalogIngredientId
+        INNER JOIN ingredient_categories category ON category.id = ci.categoryId
+        WHERE used.catalogIngredientId IS NOT NULL
+          AND ci.isActive = 1
+          AND ci.catalogRole = 'CULINARY'
+          AND category.isActive = 1
+        GROUP BY
+            ci.id,
+            ci.canonicalName,
+            ci.categoryId,
+            category.name,
+            ci.defaultUnit,
+            ci.verificationStatus
+        HAVING COUNT(DISTINCT used.recipeId) >= :minimumRecipeCount
+        ORDER BY recipeCount DESC, ci.canonicalName COLLATE NOCASE ASC, ci.id ASC
+        LIMIT :limit
+        """,
+    )
+    suspend fun getFrequentCulinaryIngredients(
+        minimumRecipeCount: Int,
+        limit: Int,
+    ): List<CatalogIngredientFrequencyRow>
 
     @Query(
         """
