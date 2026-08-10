@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.rmm.recetasraquel.domain.ingredient.CatalogIngredientSafetyRecord
+import com.rmm.recetasraquel.domain.ingredient.FrequentIngredientCatalogEntry
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogCategory
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogDetail
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogEntry
@@ -33,6 +34,35 @@ class IngredientLibraryUiTest {
 
         composeRule.onNodeWithText("Busca un ingrediente o elige una categoría.").assertIsDisplayed()
         composeRule.onNodeWithTag("ingredient_library_manual").assertIsDisplayed()
+    }
+
+    @Test
+    fun frequentStateUsesExistingRecipeHistoryAndKeepsSelectionExplicit() {
+        var selectedId: String? = null
+        val wheat = entry(
+            id = "ing-wheat",
+            name = "Trigo",
+            status = IngredientCatalogInformationStatus.SAFETY_RELATIONS_RECORDED,
+        )
+        setScreen(
+            state = IngredientLibraryUiState(
+                categories = sampleCategories(),
+                frequentIngredients = listOf(
+                    FrequentIngredientCatalogEntry(
+                        ingredient = wheat,
+                        recipeCount = 3,
+                    ),
+                ),
+                isLoading = false,
+            ),
+            onSelectIngredient = { selectedId = it.id },
+        )
+
+        composeRule.onNodeWithTag("ingredient_library_frequent").assertIsDisplayed()
+        composeRule.onNodeWithText("Frecuentes").assertIsDisplayed()
+        composeRule.onNodeWithText("Usado en 3 recetas").assertIsDisplayed()
+        composeRule.onNodeWithTag("ingredient_result_ing-wheat").performClick()
+        composeRule.runOnIdle { assertEquals("ing-wheat", selectedId) }
     }
 
     @Test
