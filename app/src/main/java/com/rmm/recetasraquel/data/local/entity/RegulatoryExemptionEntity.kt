@@ -3,10 +3,10 @@ package com.rmm.recetasraquel.data.local.entity
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
-import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "regulatory_exemptions",
+    primaryKeys = ["id", "catalogVersion"],
     foreignKeys = [
         ForeignKey(
             entity = CatalogIngredientEntity::class,
@@ -31,14 +31,16 @@ import androidx.room.PrimaryKey
         Index(value = ["ingredientId"]),
         Index(value = ["safetyGroupId"]),
         Index(value = ["sourceId"]),
+        Index(value = ["catalogVersion"]),
         Index(
-            value = ["ingredientId", "safetyGroupId", "jurisdiction", "regulatoryEffect"],
+            value = ["ingredientId", "safetyGroupId", "jurisdiction", "regulatoryEffect", "catalogVersion"],
             unique = true,
         ),
     ],
 )
 data class RegulatoryExemptionEntity(
-    @PrimaryKey val id: String,
+    val id: String,
+    val catalogVersion: Int,
     val ingredientId: String,
     val safetyGroupId: String,
     val jurisdiction: String,
