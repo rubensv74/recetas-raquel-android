@@ -52,7 +52,7 @@ class CatalogImporter(
             safetyGroups = bundle.safetyGroups.map { it.toEntity() },
             safetySources = bundle.safetySources.map { it.toEntity() },
             safetyRelations = bundle.safetyRelations.map { it.toEntity() },
-            regulatoryExemptions = bundle.regulatoryExemptions.map { it.toEntity() },
+            regulatoryExemptions = bundle.regulatoryExemptions.map { it.toEntity(manifest.catalogVersion) },
             metadata = CatalogMetadataEntity(
                 key = METADATA_KEY,
                 catalogVersion = manifest.catalogVersion,
@@ -143,8 +143,9 @@ class CatalogImporter(
         reviewedAt = reviewedAt,
     )
 
-    private fun CatalogRegulatoryExemptionRecord.toEntity() = RegulatoryExemptionEntity(
+    private fun CatalogRegulatoryExemptionRecord.toEntity(catalogVersion: Int) = RegulatoryExemptionEntity(
         id = id,
+        catalogVersion = catalogVersion,
         ingredientId = ingredientId,
         safetyGroupId = safetyGroupId,
         jurisdiction = jurisdiction,
