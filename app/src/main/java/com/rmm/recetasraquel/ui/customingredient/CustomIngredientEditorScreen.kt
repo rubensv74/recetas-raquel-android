@@ -181,6 +181,19 @@ fun CustomIngredientEditorScreen(
                         )
                     }
                 }
+                item {
+                    OutlinedTextField(
+                        value = state.labelReadAt,
+                        onValueChange = onLabelReadAtChange,
+                        label = { Text("Fecha de lectura de etiqueta") },
+                        supportingText = { Text("Opcional · AAAA-MM-DD") },
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .testTag("custom_label_read_at"),
+                    )
+                }
             }
 
             item {
@@ -206,17 +219,6 @@ fun CustomIngredientEditorScreen(
                     text = "Si la composición es desconocida, la aplicación debe tratar la información disponible como incompleta.",
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(horizontal = 16.dp),
-                )
-            }
-
-            item {
-                OutlinedTextField(
-                    value = state.labelReadAt,
-                    onValueChange = onLabelReadAtChange,
-                    label = { Text("Fecha de lectura de etiqueta") },
-                    supportingText = { Text("Opcional · AAAA-MM-DD") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                 )
             }
 
@@ -352,7 +354,7 @@ private fun SafetyDeclarationCard(
 
             OutlinedTextField(
                 value = row.sourceDetails,
-                onValueChange = onSourceDetailsChange,
+                onValueChange = onSafetySourceDetailsChange,
                 label = { Text("Origen de la declaración") },
                 supportingText = { Text("Ej.: leído en la etiqueta del producto") },
                 modifier = Modifier.fillMaxWidth(),
