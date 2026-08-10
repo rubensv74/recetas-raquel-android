@@ -24,6 +24,11 @@ data class IngredientCatalogEntry(
     val informationStatus: IngredientCatalogInformationStatus,
 )
 
+data class FrequentIngredientCatalogEntry(
+    val ingredient: IngredientCatalogEntry,
+    val recipeCount: Int,
+)
+
 enum class IngredientCatalogRelationDirection {
     PARENT,
     CHILD,
