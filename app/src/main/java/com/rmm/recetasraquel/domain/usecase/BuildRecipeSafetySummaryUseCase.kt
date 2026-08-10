@@ -157,7 +157,7 @@ class BuildRecipeSafetySummaryUseCase(
                 relationType = RecipeSafetyRelationType.valueOf(relation.relationType.name),
                 evidenceLevel = relation.evidenceLevel.name,
                 sourceId = relation.sourceId,
-                sourceDetails = relation.sourceDetails,
+                sourceDetails = relation.sourceDetails ?: relation.sourceId,
                 notes = relation.notes,
                 reviewedAt = relation.reviewedAt,
             )
