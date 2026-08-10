@@ -2,6 +2,7 @@ package com.rmm.recetasraquel.domain.repository
 
 import com.rmm.recetasraquel.domain.ingredient.CatalogIngredientSafetyRecord
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogCategory
+import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogDetail
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogEntry
 import com.rmm.recetasraquel.domain.ingredient.IngredientLineageRelation
 import com.rmm.recetasraquel.domain.ingredient.RegulatoryExemption
@@ -26,6 +27,8 @@ interface IngredientCatalogRepository {
         limit: Int = 100,
     ): Result<List<IngredientCatalogEntry>>
     suspend fun getIngredient(ingredientId: String): Result<IngredientCatalogEntry?>
+    suspend fun getIngredientDetail(ingredientId: String): Result<IngredientCatalogDetail> =
+        Result.success(IngredientCatalogDetail())
     suspend fun getParentRelations(ingredientId: String): Result<List<IngredientLineageRelation>>
     suspend fun getChildRelations(ingredientId: String): Result<List<IngredientLineageRelation>>
     suspend fun getSafetyRelations(ingredientId: String): Result<List<CatalogIngredientSafetyRecord>> =
