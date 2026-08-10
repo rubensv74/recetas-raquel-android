@@ -41,7 +41,7 @@ import com.rmm.recetasraquel.data.local.entity.SafetySourceEntity
         CustomIngredientSafetyRelationEntity::class,
         CatalogMetadataEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 abstract class RecipeDatabase : RoomDatabase() {
@@ -62,6 +62,7 @@ abstract class RecipeDatabase : RoomDatabase() {
                 IngredientLibraryMigrations.MIGRATION_2_3,
                 IngredientLibraryMigrations.MIGRATION_3_4,
                 IngredientLibraryMigrations.MIGRATION_4_5,
+                IngredientLibraryMigrations.MIGRATION_5_6,
             )
             .build()
     }
