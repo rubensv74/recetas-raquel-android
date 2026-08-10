@@ -1,6 +1,7 @@
 package com.rmm.recetasraquel.domain.usecase
 
 import com.rmm.recetasraquel.domain.ingredient.CatalogIngredientSafetyRecord
+import com.rmm.recetasraquel.domain.ingredient.CustomIngredientDraft
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientRecord
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientSafetyEvidence
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientSafetyRecord
@@ -19,7 +20,7 @@ import com.rmm.recetasraquel.domain.model.Recipe
 import com.rmm.recetasraquel.domain.repository.CustomIngredientRepository
 import com.rmm.recetasraquel.domain.repository.IngredientCatalogImportSummary
 import com.rmm.recetasraquel.domain.repository.IngredientCatalogRepository
-import com.rmm.recetasraquel.domain.ingredient.CustomIngredientDraft
+import com.rmm.recetasraquel.util.TimeProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -121,6 +122,56 @@ class BuildRecipeSafetySummaryUseCaseTest {
     }
 
     @Test
+    fun `only exemptions applicable to jurisdiction and date reach recipe summary`() = runTestBlocking {
+        val catalogId = "ing-soy-oil-refined"
+        val applicable = regulatoryExemption(
+            id = "applicable",
+            ingredientId = catalogId,
+            jurisdiction = "EU-ES",
+            effectiveFrom = "2025-04-01",
+            effectiveTo = null,
+        )
+        val foreign = regulatoryExemption(
+            id = "foreign",
+            ingredientId = catalogId,
+            jurisdiction = "US",
+            effectiveFrom = null,
+            effectiveTo = null,
+        )
+        val future = regulatoryExemption(
+            id = "future",
+            ingredientId = catalogId,
+            jurisdiction = "EU-ES",
+            effectiveFrom = "2027-01-01",
+            effectiveTo = null,
+        )
+        val expired = regulatoryExemption(
+            id = "expired",
+            ingredientId = catalogId,
+            jurisdiction = "EU-ES",
+            effectiveFrom = null,
+            effectiveTo = "2025-12-31",
+        )
+        val useCase = BuildRecipeSafetySummaryUseCase(
+            catalogRepository = FakeCatalogRepository(
+                entries = mapOf(catalogId to catalogEntry(catalogId, "Aceite de soja totalmente refinado")),
+                exemptions = mapOf(catalogId to listOf(applicable, foreign, future, expired)),
+            ),
+            customIngredientRepository = FakeCustomRepository(safetyGroups = listOf(glutenGroup)),
+            timeProvider = TimeProvider { FIXED_2026_08_10_NOON_UTC },
+            regulatoryJurisdiction = "EU-ES",
+            regulatoryTimeZoneId = "Europe/Madrid",
+        )
+
+        val result = useCase.resolve(
+            recipe(listOf(ingredient("recipe-ing-1", "Aceite de soja totalmente refinado", catalogIngredientId = catalogId))),
+        ).getOrThrow()
+
+        assertEquals(listOf(applicable), result.regulatoryExemptions)
+        assertTrue(result.groups.isEmpty())
+    }
+
+    @Test
     fun `originless recipe ingredient becomes global review notice instead of inferred safety`() = runTestBlocking {
         val useCase = BuildRecipeSafetySummaryUseCase(
             FakeCatalogRepository(),
@@ -193,6 +244,30 @@ class BuildRecipeSafetySummaryUseCaseTest {
         verificationStatus = "REVIEWED",
         informationStatus = IngredientCatalogInformationStatus.SAFETY_RELATIONS_RECORDED,
     )
+
+    private fun regulatoryExemption(
+        id: String,
+        ingredientId: String,
+        jurisdiction: String,
+        effectiveFrom: String?,
+        effectiveTo: String?,
+    ) = RegulatoryExemption(
+        id = id,
+        ingredientId = ingredientId,
+        safetyGroupId = glutenGroup.id,
+        jurisdiction = jurisdiction,
+        effect = RegulatoryEffect.EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION,
+        conditions = "Condición regulatoria de prueba",
+        sourceId = "TEST_SOURCE",
+        effectiveFrom = effectiveFrom,
+        effectiveTo = effectiveTo,
+        reviewedAt = "2026-08-09",
+        notes = null,
+    )
+
+    companion object {
+        private const val FIXED_2026_08_10_NOON_UTC = 1_786_363_200_000L
+    }
 }
 
 private class FakeCatalogRepository(
