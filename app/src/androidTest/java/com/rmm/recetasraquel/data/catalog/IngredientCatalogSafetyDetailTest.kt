@@ -40,7 +40,8 @@ class IngredientCatalogSafetyDetailTest {
             assertEquals("EU_LEGAL", relation.evidenceLevel)
             assertEquals("EU_FIC_1169_2011", relation.sourceId)
             assertNotNull(relation.sourceDetails)
-            assertTrue(relation.sourceDetails.orEmpty().contains("Reglamento"))
+            assertTrue(relation.sourceDetails.orEmpty().contains("Regulation (EU) No 1169/2011"))
+            assertTrue(relation.sourceDetails.orEmpty().contains("CELEX 02011R1169-20250401"))
             assertEquals("2026-08-08", relation.reviewedAt)
         } finally {
             database.close()
