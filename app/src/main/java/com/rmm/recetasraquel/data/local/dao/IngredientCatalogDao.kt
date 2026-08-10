@@ -32,6 +32,7 @@ data class CatalogIngredientSearchRow(
 data class CatalogIngredientSafetyRow(
     val safetyGroupId: String,
     val safetyGroupName: String,
+    val safetyGroupJurisdiction: String,
     val relationType: String,
     val evidenceLevel: String,
     val sourceId: String,
@@ -187,6 +188,7 @@ interface IngredientCatalogDao {
         SELECT
             relation.safetyGroupId AS safetyGroupId,
             safetyGroup.displayName AS safetyGroupName,
+            safetyGroup.jurisdiction AS safetyGroupJurisdiction,
             relation.relationType AS relationType,
             relation.evidenceLevel AS evidenceLevel,
             relation.sourceId AS sourceId,
@@ -325,21 +327,20 @@ interface IngredientCatalogDao {
         regulatoryExemptions: List<RegulatoryExemptionEntity>,
         metadata: CatalogMetadataEntity,
     ) {
-        deleteAllSafetyRelations()
-        deleteAllIngredientRelations()
-        deleteAllAliases()
-        deactivateAllIngredients()
         deactivateAllCategories()
+        deactivateAllIngredients()
         deactivateAllSafetyGroups()
-
-        if (categories.isNotEmpty()) upsertCategories(categories)
-        if (safetyGroups.isNotEmpty()) upsertSafetyGroups(safetyGroups)
-        if (safetySources.isNotEmpty()) upsertSafetySources(safetySources)
-        if (ingredients.isNotEmpty()) upsertIngredients(ingredients)
-        if (aliases.isNotEmpty()) insertAliases(aliases)
-        if (ingredientRelations.isNotEmpty()) insertIngredientRelations(ingredientRelations)
-        if (safetyRelations.isNotEmpty()) insertSafetyRelations(safetyRelations)
-        if (regulatoryExemptions.isNotEmpty()) upsertRegulatoryExemptions(regulatoryExemptions)
+        deleteAllAliases()
+        deleteAllIngredientRelations()
+        deleteAllSafetyRelations()
+        upsertCategories(categories)
+        upsertIngredients(ingredients)
+        insertAliases(aliases)
+        insertIngredientRelations(ingredientRelations)
+        upsertSafetyGroups(safetyGroups)
+        upsertSafetySources(safetySources)
+        insertSafetyRelations(safetyRelations)
+        upsertRegulatoryExemptions(regulatoryExemptions)
         upsertMetadata(metadata)
     }
 }
