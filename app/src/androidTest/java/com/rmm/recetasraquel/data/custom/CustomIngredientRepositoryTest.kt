@@ -35,7 +35,7 @@ class CustomIngredientRepositoryTest {
                     categoryId = "cat-prepared-compound",
                     defaultUnit = "g",
                     type = CustomIngredientType.COMMERCIAL_PRODUCT,
-                    aliases = listOf("Crema especial", "crema especial"),
+                    aliases = listOf("Crema especial", "crema especial", "CREMA DE PRUEBA"),
                     brand = "Marca de prueba",
                     tradeName = "Producto de prueba",
                     compositionKnown = false,
@@ -58,12 +58,42 @@ class CustomIngredientRepositoryTest {
             assertEquals(CustomIngredientType.COMMERCIAL_PRODUCT, stored.type)
             assertFalse(stored.compositionKnown)
             assertEquals(listOf("Crema especial"), stored.aliases)
+            assertEquals("Marca de prueba", stored.brand)
+            assertEquals("Producto de prueba", stored.tradeName)
+            assertEquals("2026-08-09", stored.labelReadAt)
             assertEquals(1, stored.safetyRelations.size)
             assertEquals(CustomIngredientSafetyEvidence.USER_DECLARED, stored.safetyRelations.single().evidenceLevel)
             assertEquals(LocalCustomIngredientRepository.LOCAL_USER_DECLARED_SOURCE_ID, stored.safetyRelations.single().sourceId)
 
             assertNull(fixture.database.ingredientCatalogDao().getActiveIngredientSummary(id))
             assertEquals(1, fixture.database.customIngredientDao().countActiveIngredients())
+        } finally {
+            fixture.database.close()
+        }
+    }
+
+    @Test
+    fun nonCommercialTypesCannotPersistCommercialOnlyMetadata() = runBlocking {
+        val fixture = fixture()
+        try {
+            listOf(CustomIngredientType.SIMPLE, CustomIngredientType.COMPOUND).forEachIndexed { index, type ->
+                val id = fixture.repository.createIngredient(
+                    CustomIngredientDraft(
+                        name = "Ingrediente no comercial $index",
+                        type = type,
+                        brand = "Marca que debe ignorarse",
+                        tradeName = "Nombre comercial que debe ignorarse",
+                        compositionKnown = true,
+                        labelReadAt = "2026-08-09",
+                    ),
+                ).getOrThrow()
+
+                val stored = requireNotNull(fixture.repository.getIngredient(id).getOrThrow())
+                assertEquals(type, stored.type)
+                assertNull(stored.brand)
+                assertNull(stored.tradeName)
+                assertNull(stored.labelReadAt)
+            }
         } finally {
             fixture.database.close()
         }
@@ -85,6 +115,57 @@ class CustomIngredientRepositoryTest {
                             evidenceLevel = CustomIngredientSafetyEvidence.UNVERIFIED,
                         ),
                     ),
+                ),
+            )
+
+            assertTrue(result.isFailure)
+            assertEquals(0, fixture.database.customIngredientDao().countActiveIngredients())
+        } finally {
+            fixture.database.close()
+        }
+    }
+
+    @Test
+    fun duplicateSafetyRelationFailsBeforeLeavingPartialCustomData() = runBlocking {
+        val fixture = fixture()
+        try {
+            val result = fixture.repository.createIngredient(
+                CustomIngredientDraft(
+                    name = "Ingrediente duplicado",
+                    type = CustomIngredientType.COMPOUND,
+                    compositionKnown = true,
+                    safetyDeclarations = listOf(
+                        CustomIngredientSafetyDeclaration(
+                            safetyGroupId = "sg-eu-milk",
+                            relationType = CustomIngredientSafetyRelationType.CONTAINS,
+                            evidenceLevel = CustomIngredientSafetyEvidence.USER_DECLARED,
+                        ),
+                        CustomIngredientSafetyDeclaration(
+                            safetyGroupId = "sg-eu-milk",
+                            relationType = CustomIngredientSafetyRelationType.CONTAINS,
+                            evidenceLevel = CustomIngredientSafetyEvidence.UNVERIFIED,
+                        ),
+                    ),
+                ),
+            )
+
+            assertTrue(result.isFailure)
+            assertEquals(0, fixture.database.customIngredientDao().countActiveIngredients())
+        } finally {
+            fixture.database.close()
+        }
+    }
+
+    @Test
+    fun invalidCommercialLabelDateFailsBeforeLeavingPartialCustomData() = runBlocking {
+        val fixture = fixture()
+        try {
+            val result = fixture.repository.createIngredient(
+                CustomIngredientDraft(
+                    name = "Producto con fecha inválida",
+                    type = CustomIngredientType.COMMERCIAL_PRODUCT,
+                    compositionKnown = true,
+                    labelReadAt = "2026-02-30",
                 ),
             )
 
