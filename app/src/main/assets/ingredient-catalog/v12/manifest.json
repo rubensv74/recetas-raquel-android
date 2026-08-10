@@ -1,6 +1,6 @@
 {
   "catalogId": "rmm-es-eu",
-  "schemaVersion": 5,
+  "schemaVersion": 4,
   "catalogVersion": 12,
   "releaseStatus": "DRAFT",
   "locale": "es-ES",
