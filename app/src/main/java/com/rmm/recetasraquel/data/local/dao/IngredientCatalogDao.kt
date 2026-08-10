@@ -47,6 +47,9 @@ interface IngredientCatalogDao {
     @Query("SELECT * FROM catalog_metadata WHERE `key` = :key LIMIT 1")
     suspend fun getMetadata(key: String): CatalogMetadataEntity?
 
+    @Query("SELECT * FROM safety_sources WHERE id IN (:sourceIds)")
+    suspend fun getSafetySourcesByIds(sourceIds: List<String>): List<SafetySourceEntity>
+
     @Query("SELECT * FROM ingredient_categories WHERE isActive = 1 ORDER BY sortOrder ASC, name COLLATE NOCASE ASC")
     fun observeActiveCategories(): Flow<List<IngredientCategoryEntity>>
 
