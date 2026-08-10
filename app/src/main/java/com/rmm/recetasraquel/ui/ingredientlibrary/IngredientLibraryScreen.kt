@@ -33,6 +33,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogEntry
@@ -286,11 +288,24 @@ private fun IngredientCatalogRow(
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
-            Text(
-                text = ingredient.informationStatus.displayText(),
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Medium,
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.testTag("ingredient_status_${ingredient.id}"),
+            ) {
+                Text(
+                    text = ingredient.informationStatus.statusSymbol(),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.semantics {
+                        contentDescription = ingredient.informationStatus.symbolAccessibilityLabel()
+                    },
+                )
+                Text(
+                    text = ingredient.informationStatus.displayText(),
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
             TextButton(
                 onClick = onShowInfo,
                 modifier = Modifier.testTag("ingredient_info_${ingredient.id}"),
@@ -299,6 +314,21 @@ private fun IngredientCatalogRow(
             }
         }
     }
+}
+
+private fun IngredientCatalogInformationStatus.statusSymbol(): String = when (this) {
+    IngredientCatalogInformationStatus.SAFETY_RELATIONS_RECORDED -> "ⓘ"
+    IngredientCatalogInformationStatus.REGULATORY_EXEMPTION_RECORDED -> "ⓘ"
+    IngredientCatalogInformationStatus.NO_DIRECT_SAFETY_RELATION_RECORDED -> "⚠"
+}
+
+private fun IngredientCatalogInformationStatus.symbolAccessibilityLabel(): String = when (this) {
+    IngredientCatalogInformationStatus.SAFETY_RELATIONS_RECORDED ->
+        "Información de seguridad disponible"
+    IngredientCatalogInformationStatus.REGULATORY_EXEMPTION_RECORDED ->
+        "Información regulatoria disponible"
+    IngredientCatalogInformationStatus.NO_DIRECT_SAFETY_RELATION_RECORDED ->
+        "Aviso: información posiblemente incompleta"
 }
 
 private fun IngredientCatalogInformationStatus.displayText(): String = when (this) {
