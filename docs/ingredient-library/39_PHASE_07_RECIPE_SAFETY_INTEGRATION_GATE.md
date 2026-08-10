@@ -1,6 +1,6 @@
 # 39 — FASE 7: INTEGRACIÓN DE SEGURIDAD EN RECETA — GATE
 
-**Estado:** IMPLEMENTADA — EVOLUCIONADA POR ADR-028 / ROOM v5  
+**Estado:** VALIDADA — ADR-027 + ADR-028 / ROOM v5  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-10
 
@@ -13,7 +13,7 @@ La Fase 7 se implementó inicialmente sobre Room v4. Posteriormente, durante su 
 ## Alcance implementado
 
 ```text
-Room                              v5 — evolución posterior ADR-028
+Room                              v5 — validado por ADR-028
 Lectura evidencia catálogo        implementada con grupo + fuente
 Lectura evidencia personalizada   reutiliza declaraciones persistidas
 Agregación por receta             implementada
@@ -22,8 +22,8 @@ Exenciones regulatorias           canal separado + snapshot + vigencia contextua
 Historial regulatorio             versionado por catalogVersion
 RecipeDetailViewModel             integrado
 RecipeDetailScreen                panel de seguridad integrado
-Pruebas unitarias                 añadidas
-Pruebas instrumentadas / UI       añadidas
+Pruebas unitarias                 PASS
+Pruebas instrumentadas / UI       PASS
 ```
 
 ## Reglas verificables
@@ -120,20 +120,29 @@ Desde la raíz del repositorio:
 .\gradlew.bat -g "C:\Temp\gradle_home_ingredient_library" assembleRelease
 ```
 
-## Criterios de cierre actuales
+## Gate de cierre validado
+
+Ejecución final:
 
 ```text
-assembleDebug                  PASS requerido
-unit tests                     PASS requerido
-lintDebug                      PASS requerido
-compileDebugAndroidTestKotlin  PASS requerido
-assembleRelease                PASS requerido
-Room schemas 1..5              PASS requerido
-connectedDebugAndroidTest      PASS requerido
-Room guard post-emulador       PASS requerido
+Android CI run 31376760612
+Code SHA 71ee4d38b3dba77831ae850a7c496af68942af4c
 ```
 
-La ejecución automatizada de cierre de ADR-028 se documenta por separado en `41_ROOM_V5_REGULATORY_HISTORY_GATE.md`.
+Resultado:
+
+```text
+assembleDebug                  PASS
+unit tests                     PASS
+lintDebug                      PASS
+compileDebugAndroidTestKotlin  PASS
+assembleRelease                PASS
+Room schemas 1..5              PASS
+connectedDebugAndroidTest      PASS — 63/63
+Room guard post-emulador       PASS
+```
+
+Durante la validación se corrigió únicamente una prueba de navegación que asumía visibilidad inmediata de elementos contenidos en `LazyColumn`. La UI y el flujo de producto no necesitaron cambios para superar el gate.
 
 ## Inspección manual mínima
 
@@ -141,6 +150,6 @@ Abrir una receta con evidencia conocida y comprobar que el panel muestra grupo, 
 
 La presentación detallada de exenciones regulatorias, si se incorpora posteriormente, deberá permanecer visualmente separada de las advertencias de seguridad y no podrá traducir una exención legal a una afirmación clínica.
 
-## Siguiente paso
+## Cierre
 
-Tras quedar verde el gate completo Room v5, ADR-028 puede cerrarse como validada y la Fase 7 queda alineada con el modelo regulatorio histórico. El trabajo posterior podrá centrarse en revisión de cobertura y UX sin reabrir la semántica de seguridad, salvo aparición de una nueva decisión arquitectónica.
+La Fase 7 queda validada sobre Room v5. ADR-027 mantiene la semántica de agregación de seguridad y ADR-028 garantiza la trazabilidad histórica de la capa regulatoria. No queda abierto ningún gate técnico de esta fase.
