@@ -31,4 +31,16 @@ interface IngredientCatalogRepository {
     suspend fun getSafetyRelations(ingredientId: String): Result<List<CatalogIngredientSafetyRecord>> =
         Result.success(emptyList())
     suspend fun getRegulatoryExemptions(ingredientId: String): Result<List<RegulatoryExemption>>
+
+    suspend fun getApplicableRegulatoryExemptions(
+        ingredientId: String,
+        jurisdiction: String,
+        asOfDate: String,
+    ): Result<List<RegulatoryExemption>> = getRegulatoryExemptions(ingredientId).map { exemptions ->
+        exemptions.filter { exemption ->
+            exemption.jurisdiction == jurisdiction &&
+                (exemption.effectiveFrom == null || exemption.effectiveFrom <= asOfDate) &&
+                (exemption.effectiveTo == null || exemption.effectiveTo >= asOfDate)
+        }
+    }
 }
