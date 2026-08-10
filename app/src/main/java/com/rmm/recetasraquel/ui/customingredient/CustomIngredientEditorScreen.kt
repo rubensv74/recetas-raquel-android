@@ -354,7 +354,7 @@ private fun SafetyDeclarationCard(
 
             OutlinedTextField(
                 value = row.sourceDetails,
-                onValueChange = onSafetySourceDetailsChange,
+                onValueChange = onSourceDetailsChange,
                 label = { Text("Origen de la declaración") },
                 supportingText = { Text("Ej.: leído en la etiqueta del producto") },
                 modifier = Modifier.fillMaxWidth(),
