@@ -29,6 +29,19 @@ data class CatalogIngredientSearchRow(
     val searchRank: Int,
 )
 
+data class CatalogIngredientSafetyRow(
+    val safetyGroupId: String,
+    val safetyGroupName: String,
+    val relationType: String,
+    val evidenceLevel: String,
+    val sourceId: String,
+    val sourceOrganization: String,
+    val sourceTitle: String,
+    val sourceReference: String,
+    val notes: String?,
+    val reviewedAt: String,
+)
+
 @Dao
 interface IngredientCatalogDao {
     @Query("SELECT * FROM catalog_metadata WHERE `key` = :key LIMIT 1")
@@ -148,6 +161,28 @@ interface IngredientCatalogDao {
             "ORDER BY safetyGroupId ASC, relationType ASC, id ASC",
     )
     suspend fun getSafetyRelationsForIngredient(ingredientId: String): List<IngredientSafetyRelationEntity>
+
+    @Query(
+        """
+        SELECT
+            relation.safetyGroupId AS safetyGroupId,
+            safetyGroup.displayName AS safetyGroupName,
+            relation.relationType AS relationType,
+            relation.evidenceLevel AS evidenceLevel,
+            relation.sourceId AS sourceId,
+            source.organization AS sourceOrganization,
+            source.title AS sourceTitle,
+            source.officialReference AS sourceReference,
+            relation.notes AS notes,
+            relation.reviewedAt AS reviewedAt
+        FROM ingredient_safety_relations relation
+        INNER JOIN food_safety_groups safetyGroup ON safetyGroup.id = relation.safetyGroupId
+        INNER JOIN safety_sources source ON source.id = relation.sourceId
+        WHERE relation.ingredientId = :ingredientId
+        ORDER BY safetyGroup.displayName COLLATE NOCASE ASC, relation.relationType ASC, relation.id ASC
+        """,
+    )
+    suspend fun getSafetyRelationDetailsForIngredient(ingredientId: String): List<CatalogIngredientSafetyRow>
 
     @Query("SELECT COUNT(*) FROM regulatory_exemptions WHERE isActive = 1")
     suspend fun countActiveRegulatoryExemptions(): Int
