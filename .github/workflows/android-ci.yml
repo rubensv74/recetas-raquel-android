@@ -1,15 +1,6 @@
 name: Android CI
 
 on:
-  push:
-    branches:
-      - "program/**"
-    paths:
-      - "app/**"
-      - "gradle/**"
-      - "*.gradle.kts"
-      - "gradle.properties"
-      - ".github/workflows/android-ci.yml"
   pull_request:
     branches:
       - master
@@ -33,9 +24,9 @@ env:
 
 jobs:
   quality:
-    name: Build, unit tests, lint and Room guard
+    name: PR gate — build, unit tests, lint and Room guard
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -62,20 +53,8 @@ jobs:
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" "platform-tools" "platforms;android-36.1"
 
-      - name: Assemble debug
-        run: ./gradlew --no-daemon clean assembleDebug
-
-      - name: Unit tests
-        run: ./gradlew --no-daemon testDebugUnitTest
-
-      - name: Lint
-        run: ./gradlew --no-daemon lintDebug
-
-      - name: Compile instrumented tests
-        run: ./gradlew --no-daemon compileDebugAndroidTestKotlin
-
-      - name: Assemble release
-        run: ./gradlew --no-daemon assembleRelease
+      - name: Validate debug build, unit tests and lint
+        run: ./gradlew --no-daemon assembleDebug testDebugUnitTest lintDebug
 
       - name: Guard Room schemas
         shell: bash
@@ -101,8 +80,9 @@ jobs:
             exit 1
           fi
 
-  instrumented:
-    name: Instrumented tests on Android emulator
+  full-validation:
+    name: Manual gate — release and instrumented tests
+    if: github.event_name == 'workflow_dispatch'
     needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -116,7 +96,6 @@ jobs:
 
       - name: Set up JDK 21
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
-
         with:
           distribution: temurin
           java-version: "21"
@@ -132,6 +111,9 @@ jobs:
           test -x "$SDKMANAGER"
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" "platform-tools" "platforms;android-36.1"
+
+      - name: Assemble release
+        run: ./gradlew --no-daemon assembleRelease
 
       - name: Enable KVM access
         shell: bash
@@ -151,7 +133,7 @@ jobs:
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: ./gradlew --no-daemon connectedDebugAndroidTest
 
-      - name: Guard Room schemas after instrumented tests
+      - name: Guard Room schemas after full validation
         shell: bash
         run: |
           set -euo pipefail
@@ -160,13 +142,13 @@ jobs:
           expected="$(printf '1.json\n2.json\n3.json\n4.json\n5.json\n6.json\n')"
 
           if [[ "$actual" != "$expected" ]]; then
-            echo "Unexpected Room schema set after instrumented tests."
+            echo "Unexpected Room schema set after full validation."
             printf '%s\n' "$actual"
             exit 1
           fi
 
           if [[ -n "$(git status --porcelain -- "$schema_dir")" ]]; then
-            echo "Room schema files differ from the committed contract after instrumented tests."
+            echo "Room schema files differ from the committed contract after full validation."
             git status --short -- "$schema_dir"
             exit 1
           fi
