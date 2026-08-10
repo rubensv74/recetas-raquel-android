@@ -3,6 +3,7 @@ package com.rmm.recetasraquel.ui.ingredientlibrary
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -79,6 +80,7 @@ class IngredientLibraryUiTest {
         )
 
         composeRule.onNodeWithText("Información de seguridad registrada").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Información de seguridad disponible").assertIsDisplayed()
         composeRule.onNodeWithTag("ingredient_result_ing-wheat").performClick()
         composeRule.runOnIdle { assertEquals("ing-wheat", selectedId) }
     }
@@ -231,6 +233,7 @@ class IngredientLibraryUiTest {
         )
 
         composeRule.onNodeWithText("Información regulatoria específica").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Información regulatoria disponible").assertIsDisplayed()
     }
 
     @Test
@@ -246,6 +249,8 @@ class IngredientLibraryUiTest {
         )
 
         composeRule.onNodeWithText("La información disponible puede ser incompleta").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Aviso: información posiblemente incompleta").assertIsDisplayed()
+        composeRule.onNodeWithText("⚠").assertIsDisplayed()
     }
 
     @Test
