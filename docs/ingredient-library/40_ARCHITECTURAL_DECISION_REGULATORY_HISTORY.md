@@ -79,6 +79,18 @@ Si una exención existía en v10 y desaparece en v11, la fila v10 permanece para
 
 Si una exención cambia en v11, la fila v10 permanece sin cambios y v11 contiene la nueva fotografía.
 
+### Inmutabilidad de las fuentes
+
+Las exenciones históricas referencian `safety_sources` mediante `sourceId`. Por tanto, conservar la fila de la exención no es suficiente si una versión posterior pudiera reescribir en sitio los metadatos de esa misma fuente.
+
+El importador aplica una regla adicional:
+
+```text
+mismo sourceId -> mismos metadatos completos
+```
+
+Si cambia organización, título, referencia oficial, jurisdicción, fechas, estado documental o URL, la nueva fuente debe publicarse con otro `sourceId`. La importación se rechaza antes de modificar el catálogo si intenta reutilizar un identificador publicado con contenido diferente.
+
 ## 6. Consultas
 
 Se distinguen dos familias:
@@ -127,7 +139,7 @@ Si una base v4 no dispone excepcionalmente de metadata, se usa `catalogVersion =
 4. Una exención continúa sin significar `seguro`, `apto` ni ausencia de riesgo clínico.
 5. El grafo culinario no modifica ni propaga exenciones.
 6. Las relaciones de seguridad no se neutralizan automáticamente por una exención.
-7. Los identificadores de fuentes regulatorias deben mantenerse estables; una referencia oficial materialmente distinta debe recibir un identificador de fuente nuevo.
+7. Un `sourceId` publicado es inmutable: cualquier cambio de sus metadatos requiere un nuevo identificador.
 8. Una misma versión de catálogo se considera inmutable una vez publicada; cualquier revisión de contenido regulatorio exige una nueva versión de catálogo.
 
 ## 9. Pruebas obligatorias
@@ -142,6 +154,7 @@ Room v5 debe cubrir como mínimo:
 - consulta explícita de una versión histórica;
 - filtrado por jurisdicción;
 - exclusión de reglas futuras, caducadas e inactivas;
+- rechazo de la reescritura de un `sourceId` histórico;
 - migración completa desde instalaciones antiguas hasta v5;
 - `PRAGMA foreign_key_check` sin incidencias.
 
@@ -162,10 +175,11 @@ Migración 4 -> 5                         IMPLEMENTADA
 Importación sin borrar historial         IMPLEMENTADA
 Consulta snapshot actual                 IMPLEMENTADA
 Consulta histórica explícita             IMPLEMENTADA
-Filtro jurisdicción + vigencia            IMPLEMENTADO
+Filtro jurisdicción + vigencia           IMPLEMENTADO
+Inmutabilidad de safety_sources           IMPLEMENTADA
 Pruebas unitarias/DAO                    IMPLEMENTADAS
 Prueba migración 4 -> 5                  IMPLEMENTADA
-Schema Room v5                           PENDIENTE DE GENERAR/VALIDAR EN CI
+Schema Room v5                           GENERADO — EN VALIDACIÓN CI
 Gate CI completo                         PENDIENTE
 ```
 
