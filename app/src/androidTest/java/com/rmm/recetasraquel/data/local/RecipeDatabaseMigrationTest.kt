@@ -31,7 +31,7 @@ class RecipeDatabaseMigrationTest {
     }
 
     @Test
-    fun migrate1To5PreservesLegacyRecipeDataAndAddsVersionedRegulatoryInfrastructure() = runBlocking {
+    fun migrate1To6PreservesLegacyRecipeDataAndAddsVersionedRegulatoryInfrastructure() = runBlocking {
         createVersion1Database()
 
         val database = Room.databaseBuilder(context, RecipeDatabase::class.java, TEST_DB)
@@ -40,6 +40,7 @@ class RecipeDatabaseMigrationTest {
                 IngredientLibraryMigrations.MIGRATION_2_3,
                 IngredientLibraryMigrations.MIGRATION_3_4,
                 IngredientLibraryMigrations.MIGRATION_4_5,
+                IngredientLibraryMigrations.MIGRATION_5_6,
             )
             .build()
 
@@ -153,6 +154,19 @@ class RecipeDatabaseMigrationTest {
                 assertFalse("sourceDescription" in columns)
             }
 
+            migrated.query("PRAGMA table_info(`catalog_ingredients`)").use { cursor ->
+                var catalogRoleFound = false
+                while (cursor.moveToNext()) {
+                    if (cursor.getString(1) == "catalogRole") {
+                        catalogRoleFound = true
+                        assertEquals("TEXT", cursor.getString(2))
+                        assertEquals(1, cursor.getInt(3))
+                        assertEquals("'CULINARY'", cursor.getString(4))
+                    }
+                }
+                assertTrue(catalogRoleFound)
+            }
+
             migrated.query(
                 """
                 SELECT instruction, timerMinutes, photoPath, sortOrder
@@ -172,7 +186,7 @@ class RecipeDatabaseMigrationTest {
 
             migrated.query("PRAGMA user_version").use { cursor ->
                 assertTrue(cursor.moveToFirst())
-                assertEquals(5, cursor.getInt(0))
+                assertEquals(6, cursor.getInt(0))
             }
 
             val recipe = database.recipeDao().getRecipeWithDetails("recipe-1")
@@ -294,6 +308,6 @@ class RecipeDatabaseMigrationTest {
     }
 
     private companion object {
-        const val TEST_DB = "recipes-migration-1-5-test.db"
+        const val TEST_DB = "recipes-migration-1-6-test.db"
     }
 }
