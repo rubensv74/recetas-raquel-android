@@ -104,6 +104,7 @@ class CatalogImporter(
         catalogVersion = catalogVersion,
         verificationStatus = verificationStatus,
         compositionVariability = compositionVariability,
+        catalogRole = catalogRole ?: DEFAULT_CATALOG_ROLE,
         sourceUpdatedAt = sourceUpdatedAt,
         isActive = isActive,
     )
@@ -180,5 +181,6 @@ class CatalogImporter(
 
     companion object {
         const val METADATA_KEY = "master"
+        const val DEFAULT_CATALOG_ROLE = "CULINARY"
     }
 }
