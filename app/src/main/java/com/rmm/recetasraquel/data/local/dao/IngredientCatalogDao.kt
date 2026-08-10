@@ -72,7 +72,15 @@ interface IngredientCatalogDao {
             ci.defaultUnit AS defaultUnit,
             ci.verificationStatus AS verificationStatus,
             (SELECT COUNT(*) FROM ingredient_safety_relations safety WHERE safety.ingredientId = ci.id) AS safetyRelationCount,
-            (SELECT COUNT(*) FROM regulatory_exemptions exemption WHERE exemption.ingredientId = ci.id AND exemption.isActive = 1) AS regulatoryExemptionCount,
+            (
+                SELECT COUNT(*)
+                FROM regulatory_exemptions exemption
+                WHERE exemption.ingredientId = ci.id
+                  AND exemption.catalogVersion = (
+                      SELECT catalogVersion FROM catalog_metadata WHERE `key` = 'master' LIMIT 1
+                  )
+                  AND exemption.isActive = 1
+            ) AS regulatoryExemptionCount,
             CASE
                 WHEN :normalizedQuery = '' THEN 0
                 WHEN ci.normalizedName = :normalizedQuery OR EXISTS (
@@ -120,7 +128,15 @@ interface IngredientCatalogDao {
             ci.defaultUnit AS defaultUnit,
             ci.verificationStatus AS verificationStatus,
             (SELECT COUNT(*) FROM ingredient_safety_relations safety WHERE safety.ingredientId = ci.id) AS safetyRelationCount,
-            (SELECT COUNT(*) FROM regulatory_exemptions exemption WHERE exemption.ingredientId = ci.id AND exemption.isActive = 1) AS regulatoryExemptionCount,
+            (
+                SELECT COUNT(*)
+                FROM regulatory_exemptions exemption
+                WHERE exemption.ingredientId = ci.id
+                  AND exemption.catalogVersion = (
+                      SELECT catalogVersion FROM catalog_metadata WHERE `key` = 'master' LIMIT 1
+                  )
+                  AND exemption.isActive = 1
+            ) AS regulatoryExemptionCount,
             0 AS searchRank
         FROM catalog_ingredients ci
         INNER JOIN ingredient_categories category ON category.id = ci.categoryId
@@ -184,24 +200,63 @@ interface IngredientCatalogDao {
     )
     suspend fun getSafetyRelationDetailsForIngredient(ingredientId: String): List<CatalogIngredientSafetyRow>
 
-    @Query("SELECT COUNT(*) FROM regulatory_exemptions WHERE isActive = 1")
+    @Query(
+        """
+        SELECT COUNT(*)
+        FROM regulatory_exemptions
+        WHERE catalogVersion = (
+            SELECT catalogVersion FROM catalog_metadata WHERE `key` = 'master' LIMIT 1
+        )
+          AND isActive = 1
+        """,
+    )
     suspend fun countActiveRegulatoryExemptions(): Int
 
+    @Query("SELECT COUNT(*) FROM regulatory_exemptions")
+    suspend fun countRegulatoryExemptionSnapshots(): Int
+
     @Query(
-        "SELECT * FROM regulatory_exemptions " +
-            "WHERE ingredientId = :ingredientId AND isActive = 1 " +
-            "ORDER BY safetyGroupId ASC, jurisdiction ASC, regulatoryEffect ASC, id ASC",
+        """
+        SELECT *
+        FROM regulatory_exemptions
+        WHERE ingredientId = :ingredientId
+          AND catalogVersion = (
+              SELECT catalogVersion FROM catalog_metadata WHERE `key` = 'master' LIMIT 1
+          )
+          AND isActive = 1
+        ORDER BY safetyGroupId ASC, jurisdiction ASC, regulatoryEffect ASC, id ASC
+        """,
     )
     suspend fun getRegulatoryExemptionsForIngredient(ingredientId: String): List<RegulatoryExemptionEntity>
 
     @Query(
-        "SELECT * FROM regulatory_exemptions " +
-            "WHERE ingredientId = :ingredientId " +
-            "AND jurisdiction = :jurisdiction " +
-            "AND isActive = 1 " +
-            "AND (effectiveFrom IS NULL OR effectiveFrom <= :asOfDate) " +
-            "AND (effectiveTo IS NULL OR effectiveTo >= :asOfDate) " +
-            "ORDER BY safetyGroupId ASC, regulatoryEffect ASC, id ASC",
+        """
+        SELECT *
+        FROM regulatory_exemptions
+        WHERE ingredientId = :ingredientId
+          AND catalogVersion = :catalogVersion
+        ORDER BY safetyGroupId ASC, jurisdiction ASC, regulatoryEffect ASC, id ASC
+        """,
+    )
+    suspend fun getRegulatoryExemptionsForIngredientAtCatalogVersion(
+        ingredientId: String,
+        catalogVersion: Int,
+    ): List<RegulatoryExemptionEntity>
+
+    @Query(
+        """
+        SELECT *
+        FROM regulatory_exemptions
+        WHERE ingredientId = :ingredientId
+          AND catalogVersion = (
+              SELECT catalogVersion FROM catalog_metadata WHERE `key` = 'master' LIMIT 1
+          )
+          AND jurisdiction = :jurisdiction
+          AND isActive = 1
+          AND (effectiveFrom IS NULL OR effectiveFrom <= :asOfDate)
+          AND (effectiveTo IS NULL OR effectiveTo >= :asOfDate)
+        ORDER BY safetyGroupId ASC, regulatoryEffect ASC, id ASC
+        """,
     )
     suspend fun getApplicableRegulatoryExemptionsForIngredient(
         ingredientId: String,
@@ -230,8 +285,8 @@ interface IngredientCatalogDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertSafetyRelations(items: List<IngredientSafetyRelationEntity>)
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insertRegulatoryExemptions(items: List<RegulatoryExemptionEntity>)
+    @Upsert
+    suspend fun upsertRegulatoryExemptions(items: List<RegulatoryExemptionEntity>)
 
     @Upsert
     suspend fun upsertMetadata(item: CatalogMetadataEntity)
@@ -254,9 +309,6 @@ interface IngredientCatalogDao {
     @Query("DELETE FROM ingredient_safety_relations")
     suspend fun deleteAllSafetyRelations()
 
-    @Query("DELETE FROM regulatory_exemptions")
-    suspend fun deleteAllRegulatoryExemptions()
-
     @Transaction
     suspend fun replaceShippedCatalog(
         categories: List<IngredientCategoryEntity>,
@@ -269,7 +321,6 @@ interface IngredientCatalogDao {
         regulatoryExemptions: List<RegulatoryExemptionEntity>,
         metadata: CatalogMetadataEntity,
     ) {
-        deleteAllRegulatoryExemptions()
         deleteAllSafetyRelations()
         deleteAllIngredientRelations()
         deleteAllAliases()
@@ -284,7 +335,7 @@ interface IngredientCatalogDao {
         if (aliases.isNotEmpty()) insertAliases(aliases)
         if (ingredientRelations.isNotEmpty()) insertIngredientRelations(ingredientRelations)
         if (safetyRelations.isNotEmpty()) insertSafetyRelations(safetyRelations)
-        if (regulatoryExemptions.isNotEmpty()) insertRegulatoryExemptions(regulatoryExemptions)
+        if (regulatoryExemptions.isNotEmpty()) upsertRegulatoryExemptions(regulatoryExemptions)
         upsertMetadata(metadata)
     }
 }
