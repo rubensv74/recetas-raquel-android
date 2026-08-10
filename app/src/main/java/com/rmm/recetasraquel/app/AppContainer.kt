@@ -52,6 +52,7 @@ class AppContainer(context: Context) {
     val recipeSafetySummaryResolver: RecipeSafetySummaryResolver = BuildRecipeSafetySummaryUseCase(
         catalogRepository = ingredientCatalogRepository,
         customIngredientRepository = customIngredientRepository,
+        timeProvider = timeProvider,
     )
     val photoStorage: RecipePhotoStorage = LocalRecipePhotoStorage(context)
     val saveRecipeUseCase: SaveRecipeOperation = SaveRecipeUseCase(recipeRepository, photoStorage)
