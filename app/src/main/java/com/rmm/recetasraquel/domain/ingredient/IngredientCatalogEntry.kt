@@ -24,6 +24,24 @@ data class IngredientCatalogEntry(
     val informationStatus: IngredientCatalogInformationStatus,
 )
 
+enum class IngredientCatalogRelationDirection {
+    PARENT,
+    CHILD,
+}
+
+data class IngredientCatalogRelatedPresentation(
+    val ingredientId: String,
+    val canonicalName: String,
+    val relationType: IngredientLineageType,
+    val direction: IngredientCatalogRelationDirection,
+)
+
+data class IngredientCatalogDetail(
+    val description: String? = null,
+    val aliases: List<String> = emptyList(),
+    val relatedPresentations: List<IngredientCatalogRelatedPresentation> = emptyList(),
+)
+
 data class CatalogIngredientSafetyRecord(
     val safetyGroupId: String,
     val safetyGroupName: String,
