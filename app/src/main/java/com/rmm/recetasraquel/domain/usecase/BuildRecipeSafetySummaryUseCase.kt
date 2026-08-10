@@ -11,6 +11,12 @@ import com.rmm.recetasraquel.domain.model.Ingredient
 import com.rmm.recetasraquel.domain.model.Recipe
 import com.rmm.recetasraquel.domain.repository.CustomIngredientRepository
 import com.rmm.recetasraquel.domain.repository.IngredientCatalogRepository
+import com.rmm.recetasraquel.util.SystemTimeProvider
+import com.rmm.recetasraquel.util.TimeProvider
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 interface RecipeSafetySummaryResolver {
     suspend fun resolve(recipe: Recipe): Result<RecipeSafetySummary>
@@ -20,10 +26,14 @@ class BuildRecipeSafetySummaryUseCase(
     private val catalogRepository: IngredientCatalogRepository,
     private val customIngredientRepository: CustomIngredientRepository,
     private val aggregator: RecipeSafetyAggregator = RecipeSafetyAggregator(),
+    private val timeProvider: TimeProvider = SystemTimeProvider(),
+    private val regulatoryJurisdiction: String = DEFAULT_REGULATORY_JURISDICTION,
+    private val regulatoryTimeZoneId: String = DEFAULT_REGULATORY_TIME_ZONE_ID,
 ) : RecipeSafetySummaryResolver {
     override suspend fun resolve(recipe: Recipe): Result<RecipeSafetySummary> = runCatching {
         catalogRepository.ensureCatalogImported().getOrThrow()
         val safetyGroups = customIngredientRepository.getSafetyGroups().getOrThrow().associateBy { it.id }
+        val regulatoryAsOfDate = currentRegulatoryDateIso()
 
         val observations = mutableListOf<RecipeSafetyObservation>()
         val reviewNotices = mutableListOf<RecipeReviewNotice>()
@@ -44,6 +54,7 @@ class BuildRecipeSafetySummaryUseCase(
                 catalogIngredientId != null -> appendCatalogEvidence(
                     recipeIngredient = ingredient,
                     catalogIngredientId = catalogIngredientId,
+                    regulatoryAsOfDate = regulatoryAsOfDate,
                     observations = observations,
                     reviewNotices = reviewNotices,
                     regulatoryExemptions = regulatoryExemptions,
@@ -76,6 +87,7 @@ class BuildRecipeSafetySummaryUseCase(
     private suspend fun appendCatalogEvidence(
         recipeIngredient: Ingredient,
         catalogIngredientId: String,
+        regulatoryAsOfDate: String,
         observations: MutableList<RecipeSafetyObservation>,
         reviewNotices: MutableList<RecipeReviewNotice>,
         regulatoryExemptions: MutableList<RegulatoryExemption>,
@@ -113,7 +125,11 @@ class BuildRecipeSafetySummaryUseCase(
         }
 
         regulatoryExemptions += catalogRepository
-            .getRegulatoryExemptions(catalogIngredientId)
+            .getApplicableRegulatoryExemptions(
+                ingredientId = catalogIngredientId,
+                jurisdiction = regulatoryJurisdiction,
+                asOfDate = regulatoryAsOfDate,
+            )
             .getOrThrow()
     }
 
@@ -164,6 +180,10 @@ class BuildRecipeSafetySummaryUseCase(
         }
     }
 
+    private fun currentRegulatoryDateIso(): String = SimpleDateFormat(DATE_PATTERN, Locale.ROOT).apply {
+        timeZone = TimeZone.getTimeZone(regulatoryTimeZoneId)
+    }.format(Date(timeProvider.nowEpochMillis()))
+
     private fun Ingredient.reviewNotice(code: String, message: String) = RecipeReviewNotice(
         code = code,
         ingredientId = id,
@@ -173,4 +193,10 @@ class BuildRecipeSafetySummaryUseCase(
 
     private fun String.toRecipeRelationTypeOrNull(): RecipeSafetyRelationType? =
         runCatching { RecipeSafetyRelationType.valueOf(this) }.getOrNull()
+
+    companion object {
+        private const val DATE_PATTERN = "yyyy-MM-dd"
+        const val DEFAULT_REGULATORY_JURISDICTION = "EU-ES"
+        const val DEFAULT_REGULATORY_TIME_ZONE_ID = "Europe/Madrid"
+    }
 }
