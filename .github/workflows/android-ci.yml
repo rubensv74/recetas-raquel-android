@@ -77,19 +77,6 @@ jobs:
       - name: Assemble release
         run: ./gradlew --no-daemon assembleRelease
 
-      - name: Show generated Room v5 schema
-        shell: bash
-        run: |
-          schema_file="app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/5.json"
-          if [[ -f "$schema_file" ]]; then
-            echo "ROOM_SCHEMA_V5_BEGIN"
-            cat "$schema_file"
-            echo "ROOM_SCHEMA_V5_END"
-          else
-            echo "Room v5 schema was not generated."
-            exit 1
-          fi
-
       - name: Guard Room schemas
         shell: bash
         run: |
