@@ -20,7 +20,7 @@ class CatalogV11AnnexIiRegulatoryCoverageTest {
 
         try {
             val reader = IngredientCatalogAssetReader(AndroidAssetCatalogTextSource(context.assets))
-            val bundle = reader.read()
+            val bundle = reader.read("ingredient-catalog/v11")
             val validation = CatalogValidator.validate(bundle)
 
             assertTrue(validation.errors.joinToString(separator = "\n"), validation.isValid)
@@ -108,7 +108,7 @@ class CatalogV11AnnexIiRegulatoryCoverageTest {
             assertEquals(14, dao.countRegulatoryExemptionSnapshots())
             assertEquals(10, dao.getMetadata(CatalogImporter.METADATA_KEY)?.catalogVersion)
 
-            val v11 = importer.ensureImported()
+            val v11 = importer.ensureImported("ingredient-catalog/v11")
             assertTrue(v11 is CatalogImportResult.Imported)
             assertEquals(272, dao.countActiveIngredients())
             assertEquals(43, dao.countActiveIngredientRelations())
