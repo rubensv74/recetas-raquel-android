@@ -1,5 +1,6 @@
 package com.rmm.recetasraquel.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -43,9 +44,10 @@ data class CatalogIngredientEntity(
     val catalogVersion: Int,
     val verificationStatus: String,
     val compositionVariability: String,
-    val catalogRole: String = "CULINARY",
     val sourceUpdatedAt: Long?,
     val isActive: Boolean = true,
+    @ColumnInfo(defaultValue = "'CULINARY'")
+    val catalogRole: String = "CULINARY",
 )
 
 @Entity(
