@@ -2,10 +2,12 @@ package com.rmm.recetasraquel.data.repository
 
 import com.rmm.recetasraquel.data.catalog.CatalogImportResult
 import com.rmm.recetasraquel.data.catalog.CatalogImporter
+import com.rmm.recetasraquel.data.local.dao.CatalogIngredientSafetyRow
 import com.rmm.recetasraquel.data.local.dao.CatalogIngredientSearchRow
 import com.rmm.recetasraquel.data.local.dao.IngredientCatalogDao
 import com.rmm.recetasraquel.data.local.entity.CatalogIngredientRelationEntity
 import com.rmm.recetasraquel.data.local.entity.RegulatoryExemptionEntity
+import com.rmm.recetasraquel.domain.ingredient.CatalogIngredientSafetyRecord
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogCategory
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogEntry
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogInformationStatus
@@ -78,6 +80,10 @@ class LocalIngredientCatalogRepository(
         dao.getChildRelations(ingredientId).map { it.toDomain() }
     }
 
+    override suspend fun getSafetyRelations(ingredientId: String): Result<List<CatalogIngredientSafetyRecord>> = runCatching {
+        dao.getSafetyRelationDetailsForIngredient(ingredientId).map { it.toDomain() }
+    }
+
     override suspend fun getRegulatoryExemptions(ingredientId: String): Result<List<RegulatoryExemption>> = runCatching {
         dao.getRegulatoryExemptionsForIngredient(ingredientId).map { it.toDomain() }
     }
@@ -98,6 +104,20 @@ class LocalIngredientCatalogRepository(
             regulatoryExemptionCount > 0 -> IngredientCatalogInformationStatus.REGULATORY_EXEMPTION_RECORDED
             else -> IngredientCatalogInformationStatus.NO_DIRECT_SAFETY_RELATION_RECORDED
         },
+    )
+
+    private fun CatalogIngredientSafetyRow.toDomain() = CatalogIngredientSafetyRecord(
+        safetyGroupId = safetyGroupId,
+        safetyGroupName = safetyGroupName,
+        relationType = relationType,
+        evidenceLevel = evidenceLevel,
+        sourceId = sourceId,
+        sourceDetails = listOf(sourceOrganization, sourceTitle, sourceReference)
+            .filter(String::isNotBlank)
+            .joinToString(" · ")
+            .takeIf(String::isNotBlank),
+        notes = notes,
+        reviewedAt = reviewedAt,
     )
 
     private fun CatalogIngredientRelationEntity.toDomain() = IngredientLineageRelation(
