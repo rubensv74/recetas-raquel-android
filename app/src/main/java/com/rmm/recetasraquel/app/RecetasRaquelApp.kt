@@ -168,6 +168,9 @@ fun RecetasRaquelApp(
                     }
                     navController.popBackStack()
                 },
+                onShowIngredientInfo = libraryViewModel::showIngredientInfo,
+                onDismissIngredientInfo = libraryViewModel::dismissIngredientInfo,
+                onRetryIngredientInfo = libraryViewModel::retryIngredientInfo,
                 onAddManualIngredient = {
                     navController.navigate(AppRoute.CUSTOM_INGREDIENT) { launchSingleTop = true }
                 },
