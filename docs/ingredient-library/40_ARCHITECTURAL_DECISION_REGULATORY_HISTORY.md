@@ -1,6 +1,6 @@
 # 40 — DECISIÓN ARQUITECTÓNICA: HISTORIAL REGULATORIO VERSIONADO
 
-**Estado:** ACEPTADA — OPCIÓN B  
+**Estado:** VALIDADA — OPCIÓN B  
 **Rama:** `program/ingredient-library-food-safety`  
 **Fecha:** 2026-08-10  
 **ADR:** ADR-028
@@ -144,7 +144,7 @@ Si una base v4 no dispone excepcionalmente de metadata, se usa `catalogVersion =
 
 ## 9. Pruebas obligatorias
 
-Room v5 debe cubrir como mínimo:
+Room v5 cubre:
 
 - migración v4 -> v5 con una exención existente;
 - conservación de todos sus campos y asignación del `catalogVersion` previo;
@@ -167,20 +167,29 @@ Esta decisión no versiona todo el catálogo culinario. El histórico persistent
 ## 11. Estado de implementación
 
 ```text
-ADR-028                                  ACEPTADA — B
+ADR-028                                  VALIDADA — B
 Room                                     v5
 RegulatoryExemption.catalogVersion       IMPLEMENTADO
 Clave snapshot id + catalogVersion       IMPLEMENTADA
-Migración 4 -> 5                         IMPLEMENTADA
+Migración 4 -> 5                         IMPLEMENTADA Y VALIDADA
 Importación sin borrar historial         IMPLEMENTADA
 Consulta snapshot actual                 IMPLEMENTADA
 Consulta histórica explícita             IMPLEMENTADA
 Filtro jurisdicción + vigencia           IMPLEMENTADO
 Inmutabilidad de safety_sources           IMPLEMENTADA
-Pruebas unitarias/DAO                    IMPLEMENTADAS
-Prueba migración 4 -> 5                  IMPLEMENTADA
-Schema Room v5                           GENERADO — EN VALIDACIÓN CI
-Gate CI completo                         PENDIENTE
+Pruebas unitarias/DAO                    PASS
+Prueba migración 4 -> 5                  PASS
+Schema Room v5                           VALIDADO
+Gate CI completo                         PASS
+```
+
+Validación automatizada final:
+
+```text
+Android CI run 31376760612
+Code SHA 71ee4d38b3dba77831ae850a7c496af68942af4c
+63/63 pruebas instrumentadas PASS
+Room guard posterior al emulador PASS
 ```
 
 Relacionados:
@@ -188,3 +197,4 @@ Relacionados:
 - `19_ARCHITECTURAL_DECISION_REGULATORY_EXEMPTIONS.md` — ADR-026.
 - `38_ARCHITECTURAL_DECISION_RECIPE_SAFETY_AGGREGATION.md` — ADR-027.
 - `39_PHASE_07_RECIPE_SAFETY_INTEGRATION_GATE.md` — integración de Fase 7.
+- `41_ROOM_V5_REGULATORY_HISTORY_GATE.md` — evidencia de cierre de ADR-028.
