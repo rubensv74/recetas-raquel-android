@@ -31,13 +31,14 @@ class IngredientLibraryMigration23Test {
     }
 
     @Test
-    fun migrate2To4PreservesCustomSafetyRelationAndCreatesSourceBackedContract() {
+    fun migrate2To5PreservesCustomSafetyRelationAndCreatesSourceBackedContract() {
         createVersion2DatabaseWithCustomSafetyRelation()
 
         val database = Room.databaseBuilder(context, RecipeDatabase::class.java, TEST_DB)
             .addMigrations(
                 IngredientLibraryMigrations.MIGRATION_2_3,
                 IngredientLibraryMigrations.MIGRATION_3_4,
+                IngredientLibraryMigrations.MIGRATION_4_5,
             )
             .build()
 
@@ -77,13 +78,19 @@ class IngredientLibraryMigration23Test {
                 assertEquals(0, cursor.getInt(0))
             }
 
+            db.query("PRAGMA table_info(`regulatory_exemptions`)").use { cursor ->
+                val columns = mutableSetOf<String>()
+                while (cursor.moveToNext()) columns += cursor.getString(1)
+                assertTrue("catalogVersion" in columns)
+            }
+
             db.query("PRAGMA foreign_key_check").use { cursor ->
                 assertFalse(cursor.moveToFirst())
             }
 
             db.query("PRAGMA user_version").use { cursor ->
                 assertTrue(cursor.moveToFirst())
-                assertEquals(4, cursor.getInt(0))
+                assertEquals(5, cursor.getInt(0))
             }
         } finally {
             database.close()
@@ -200,6 +207,6 @@ class IngredientLibraryMigration23Test {
     }
 
     private companion object {
-        const val TEST_DB = "recipes-migration-2-4-test.db"
+        const val TEST_DB = "recipes-migration-2-5-test.db"
     }
 }
