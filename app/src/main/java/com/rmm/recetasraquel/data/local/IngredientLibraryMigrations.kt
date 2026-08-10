@@ -19,6 +19,12 @@ object IngredientLibraryMigrations {
         }
     }
 
+    val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            versionRegulatoryExemptions(db)
+        }
+    }
+
     private fun createCatalogIngredientRelations(db: SupportSQLiteDatabase) {
         db.execSQL(
             """
@@ -147,6 +153,64 @@ object IngredientLibraryMigrations {
         )
         db.execSQL(
             "CREATE UNIQUE INDEX IF NOT EXISTS `index_regulatory_exemptions_ingredientId_safetyGroupId_jurisdiction_regulatoryEffect` ON `regulatory_exemptions` (`ingredientId`, `safetyGroupId`, `jurisdiction`, `regulatoryEffect`)",
+        )
+    }
+
+    private fun versionRegulatoryExemptions(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE `regulatory_exemptions_new` (
+                `id` TEXT NOT NULL,
+                `catalogVersion` INTEGER NOT NULL,
+                `ingredientId` TEXT NOT NULL,
+                `safetyGroupId` TEXT NOT NULL,
+                `jurisdiction` TEXT NOT NULL,
+                `regulatoryEffect` TEXT NOT NULL,
+                `conditions` TEXT NOT NULL,
+                `sourceId` TEXT NOT NULL,
+                `effectiveFrom` TEXT,
+                `effectiveTo` TEXT,
+                `reviewedAt` TEXT NOT NULL,
+                `notes` TEXT,
+                `isActive` INTEGER NOT NULL,
+                PRIMARY KEY(`id`, `catalogVersion`),
+                FOREIGN KEY(`ingredientId`) REFERENCES `catalog_ingredients`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION,
+                FOREIGN KEY(`safetyGroupId`) REFERENCES `food_safety_groups`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION,
+                FOREIGN KEY(`sourceId`) REFERENCES `safety_sources`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION
+            )
+            """.trimIndent(),
+        )
+        db.execSQL(
+            """
+            INSERT INTO `regulatory_exemptions_new` (
+                `id`, `catalogVersion`, `ingredientId`, `safetyGroupId`, `jurisdiction`,
+                `regulatoryEffect`, `conditions`, `sourceId`, `effectiveFrom`, `effectiveTo`,
+                `reviewedAt`, `notes`, `isActive`
+            )
+            SELECT
+                `id`,
+                COALESCE((SELECT `catalogVersion` FROM `catalog_metadata` WHERE `key` = 'master' LIMIT 1), 0),
+                `ingredientId`, `safetyGroupId`, `jurisdiction`, `regulatoryEffect`, `conditions`,
+                `sourceId`, `effectiveFrom`, `effectiveTo`, `reviewedAt`, `notes`, `isActive`
+            FROM `regulatory_exemptions`
+            """.trimIndent(),
+        )
+        db.execSQL("DROP TABLE `regulatory_exemptions`")
+        db.execSQL("ALTER TABLE `regulatory_exemptions_new` RENAME TO `regulatory_exemptions`")
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_regulatory_exemptions_ingredientId` ON `regulatory_exemptions` (`ingredientId`)",
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_regulatory_exemptions_safetyGroupId` ON `regulatory_exemptions` (`safetyGroupId`)",
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_regulatory_exemptions_sourceId` ON `regulatory_exemptions` (`sourceId`)",
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_regulatory_exemptions_catalogVersion` ON `regulatory_exemptions` (`catalogVersion`)",
+        )
+        db.execSQL(
+            "CREATE UNIQUE INDEX IF NOT EXISTS `index_regulatory_exemptions_ingredientId_safetyGroupId_jurisdiction_regulatoryEffect_catalogVersion` ON `regulatory_exemptions` (`ingredientId`, `safetyGroupId`, `jurisdiction`, `regulatoryEffect`, `catalogVersion`)",
         )
     }
 }
