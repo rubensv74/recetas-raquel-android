@@ -1,0 +1,50 @@
+[
+  {
+    "id": "ing-wheat-glucose-syrup",
+    "canonicalName": "Jarabe de glucosa a base de trigo",
+    "normalizedName": "jarabe de glucosa a base de trigo",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria a base de trigo. Su exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-wheat-dextrose",
+    "canonicalName": "Dextrosa a base de trigo",
+    "normalizedName": "dextrosa a base de trigo",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria a base de trigo incluida expresamente en la excepción de jarabes de glucosa. Su exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-wheat-maltodextrin",
+    "canonicalName": "Maltodextrina a base de trigo",
+    "normalizedName": "maltodextrina a base de trigo",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria a base de trigo. Su exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-barley-glucose-syrup",
+    "canonicalName": "Jarabe de glucosa a base de cebada",
+    "normalizedName": "jarabe de glucosa a base de cebada",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria a base de cebada. Su exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  }
+]
