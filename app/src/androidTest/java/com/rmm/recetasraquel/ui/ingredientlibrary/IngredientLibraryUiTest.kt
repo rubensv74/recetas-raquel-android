@@ -8,8 +8,12 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.rmm.recetasraquel.domain.ingredient.CatalogIngredientSafetyRecord
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogCategory
+import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogDetail
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogEntry
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogInformationStatus
+import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogRelatedPresentation
+import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogRelationDirection
+import com.rmm.recetasraquel.domain.ingredient.IngredientLineageType
 import com.rmm.recetasraquel.domain.ingredient.RegulatoryEffect
 import com.rmm.recetasraquel.domain.ingredient.RegulatoryExemption
 import com.rmm.recetasraquel.ui.theme.RecetasRaquelTheme
@@ -69,6 +73,43 @@ class IngredientLibraryUiTest {
             assertEquals("ing-wheat", infoId)
             assertNull(selectedId)
         }
+    }
+
+    @Test
+    fun identityDetailShowsDescriptionAliasesAndRelatedCulinaryPresentations() {
+        val ingredient = entry(
+            id = "ing-wheat-flour",
+            name = "Harina de trigo",
+            status = IngredientCatalogInformationStatus.NO_DIRECT_SAFETY_RELATION_RECORDED,
+        )
+        setScreen(
+            activeState(ingredient).copy(
+                ingredientInfo = IngredientLibraryInfoUiState(
+                    ingredient = ingredient,
+                    catalogDetail = IngredientCatalogDetail(
+                        description = "Harina obtenida a partir de trigo.",
+                        aliases = listOf("Harina trigo"),
+                        relatedPresentations = listOf(
+                            IngredientCatalogRelatedPresentation(
+                                ingredientId = "ing-wheat",
+                                canonicalName = "Trigo",
+                                relationType = IngredientLineageType.DERIVED_FROM,
+                                direction = IngredientCatalogRelationDirection.PARENT,
+                            ),
+                        ),
+                    ),
+                    isLoading = false,
+                ),
+            ),
+        )
+
+        composeRule.onNodeWithTag("ingredient_library_description").fetchSemanticsNode()
+        composeRule.onNodeWithText("Harina obtenida a partir de trigo.").fetchSemanticsNode()
+        composeRule.onNodeWithTag("ingredient_library_aliases").fetchSemanticsNode()
+        composeRule.onNodeWithText("Harina trigo").fetchSemanticsNode()
+        composeRule.onNodeWithText("Presentaciones relacionadas").fetchSemanticsNode()
+        composeRule.onNodeWithText("Derivado de: Trigo").fetchSemanticsNode()
+        composeRule.onNodeWithTag("ingredient_library_lineage_disclaimer").fetchSemanticsNode()
     }
 
     @Test
