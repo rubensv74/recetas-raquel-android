@@ -100,6 +100,7 @@ interface IngredientCatalogDao {
         FROM catalog_ingredients ci
         INNER JOIN ingredient_categories category ON category.id = ci.categoryId
         WHERE ci.isActive = 1
+          AND ci.catalogRole = 'CULINARY'
           AND category.isActive = 1
           AND (:categoryId IS NULL OR ci.categoryId = :categoryId)
           AND (
