@@ -14,6 +14,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
+// Contract gate: technical regulatory identities stay addressable internally but never enter normal culinary search.
 @RunWith(AndroidJUnit4::class)
 class CatalogV12RoleVisibilityTest {
     @Test
