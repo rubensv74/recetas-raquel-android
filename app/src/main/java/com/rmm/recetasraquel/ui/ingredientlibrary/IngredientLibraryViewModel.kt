@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.rmm.recetasraquel.domain.ingredient.CatalogIngredientSafetyRecord
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogCategory
+import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogDetail
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogEntry
 import com.rmm.recetasraquel.domain.ingredient.RegulatoryExemption
 import com.rmm.recetasraquel.domain.repository.IngredientCatalogRepository
@@ -20,6 +21,7 @@ import kotlinx.coroutines.launch
 
 data class IngredientLibraryInfoUiState(
     val ingredient: IngredientCatalogEntry,
+    val catalogDetail: IngredientCatalogDetail = IngredientCatalogDetail(),
     val safetyRelations: List<CatalogIngredientSafetyRecord> = emptyList(),
     val regulatoryExemptions: List<RegulatoryExemption> = emptyList(),
     val isLoading: Boolean = true,
@@ -175,16 +177,18 @@ class IngredientLibraryViewModel(
 
         infoJob = viewModelScope.launch {
             runCatching {
+                val catalogDetail = repository.getIngredientDetail(ingredient.id).getOrThrow()
                 val safetyRelations = repository.getSafetyRelations(ingredient.id).getOrThrow()
                 val regulatoryExemptions = repository.getRegulatoryExemptions(ingredient.id).getOrThrow()
-                safetyRelations to regulatoryExemptions
+                Triple(catalogDetail, safetyRelations, regulatoryExemptions)
             }.fold(
-                onSuccess = { (safetyRelations, regulatoryExemptions) ->
+                onSuccess = { (catalogDetail, safetyRelations, regulatoryExemptions) ->
                     if (_uiState.value.ingredientInfo?.ingredient?.id == ingredient.id) {
                         _uiState.update {
                             it.copy(
                                 ingredientInfo = IngredientLibraryInfoUiState(
                                     ingredient = ingredient,
+                                    catalogDetail = catalogDetail,
                                     safetyRelations = safetyRelations,
                                     regulatoryExemptions = regulatoryExemptions,
                                     isLoading = false,
