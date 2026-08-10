@@ -1,6 +1,7 @@
 package com.rmm.recetasraquel.domain.repository
 
 import com.rmm.recetasraquel.domain.ingredient.CatalogIngredientSafetyRecord
+import com.rmm.recetasraquel.domain.ingredient.FrequentIngredientCatalogEntry
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogCategory
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogDetail
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogEntry
@@ -26,6 +27,10 @@ interface IngredientCatalogRepository {
         categoryId: String? = null,
         limit: Int = 100,
     ): Result<List<IngredientCatalogEntry>>
+    suspend fun getFrequentIngredients(
+        minimumRecipeCount: Int = 2,
+        limit: Int = 6,
+    ): Result<List<FrequentIngredientCatalogEntry>> = Result.success(emptyList())
     suspend fun getIngredient(ingredientId: String): Result<IngredientCatalogEntry?>
     suspend fun getIngredientDetail(ingredientId: String): Result<IngredientCatalogDetail> =
         Result.success(IngredientCatalogDetail())
