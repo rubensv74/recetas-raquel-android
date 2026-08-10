@@ -31,11 +31,14 @@ class RegulatoryExemptionMigration45Test {
     }
 
     @Test
-    fun migrate4To5PreservesExistingExemptionAsCatalogSnapshot() {
+    fun migrate4To6PreservesExistingExemptionAsCatalogSnapshot() {
         createVersion4DatabaseWithRegulatoryExemption()
 
         val database = Room.databaseBuilder(context, RecipeDatabase::class.java, TEST_DB)
-            .addMigrations(IngredientLibraryMigrations.MIGRATION_4_5)
+            .addMigrations(
+                IngredientLibraryMigrations.MIGRATION_4_5,
+                IngredientLibraryMigrations.MIGRATION_5_6,
+            )
             .build()
 
         try {
@@ -75,13 +78,18 @@ class RegulatoryExemptionMigration45Test {
                 assertEquals(2, primaryKeyPositions["catalogVersion"])
             }
 
+            db.query("SELECT catalogRole FROM catalog_ingredients WHERE id = 'ingredient-v4'").use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals("CULINARY", cursor.getString(0))
+            }
+
             db.query("PRAGMA foreign_key_check").use { cursor ->
                 assertFalse(cursor.moveToFirst())
             }
 
             db.query("PRAGMA user_version").use { cursor ->
                 assertTrue(cursor.moveToFirst())
-                assertEquals(5, cursor.getInt(0))
+                assertEquals(6, cursor.getInt(0))
             }
         } finally {
             database.close()
@@ -212,6 +220,6 @@ class RegulatoryExemptionMigration45Test {
     }
 
     private companion object {
-        const val TEST_DB = "regulatory-exemption-migration-4-5-test.db"
+        const val TEST_DB = "regulatory-exemption-migration-4-6-test.db"
     }
 }
