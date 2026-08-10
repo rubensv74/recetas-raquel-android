@@ -56,6 +56,7 @@ data class CatalogIngredientRecord(
     val description: String? = null,
     val verificationStatus: String,
     val compositionVariability: String,
+    val catalogRole: String? = null,
     val sourceUpdatedAt: Long? = null,
     val isActive: Boolean = true,
 )
