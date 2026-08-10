@@ -31,7 +31,7 @@ class IngredientLibraryMigration23Test {
     }
 
     @Test
-    fun migrate2To5PreservesCustomSafetyRelationAndCreatesSourceBackedContract() {
+    fun migrate2To6PreservesCustomSafetyRelationAndCreatesSourceBackedContract() {
         createVersion2DatabaseWithCustomSafetyRelation()
 
         val database = Room.databaseBuilder(context, RecipeDatabase::class.java, TEST_DB)
@@ -39,6 +39,7 @@ class IngredientLibraryMigration23Test {
                 IngredientLibraryMigrations.MIGRATION_2_3,
                 IngredientLibraryMigrations.MIGRATION_3_4,
                 IngredientLibraryMigrations.MIGRATION_4_5,
+                IngredientLibraryMigrations.MIGRATION_5_6,
             )
             .build()
 
@@ -84,13 +85,26 @@ class IngredientLibraryMigration23Test {
                 assertTrue("catalogVersion" in columns)
             }
 
+            db.query("PRAGMA table_info(`catalog_ingredients`)").use { cursor ->
+                var catalogRoleFound = false
+                while (cursor.moveToNext()) {
+                    if (cursor.getString(1) == "catalogRole") {
+                        catalogRoleFound = true
+                        assertEquals("TEXT", cursor.getString(2))
+                        assertEquals(1, cursor.getInt(3))
+                        assertEquals("'CULINARY'", cursor.getString(4))
+                    }
+                }
+                assertTrue(catalogRoleFound)
+            }
+
             db.query("PRAGMA foreign_key_check").use { cursor ->
                 assertFalse(cursor.moveToFirst())
             }
 
             db.query("PRAGMA user_version").use { cursor ->
                 assertTrue(cursor.moveToFirst())
-                assertEquals(5, cursor.getInt(0))
+                assertEquals(6, cursor.getInt(0))
             }
         } finally {
             database.close()
@@ -207,6 +221,6 @@ class IngredientLibraryMigration23Test {
     }
 
     private companion object {
-        const val TEST_DB = "recipes-migration-2-5-test.db"
+        const val TEST_DB = "recipes-migration-2-6-test.db"
     }
 }
