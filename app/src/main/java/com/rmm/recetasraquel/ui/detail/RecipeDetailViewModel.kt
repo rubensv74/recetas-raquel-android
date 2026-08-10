@@ -7,8 +7,10 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.rmm.recetasraquel.domain.ingredient.RecipeSafetySummary
 import com.rmm.recetasraquel.domain.model.Recipe
 import com.rmm.recetasraquel.domain.repository.RecipeRepository
+import com.rmm.recetasraquel.domain.usecase.RecipeSafetySummaryResolver
 import com.rmm.recetasraquel.ui.navigation.AppRoute
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,13 +23,19 @@ import kotlinx.coroutines.launch
 sealed interface DetailUiState {
     data object Loading : DetailUiState
     data object NotFound : DetailUiState
-    data class Content(val recipe: Recipe, val actionMessage: String? = null) : DetailUiState
+    data class Content(
+        val recipe: Recipe,
+        val safetySummary: RecipeSafetySummary? = null,
+        val safetyMessage: String? = null,
+        val actionMessage: String? = null,
+    ) : DetailUiState
     data class Error(val message: String) : DetailUiState
 }
 
 class RecipeDetailViewModel(
     private val repository: RecipeRepository,
     savedStateHandle: SavedStateHandle,
+    private val safetySummaryResolver: RecipeSafetySummaryResolver? = null,
 ) : ViewModel() {
     private val recipeId: String = checkNotNull(savedStateHandle[AppRoute.RECIPE_ID])
     private val actionMessage = MutableStateFlow<String?>(null)
@@ -36,7 +44,21 @@ class RecipeDetailViewModel(
         repository.observeRecipe(recipeId),
         actionMessage,
     ) { recipe, message ->
-        if (recipe == null) DetailUiState.NotFound else DetailUiState.Content(recipe, message)
+        if (recipe == null) {
+            DetailUiState.NotFound
+        } else {
+            val safetyResult = safetySummaryResolver?.resolve(recipe)
+            DetailUiState.Content(
+                recipe = recipe,
+                safetySummary = safetyResult?.getOrNull(),
+                safetyMessage = if (safetyResult?.isFailure == true) {
+                    "No se pudo cargar la información de seguridad alimentaria. Requiere revisión."
+                } else {
+                    null
+                },
+                actionMessage = message,
+            )
+        }
     }.catch {
         emit(DetailUiState.Error("No se pudo cargar la receta."))
     }.stateIn(
@@ -59,8 +81,17 @@ class RecipeDetailViewModel(
     }
 
     companion object {
-        fun factory(repository: RecipeRepository): ViewModelProvider.Factory = viewModelFactory {
-            initializer { RecipeDetailViewModel(repository, createSavedStateHandle()) }
+        fun factory(
+            repository: RecipeRepository,
+            safetySummaryResolver: RecipeSafetySummaryResolver? = null,
+        ): ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                RecipeDetailViewModel(
+                    repository = repository,
+                    savedStateHandle = createSavedStateHandle(),
+                    safetySummaryResolver = safetySummaryResolver,
+                )
+            }
         }
     }
 }
