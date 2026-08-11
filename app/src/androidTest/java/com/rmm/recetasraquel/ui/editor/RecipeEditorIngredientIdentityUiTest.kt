@@ -25,9 +25,9 @@ class RecipeEditorIngredientIdentityUiTest {
         )
 
         composeRule.onNodeWithText("Ingrediente de biblioteca").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("Cantidad").assertIsDisplayed()
-        composeRule.onNodeWithText("Unidad").assertIsDisplayed()
-        composeRule.onNodeWithText("Observaciones").assertIsDisplayed()
+        composeRule.onNodeWithText("Cantidad").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Unidad").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Observaciones").performScrollTo().assertIsDisplayed()
     }
 
     @Test
