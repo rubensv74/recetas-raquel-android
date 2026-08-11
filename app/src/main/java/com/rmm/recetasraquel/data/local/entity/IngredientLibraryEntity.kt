@@ -44,6 +44,8 @@ data class CatalogIngredientEntity(
     val catalogVersion: Int,
     val verificationStatus: String,
     val compositionVariability: String,
+    @ColumnInfo(defaultValue = "'NONE'")
+    val compositionCoverage: String = "NONE",
     val sourceUpdatedAt: Long?,
     val isActive: Boolean = true,
     @ColumnInfo(defaultValue = "'CULINARY'")
@@ -101,6 +103,39 @@ data class CatalogIngredientRelationEntity(
     val childIngredientId: String,
     val parentIngredientId: String,
     val relationType: String,
+    val reviewedAt: String,
+    val sourceReference: String?,
+    val notes: String?,
+    val isActive: Boolean = true,
+)
+
+@Entity(
+    tableName = "catalog_ingredient_components",
+    foreignKeys = [
+        ForeignKey(
+            entity = CatalogIngredientEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["parentIngredientId"],
+            onDelete = ForeignKey.NO_ACTION,
+        ),
+        ForeignKey(
+            entity = CatalogIngredientEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["componentIngredientId"],
+            onDelete = ForeignKey.NO_ACTION,
+        ),
+    ],
+    indices = [
+        Index(value = ["parentIngredientId"]),
+        Index(value = ["componentIngredientId"]),
+        Index(value = ["parentIngredientId", "componentIngredientId"], unique = true),
+    ],
+)
+data class CatalogIngredientComponentEntity(
+    @PrimaryKey val id: String,
+    val parentIngredientId: String,
+    val componentIngredientId: String,
+    val presenceType: String,
     val reviewedAt: String,
     val sourceReference: String?,
     val notes: String?,
