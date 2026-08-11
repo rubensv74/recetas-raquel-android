@@ -5,6 +5,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.rmm.recetasraquel.data.local.RecipeDatabase
 import com.rmm.recetasraquel.data.repository.LocalIngredientCatalogRepository
+import com.rmm.recetasraquel.domain.ingredient.IngredientComponentPresence
+import com.rmm.recetasraquel.domain.ingredient.IngredientCompositionCoverage
 import com.rmm.recetasraquel.util.TimeProvider
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -16,7 +18,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class CatalogV13CulinaryCoverageTest {
     @Test
-    fun v13ExpandsEverydayCoverageWithoutInventingSafetyRelations() = runBlocking {
+    fun v13ExpandsEverydayCoverageWithExplicitSafetyAndCompoundComposition() = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val database = Room.inMemoryDatabaseBuilder(context, RecipeDatabase::class.java).build()
 
@@ -26,13 +28,14 @@ class CatalogV13CulinaryCoverageTest {
             val validation = CatalogValidator.validate(bundle)
 
             assertTrue(validation.errors.joinToString(separator = "\n"), validation.isValid)
-            assertEquals(4, bundle.manifest.schemaVersion)
+            assertEquals(5, bundle.manifest.schemaVersion)
             assertEquals(13, bundle.manifest.catalogVersion)
             assertEquals("DRAFT", bundle.manifest.releaseStatus)
             assertEquals(20, bundle.categories.size)
-            assertEquals(554, bundle.ingredients.size)
+            assertEquals(584, bundle.ingredients.size)
             assertEquals(335, bundle.aliases.size)
             assertEquals(143, bundle.ingredientRelations.size)
+            assertEquals(48, bundle.ingredientComponents.size)
             assertEquals(14, bundle.safetyGroups.size)
             assertEquals(3, bundle.safetySources.size)
             assertEquals(133, bundle.safetyRelations.size)
@@ -50,10 +53,13 @@ class CatalogV13CulinaryCoverageTest {
                 "ing-salmon",
                 "ing-shrimp",
                 "ing-octopus",
+                "ing-wheat-bread",
+                "ing-egg-mayonnaise",
+                "ing-soy-drink",
             )
             representativeCulinaryIds.forEach { ingredientId ->
                 val ingredient = bundle.ingredients.single { it.id == ingredientId }
-                assertEquals("CULINARY", ingredient.catalogRole)
+                assertEquals("CULINARY", ingredient.catalogRole ?: CatalogImporter.DEFAULT_CATALOG_ROLE)
                 assertTrue(ingredient.isActive)
             }
             assertEquals("g", bundle.ingredients.single { it.id == "ing-milk-powder" }.defaultUnit)
@@ -85,6 +91,17 @@ class CatalogV13CulinaryCoverageTest {
                 assertTrue(bundle.safetyRelations.none { it.ingredientId == ingredientId })
             }
 
+            val compound = bundle.ingredients.single { it.id == "ing-wheat-milk-egg-crepe" }
+            assertEquals("PARTIAL", compound.compositionCoverage)
+            val crepeComponents = bundle.ingredientComponents.filter { it.parentIngredientId == compound.id }
+            assertEquals(3, crepeComponents.size)
+            assertEquals(
+                setOf("ing-wheat-flour", "ing-cow-milk", "ing-chicken-egg"),
+                crepeComponents.map { it.componentIngredientId }.toSet(),
+            )
+            assertTrue(crepeComponents.all { it.presenceType == "REQUIRED" })
+            assertTrue(bundle.safetyRelations.none { it.ingredientId == compound.id })
+
             val importer = CatalogImporter(
                 reader = reader,
                 dao = database.ingredientCatalogDao(),
@@ -95,14 +112,16 @@ class CatalogV13CulinaryCoverageTest {
             val v12 = importer.ensureImported("ingredient-catalog/v12")
             assertTrue(v12 is CatalogImportResult.Imported)
             assertEquals(272, dao.countActiveIngredients())
+            assertEquals(0, dao.countActiveIngredientComponents())
             assertEquals(33, dao.countSafetyRelations())
             assertEquals(20, dao.countActiveRegulatoryExemptions())
             assertEquals(20, dao.countRegulatoryExemptionSnapshots())
 
             val v13 = importer.ensureImported("ingredient-catalog/v13")
             assertTrue(v13 is CatalogImportResult.Imported)
-            assertEquals(554, dao.countActiveIngredients())
+            assertEquals(584, dao.countActiveIngredients())
             assertEquals(143, dao.countActiveIngredientRelations())
+            assertEquals(48, dao.countActiveIngredientComponents())
             assertEquals(133, dao.countSafetyRelations())
             assertEquals(20, dao.countActiveRegulatoryExemptions())
             assertEquals(40, dao.countRegulatoryExemptionSnapshots())
@@ -117,6 +136,14 @@ class CatalogV13CulinaryCoverageTest {
 
             val lactoseFree = repository.searchIngredients("Leche deslactosada").getOrThrow()
             assertTrue(lactoseFree.any { it.id == "ing-lactose-free-milk" })
+
+            val crepeSearch = repository.searchIngredients("Crepe de trigo").getOrThrow()
+            assertTrue(crepeSearch.any { it.id == "ing-wheat-milk-egg-crepe" })
+
+            val storedComposition = repository.getComposition("ing-wheat-milk-egg-crepe").getOrThrow()
+            assertEquals(IngredientCompositionCoverage.PARTIAL, storedComposition.coverage)
+            assertEquals(3, storedComposition.components.size)
+            assertTrue(storedComposition.components.all { it.presence == IngredientComponentPresence.REQUIRED })
 
             val salmonRelations = repository.getSafetyRelations("ing-salmon").getOrThrow()
             assertEquals(1, salmonRelations.size)
