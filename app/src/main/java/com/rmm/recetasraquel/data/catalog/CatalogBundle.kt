@@ -20,6 +20,8 @@ data class CatalogFiles(
     val aliasShards: List<String>? = null,
     val ingredientRelations: String? = null,
     val ingredientRelationShards: List<String>? = null,
+    val ingredientComponents: String? = null,
+    val ingredientComponentShards: List<String>? = null,
     val regulatoryExemptions: String? = null,
     val regulatoryExemptionShards: List<String>? = null,
     val safetyGroups: String,
@@ -35,6 +37,7 @@ data class CatalogCounts(
     val safetySources: Int,
     val safetyRelations: Int,
     val ingredientRelations: Int = 0,
+    val ingredientComponents: Int = 0,
     val regulatoryExemptions: Int = 0,
 )
 
@@ -56,6 +59,7 @@ data class CatalogIngredientRecord(
     val description: String? = null,
     val verificationStatus: String,
     val compositionVariability: String,
+    val compositionCoverage: String? = null,
     val catalogRole: String? = null,
     val sourceUpdatedAt: Long? = null,
     val isActive: Boolean = true,
@@ -75,6 +79,17 @@ data class CatalogIngredientRelationRecord(
     val childIngredientId: String,
     val parentIngredientId: String,
     val relationType: String,
+    val reviewedAt: String,
+    val sourceReference: String? = null,
+    val notes: String? = null,
+    val isActive: Boolean = true,
+)
+
+data class CatalogIngredientComponentRecord(
+    val id: String,
+    val parentIngredientId: String,
+    val componentIngredientId: String,
+    val presenceType: String,
     val reviewedAt: String,
     val sourceReference: String? = null,
     val notes: String? = null,
@@ -136,6 +151,7 @@ data class IngredientCatalogBundle(
     val ingredients: List<CatalogIngredientRecord>,
     val aliases: List<CatalogAliasRecord>,
     val ingredientRelations: List<CatalogIngredientRelationRecord> = emptyList(),
+    val ingredientComponents: List<CatalogIngredientComponentRecord> = emptyList(),
     val safetyGroups: List<CatalogSafetyGroupRecord>,
     val safetySources: List<CatalogSafetySourceRecord>,
     val safetyRelations: List<CatalogSafetyRelationRecord>,
