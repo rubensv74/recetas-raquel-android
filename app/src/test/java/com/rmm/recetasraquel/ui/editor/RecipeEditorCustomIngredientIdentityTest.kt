@@ -44,6 +44,34 @@ class RecipeEditorCustomIngredientIdentityTest {
         assertEquals("Salsa de la casa", viewModel.uiState.value.ingredients.single().name)
     }
 
+    @Test
+    fun catalogIngredientKeepsExclusiveIdentityAndCanonicalNameWhileUsageFieldsRemainEditable() {
+        val viewModel = createViewModel()
+
+        viewModel.addCatalogIngredient(
+            catalogIngredientId = "ing-wheat",
+            canonicalName = "Trigo",
+            defaultUnit = "g",
+        )
+
+        val ingredient = viewModel.uiState.value.ingredients.single()
+        assertEquals("ing-wheat", ingredient.catalogIngredientId)
+        assertNull(ingredient.customIngredientId)
+        assertEquals("Trigo", ingredient.name)
+        assertEquals("g", ingredient.unit)
+
+        viewModel.updateIngredientName(ingredient.key, "Nombre distinto")
+        viewModel.updateIngredientQuantity(ingredient.key, "250")
+        viewModel.updateIngredientUnit(ingredient.key, "ml")
+        viewModel.updateIngredientNotes(ingredient.key, "Para la masa")
+
+        val updated = viewModel.uiState.value.ingredients.single()
+        assertEquals("Trigo", updated.name)
+        assertEquals("250", updated.quantity)
+        assertEquals("ml", updated.unit)
+        assertEquals("Para la masa", updated.notes)
+    }
+
     private fun createViewModel(): RecipeEditorViewModel = RecipeEditorViewModel(
         repository = NoOpRecipeRepository,
         idGenerator = IdGenerator { "generated-id" },
