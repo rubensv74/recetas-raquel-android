@@ -23,6 +23,45 @@ jobs:
         with:
           ref: program/culinary-catalog-v13
 
+      - name: Normalize known v13 duplicate flour identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          catalog_dir = Path("app/src/main/assets/ingredient-catalog/v13")
+          staples_path = catalog_dir / "ingredients-culinary-staples-v13.json"
+          duplicate_ids = {
+              "ing-rice-flour",
+              "ing-corn-flour",
+              "ing-chickpea-flour",
+              "ing-buckwheat-flour",
+          }
+          items = json.loads(staples_path.read_text(encoding="utf-8"))
+          found = {item["id"] for item in items if item["id"] in duplicate_ids}
+          if found != duplicate_ids:
+              raise SystemExit(f"Expected duplicate ids {sorted(duplicate_ids)}, found {sorted(found)}")
+          filtered = [item for item in items if item["id"] not in duplicate_ids]
+          if len(items) - len(filtered) != 4:
+              raise SystemExit("Expected to remove exactly four duplicate flour records")
+          staples_path.write_text(json.dumps(filtered, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+
+          manifest_path = catalog_dir / "manifest.json"
+          manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+          if manifest["counts"]["ingredients"] != 584:
+              raise SystemExit(f"Unexpected starting ingredient count: {manifest['counts']['ingredients']}")
+          manifest["counts"]["ingredients"] = 580
+          manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+          test_path = Path("app/src/androidTest/java/com/rmm/recetasraquel/data/catalog/CatalogV13CulinaryCoverageTest.kt")
+          text = test_path.read_text(encoding="utf-8")
+          if text.count("assertEquals(584,") != 2:
+              raise SystemExit("Expected exactly two v13 ingredient-count assertions at 584")
+          test_path.write_text(text.replace("assertEquals(584,", "assertEquals(580,"), encoding="utf-8")
+          PY
+
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
 
@@ -64,13 +103,17 @@ jobs:
           git diff --exit-code -- app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase
           test -f app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/7.json
 
-      - name: Remove one-shot workflow after green gate
+      - name: Commit normalized catalog and remove one-shot workflow after green gate
         shell: bash
         run: |
           set -euo pipefail
           rm .github/workflows/v13-compound-connected-one-shot.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/workflows/v13-compound-connected-one-shot.yml
-          git commit -m "chore: close v13 compound connected gate [connected-v13]"
+          git add \
+            app/src/main/assets/ingredient-catalog/v13/ingredients-culinary-staples-v13.json \
+            app/src/main/assets/ingredient-catalog/v13/manifest.json \
+            app/src/androidTest/java/com/rmm/recetasraquel/data/catalog/CatalogV13CulinaryCoverageTest.kt \
+            .github/workflows/v13-compound-connected-one-shot.yml
+          git commit -m "fix: deduplicate v13 flour identities [connected-v13]"
           git push origin HEAD:program/culinary-catalog-v13
