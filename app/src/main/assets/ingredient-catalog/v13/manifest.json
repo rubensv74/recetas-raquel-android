@@ -28,7 +28,9 @@
       "ingredients-culinary-staples-v13.json",
       "ingredients-culinary-oils-sweeteners-v13.json",
       "ingredients-culinary-pantry-v13.json",
-      "ingredients-culinary-everyday-v13.json"
+      "ingredients-culinary-everyday-v13.json",
+      "ingredients-culinary-dairy-eggs-v13.json",
+      "ingredients-culinary-aquatic-v13.json"
     ],
     "aliasShards": [
       "aliases-regulatory.json",
@@ -48,7 +50,8 @@
       "ingredient-relations-soy-exemptions.json",
       "ingredient-relations-soy-derivatives.json",
       "ingredient-relations-cereal-exemptions.json",
-      "ingredient-relations-annex-ii-exemptions.json"
+      "ingredient-relations-annex-ii-exemptions.json",
+      "ingredient-relations-culinary-regulated-v13.json"
     ],
     "safetyGroups": "safety-groups.json",
     "safetySources": "safety-sources.json",
@@ -63,12 +66,12 @@
   },
   "counts": {
     "categories": 20,
-    "ingredients": 454,
+    "ingredients": 554,
     "aliases": 294,
-    "ingredientRelations": 43,
+    "ingredientRelations": 143,
     "safetyGroups": 14,
     "safetySources": 3,
-    "safetyRelations": 33,
+    "safetyRelations": 133,
     "regulatoryExemptions": 20
   }
 }
