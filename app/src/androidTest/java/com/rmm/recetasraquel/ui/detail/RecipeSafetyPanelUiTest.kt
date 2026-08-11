@@ -6,6 +6,8 @@ import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNode
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
@@ -28,18 +30,18 @@ class RecipeSafetyPanelUiTest {
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     @Test
-    fun panelShowsGroupedEvidenceAndReviewWarning() {
+    fun panelShowsGroupedEvidencePictogramAndReviewWarning() {
         val summary = RecipeSafetySummary(
             groups = listOf(
                 RecipeSafetyGroupSummary(
-                    safetyGroupId = "safety-eu-cereals-gluten",
+                    safetyGroupId = "sg-eu-cereals-gluten",
                     safetyGroupName = "Cereales que contienen gluten",
                     presentationState = RecipeSafetyPresentationState.PRESENCIA_IDENTIFICADA,
                     observations = listOf(
                         RecipeSafetyObservation(
                             ingredientId = "ingredient-1",
                             ingredientName = "Harina de trigo",
-                            safetyGroupId = "safety-eu-cereals-gluten",
+                            safetyGroupId = "sg-eu-cereals-gluten",
                             safetyGroupName = "Cereales que contienen gluten",
                             relationType = RecipeSafetyRelationType.CONTAINS,
                             evidenceLevel = "EU_LEGAL",
@@ -64,6 +66,9 @@ class RecipeSafetyPanelUiTest {
         setDetail(summary)
 
         composeRule.onNodeWithTag("recipe_safety_panel").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(
+            "Grupo de seguridad alimentaria: Cereales que contienen gluten",
+        ).assertIsDisplayed()
         composeRule.onNodeWithText("Cereales que contienen gluten").assertIsDisplayed()
         composeRule.onNodeWithText("Presencia identificada").assertIsDisplayed()
         composeRule.onNodeWithText("Requiere revisión").assertIsDisplayed()
