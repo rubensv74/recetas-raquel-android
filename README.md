@@ -1,37 +1,96 @@
 # Recetas de Raquel
 
-Aplicación Android privada y local-first para guardar y consultar recetas sin conexión.
+Aplicación Android privada, local-first y offline para guardar, consultar y cocinar recetas personales.
 
-## Requisitos
+## Estado del producto
+
+La base funcional de la aplicación está completa y se encuentra en fase de cierre de producto para una primera versión estable.
+
+Incluye:
+
+- catálogo local de recetas con búsqueda, categorías y favoritos;
+- creación, edición y eliminación de recetas;
+- ingredientes y pasos ordenables;
+- fotografías de portada y por paso mediante Android Photo Picker;
+- modo cocina guiado;
+- biblioteca maestra de ingredientes por categorías y alias;
+- ingredientes personalizados y productos comerciales;
+- trazabilidad de seguridad alimentaria y fuentes;
+- alertas de alérgenos y composición desconocida;
+- información regulatoria separada de las advertencias de seguridad;
+- catálogo culinario versionado hasta v12;
+- soporte de identidades `CULINARY` y `REGULATORY_TECHNICAL`;
+- sección de ingredientes frecuentes derivada de recetas guardadas.
+
+La aplicación continúa funcionando completamente sin conexión y no requiere cuenta, backend ni permisos de red.
+
+## Persistencia
+
+La base de producción se llama `recipes.db` y usa Room **v6**.
+
+Los esquemas históricos están versionados en:
+
+```text
+app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/
+```
+
+Se conservan `1.json` a `6.json` junto con migraciones explícitas y no destructivas.
+
+Room almacena recetas, ingredientes utilizados en receta, pasos, catálogo estructurado, ingredientes personalizados, grupos/fuentes de seguridad y snapshots regulatorios. Las fotografías se guardan en almacenamiento privado de la aplicación y Room conserva únicamente rutas relativas.
+
+## Seguridad alimentaria
+
+La aplicación mantiene separados tres conceptos:
+
+```text
+identidad / linaje culinario
+!= evidencia de seguridad
+!= efecto regulatorio
+```
+
+Una exención regulatoria de etiquetado nunca se interpreta como ausencia de alérgeno ni como garantía de seguridad clínica. Las alertas de seguridad no se eliminan ni reducen por la existencia de una exención.
+
+La biblioteca normal oculta identidades `REGULATORY_TECHNICAL`, aunque permanecen disponibles internamente para resolución y auditoría regulatoria.
+
+## Requisitos de desarrollo
 
 - Android Studio compatible con AGP 9.0.1
-- JDK de Android Studio o compatible con Gradle 9.2.1
-- Android SDK 36.1 instalado
-
-## Estado
-
-El Sprint 3 incorpora editor de recetas con creación, edición y eliminación. La pantalla única del editor permite campos obligatorios, ingredientes y pasos con reordenamiento, validación en línea, detección de cambios sin guardar y eliminación con confirmación. La UI consume Room exclusivamente mediante ViewModels y `RecipeRepository`.
-
-El Sprint 4 añade soporte para fotos de portada y por paso. El editor permite seleccionar, previsualizar y eliminar fotos con el Android Photo Picker; las imágenes se comprimen y almacenan en almacenamiento privado. El catálogo y el detalle muestran portadas con Coil.
-
-El Sprint 5 incorpora un modo cocina guiado: acceso desde el detalle, un paso cada vez, progreso, navegación anterior/siguiente, fotografía del paso, consulta rápida de ingredientes, visualización del tiempo configurado y pantalla activa mientras se cocina. Los temporizadores ejecutables permanecen fuera de alcance.
-
-La base de producción se llama `recipes.db`. El esquema continúa en versión 1 y se exporta a `app/schemas`. Los IDs son UUID almacenados como `String` y los timestamps son milisegundos Unix UTC (`Long`).
-
-En debug, Ajustes permite cargar y retirar de forma idempotente cinco recetas de demostración. Nunca se insertan automáticamente y el controlador no existe en release.
+- JDK compatible con Gradle 9.2.1
+- Android SDK 36.1
+- Android 8.0 (API 26) o posterior
 
 ## Validación
 
+Validación local ordinaria:
+
 ```shell
-./gradlew clean
 ./gradlew assembleDebug
-./gradlew assembleRelease
 ./gradlew testDebugUnitTest
 ./gradlew lintDebug
-./gradlew compileDebugAndroidTestKotlin
-./gradlew connectedDebugAndroidTest
 ```
 
-En Windows se puede usar `gradlew.bat`. La aplicación requiere Android 8.0 (API 26) o posterior.
+Cuando un incremento afecta UI, persistencia, navegación o integración Android se ejecutan además las pruebas instrumentadas relevantes. El gate remoto completo se reserva para hitos deliberados mediante GitHub Actions.
 
-La documentación se encuentra en [`docs`](docs/). El encargo y criterios del Sprint 5 están en [`docs/SPRINT_05_COOKING_MODE.md`](docs/SPRINT_05_COOKING_MODE.md).
+La regresión funcional de la biblioteca y seguridad alimentaria cerró con:
+
+```text
+assembleDebug                    PASS
+testDebugUnitTest                PASS
+lintDebug                        PASS
+Room schema guard                PASS
+assembleRelease                  PASS
+connectedDebugAndroidTest        PASS — 82/82
+Room schema guard post-emulator  PASS
+```
+
+## Próximo objetivo
+
+La etapa actual es **cierre de producto v1**:
+
+1. documentación coherente con `master`;
+2. prueba de aceptación en teléfono real;
+3. diseño e implementación de Backup/Restore;
+4. correcciones de aceptación;
+5. congelación de una primera versión estable.
+
+La documentación técnica se encuentra en [`docs`](docs/).
