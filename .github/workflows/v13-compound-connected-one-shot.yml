@@ -47,13 +47,13 @@ jobs:
         run: ./gradlew --no-daemon compileDebugAndroidTestKotlin
 
       - name: Run connected tests
-        uses: reactivecircus/android-emulator-runner@f8e64cdbfe5de313c80bad891ab6ef0af8b7a4c8
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         with:
           api-level: 36
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           script: ./gradlew --no-daemon connectedDebugAndroidTest
 
