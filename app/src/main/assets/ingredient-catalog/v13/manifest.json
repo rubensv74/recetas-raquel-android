@@ -41,7 +41,8 @@
       "aliases-produce-extra.json",
       "aliases-lineage-cuts.json",
       "aliases-reviewed-flours.json",
-      "aliases-culinary-v13.json"
+      "aliases-culinary-v13.json",
+      "aliases-culinary-regulated-v13.json"
     ],
     "ingredientRelationShards": [
       "ingredient-relations-cuts.json",
@@ -67,7 +68,7 @@
   "counts": {
     "categories": 20,
     "ingredients": 554,
-    "aliases": 294,
+    "aliases": 335,
     "ingredientRelations": 143,
     "safetyGroups": 14,
     "safetySources": 3,
