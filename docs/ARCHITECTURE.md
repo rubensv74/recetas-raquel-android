@@ -2,70 +2,131 @@
 
 ## Enfoque local-first
 
-Room es la fuente de verdad. Todas las operaciones esenciales se ejecutan en el dispositivo y no dependen de conectividad. `recipes.db` conserva datos entre ejecuciones y expone cambios mediante `Flow`.
+Room es la fuente de verdad de los datos estructurados de la aplicación. Todas las operaciones esenciales se ejecutan en el dispositivo y no dependen de conectividad. `recipes.db` conserva datos entre ejecuciones y expone cambios mediante `Flow`.
+
+La aplicación no usa backend, autenticación, sincronización remota ni permisos de red. Las fotografías se almacenan en el sistema de archivos privado de la aplicación.
 
 ## Capas y flujo
 
-- **UI (`ui`, `app`)**: Compose representa estados inmutables y emite eventos a ViewModels.
-- **Dominio (`domain`)**: modelos, read models, filtros, contratos, casos de uso y `RecipePhotoStorage` sin dependencias de Android framework.
-- **Datos (`data`)**: entidades, relaciones, DAO, mappers, `LocalRecipeRepository` y `LocalRecipePhotoStorage`.
-- **Backup (`backup`)**: límite futuro no implementado.
+- **UI (`ui`, `app`)**: Jetpack Compose representa estados inmutables y emite eventos a ViewModels.
+- **Dominio (`domain`)**: modelos, read models, filtros, contratos, casos de uso y reglas independientes del framework Android cuando es posible.
+- **Datos (`data`)**: entidades Room, DAO, repositorios, importador del catálogo, mappers y almacenamiento local de fotografías.
+- **Backup (`backup`)**: límite arquitectónico reservado para la fase de cierre v1; todavía no implementado.
 
-El flujo de lectura es UI → ViewModel → Repository → DAO → Room/SQLite → Flow → ViewModel → UI. La UI no accede al DAO ni recibe entidades Room.
+El flujo habitual es:
 
-## Navegación y estados
+```text
+UI → ViewModel → Repository / UseCase → DAO → Room
+                                      → almacenamiento privado de fotos
+```
 
-Navigation Compose centraliza `catalog`, `recipe/{recipeId}`, `recipe/new`, `recipe/{recipeId}/edit`, `recipe/{recipeId}/cook` y `settings`; el inicio es `catalog`. Detalle, edición y modo cocina obtienen `recipeId` mediante `SavedStateHandle` y no reciben objetos completos por navegación.
+La UI no accede directamente a DAO ni consume entidades Room.
 
-`RecipeCatalogViewModel`, `RecipeDetailViewModel`, `RecipeEditorViewModel` y `CookingModeViewModel` usan `StateFlow`, `viewModelScope` y factories manuales. Compose recoge estado con `collectAsStateWithLifecycle`.
+## Persistencia — Room v6
 
-El editor usa `MutableSharedFlow<EditorNavigationEvent>` para navegación de un solo uso. Los cambios sin guardar se detectan comparando estado normalizado y el doble guardado se previene mediante flags `isSaving`/`isDeleting`.
+`RecipeDatabase` usa actualmente **versión 6** con `exportSchema = true` y migraciones explícitas:
 
-## Persistencia y catálogo
+```text
+1 -> 2
+2 -> 3
+3 -> 4
+4 -> 5
+5 -> 6
+```
 
-`RecipeDatabase` continúa en esquema 1 con `exportSchema = true`. No hay migraciones ni migración destructiva. La transacción `saveRecipeWithDetails` y las cascadas del Sprint 1 siguen siendo la unidad de persistencia del agregado receta.
+Los esquemas `1.json` a `6.json` permanecen versionados. No se utiliza migración destructiva.
 
-`RecipeSummary` evita cargar el agregado completo en cada tarjeta. SQL parametrizado combina consulta, favoritas y categoría; `EXISTS` busca ingredientes sin duplicar recetas y Room ordena por `updatedAt DESC`.
+La base contiene 15 entidades agrupables en cuatro áreas:
 
-## Fotografías de recetas (Sprint 4)
+1. **Recetas**: receta, ingredientes utilizados y pasos.
+2. **Catálogo culinario**: categorías, ingredientes, alias, relaciones de linaje y metadatos de catálogo.
+3. **Seguridad alimentaria**: grupos, fuentes y relaciones de seguridad.
+4. **Personalización y regulación**: ingredientes personalizados, alias/declaraciones personalizadas y snapshots de exenciones regulatorias.
 
-### Dominio
+La transacción de guardado de receta sigue siendo la unidad de persistencia del agregado receta.
 
-`RecipePhotoStorage` define el contrato `stagePhoto`, `promotePhoto`, `delete`, `deleteStaged`, `resolve`, `cleanStaging` y `getRecipePhotoPaths`. `PhotoDestination` y `StagedPhoto` completan el modelo. Las URI se cruzan al dominio como `String` para evitar tipos Android (ADR-016).
+## Identidad de ingrediente
 
-### Almacenamiento
+Un ingrediente utilizado en una receta conserva, cuando procede, uno de estos orígenes:
 
-1. `PickVisualMedia` obtiene una imagen seleccionada sin permisos globales de galería.
-2. `stagePhoto()` corrige orientación EXIF, limita a 2048 px, comprime JPEG a calidad 85 y escribe en `cacheDir/recipe_photo_staging/`.
-3. `SaveRecipeUseCase` conoce previamente `recipeId` y los identificadores estables de pasos, promueve los staged a `filesDir/recipe_photos/{recipeId}/...` y obtiene rutas relativas permanentes.
-4. El draft final contiene esas rutas permanentes y se persiste en Room.
-5. Si Room falla, el caso de uso elimina los archivos recién promovidos; las fotos anteriores permanecen intactas.
-6. Si Room tiene éxito, se eliminan las fotos sustituidas y se limpia staging.
+- `catalogIngredientId`: identidad procedente de la biblioteca maestra;
+- `customIngredientId`: identidad personalizada creada por la usuaria;
+- ninguno: ingrediente legacy/no vinculado cuando corresponda.
 
-Room nunca debe persistir rutas de `cacheDir`, URI del picker ni `Bitmap`.
+El nombre de una identidad vinculada se trata como identidad, no como texto libre editable. Cantidad, unidad y observaciones pertenecen al uso concreto dentro de la receta y sí son editables.
 
-### UI de fotos
+## Catálogo versionado
 
-`EditorPhotoState` representa el ciclo de vida de la selección sin almacenar bitmaps en `StateFlow`. Coil (`AsyncImage`) se utiliza para previsualización y consulta de imágenes locales. No existe cámara ni carga remota.
+El catálogo maestro se distribuye como assets inmutables versionados. La versión activa es **v12**.
 
-## Modo cocina (Sprint 5)
+El catálogo tiene su propio `catalogVersion`, separado de la versión de Room. Incluye categorías, identidades canónicas, alias, relaciones culinarias, fuentes/grupos de seguridad, relaciones de seguridad y exenciones regulatorias.
 
-`CookingModeViewModel` observa una receta con `RecipeRepository.observeRecipe(recipeId)`. Su estado es `CookingUiState`: `Loading`, `NotFound`, `Error` o `Content`.
+Las identidades pueden tener rol:
 
-`Content` contiene la receta, los pasos ordenados por `sortOrder`, el índice actual y la visibilidad de ingredientes. El índice se almacena en `SavedStateHandle`, por lo que una recreación del ViewModel conserva el paso activo. No se escribe ningún dato en Room durante la sesión de cocina.
+- `CULINARY`: visibles y seleccionables en la biblioteca normal;
+- `REGULATORY_TECHNICAL`: disponibles para resolución regulatoria interna pero ocultas en la biblioteca culinaria.
 
-`CookingModeScreen` presenta un único paso, contador `Paso X de N`, progreso, fotografía opcional y `timerMinutes` únicamente como información. Los ingredientes se abren en una `ModalBottomSheet` sin alterar el paso actual.
+## Separación de seguridad y regulación
 
-La política de pantalla encendida pertenece a UI: `LocalView.keepScreenOn` se activa con `DisposableEffect` al entrar y se restaura al salir. No requiere permisos ni servicios en background.
+La arquitectura mantiene tres grafos/conceptos independientes:
 
-El modo cocina no edita recetas, no inicia temporizadores, no crea notificaciones y no añade persistencia propia.
+```text
+linaje culinario
+!= evidencia de seguridad
+!= exención regulatoria
+```
 
-## Identidad, tiempo e inyección
+Las relaciones de linaje (`VARIANT_OF`, `CUT_OF`, `DERIVED_FROM`, `FORM_OF`) no propagan automáticamente seguridad.
 
-Los IDs son UUID `String`; fechas en milisegundos Unix UTC. `IdGenerator` y `TimeProvider` son testeables. `AppContainer` crea una única `RecipeDatabase`, `LocalRecipeRepository`, `LocalRecipePhotoStorage` y los casos de uso necesarios. Las factories de ViewModel reciben dependencias explícitas; no existe framework de DI.
+Las observaciones de seguridad se agregan por evidencia explícita. Una exención regulatoria representa únicamente un efecto jurídico condicionado de etiquetado y nunca implica ausencia de alérgeno, ausencia de riesgo ni aptitud clínica.
 
-El source set `debug` aporta el controlador de datos demo. `release` devuelve controlador nulo. No hay red, backend, sincronización ni backup.
+Los snapshots regulatorios se conservan por versión de catálogo para evitar reescritura silenciosa del historial.
+
+## Ingredientes personalizados
+
+Los ingredientes personalizados viven fuera del catálogo maestro y pueden almacenar:
+
+- identidad y categoría;
+- unidad habitual;
+- tipo de ingrediente;
+- alias;
+- notas;
+- marca/nombre comercial cuando corresponde;
+- composición conocida/desconocida;
+- fecha de lectura de etiqueta;
+- declaraciones de seguridad aportadas por la usuaria con fuente local explícita.
+
+Los metadatos comerciales solo son válidos para `COMMERCIAL_PRODUCT`.
+
+## Fotografías
+
+`RecipePhotoStorage` abstrae staging, promoción, resolución y eliminación.
+
+1. Android Photo Picker obtiene la imagen sin permiso global de galería.
+2. Se corrige EXIF, se limita a 2048 px y se comprime a JPEG calidad 85.
+3. El staging usa `cacheDir`.
+4. El guardado definitivo usa `filesDir/recipe_photos/...`.
+5. Room persiste solo rutas relativas permanentes.
+6. Si la escritura de Room falla, el caso de uso compensa eliminando archivos recién promovidos.
+
+Room nunca persiste `Bitmap`, URI externas ni rutas temporales de caché.
+
+## Modo cocina
+
+El modo cocina es de solo lectura. Presenta un paso cada vez, progreso, fotografía opcional, tiempo configurado como referencia y una hoja inferior de ingredientes. El paso actual se conserva en `SavedStateHandle` y la pantalla se mantiene encendida únicamente mientras el modo está visible.
+
+No crea temporizadores ejecutables, servicios, notificaciones ni persistencia propia.
+
+## Inyección y estado
+
+Se mantiene inyección manual mediante `AppContainer`; no existe Hilt ni otro contenedor DI. Los ViewModels reciben dependencias explícitas mediante factories y exponen estado observable con `StateFlow`.
+
+Los IDs son `String` UUID y los timestamps operativos usan milisegundos Unix UTC. Los contratos `IdGenerator` y `TimeProvider` permiten pruebas deterministas.
 
 ## Un solo módulo
 
-Se mantiene únicamente `app`; los paquetes expresan los límites internos.
+Se mantiene únicamente el módulo Android `app`; los paquetes expresan límites internos sin multiplicar módulos anticipadamente.
+
+## Siguiente límite arquitectónico
+
+El siguiente bloque de producto es **Backup/Restore**. Su diseño debe preservar el funcionamiento offline y cubrir conjuntamente los datos estructurados de Room y las fotografías privadas. La estrategia de formato, alcance y restauración se decidirá antes de implementar persistencia de backup.
