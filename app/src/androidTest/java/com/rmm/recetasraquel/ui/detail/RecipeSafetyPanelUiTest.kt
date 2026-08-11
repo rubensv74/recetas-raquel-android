@@ -3,11 +3,11 @@ package com.rmm.recetasraquel.ui.detail
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNode
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
@@ -66,8 +66,9 @@ class RecipeSafetyPanelUiTest {
         setDetail(summary)
 
         composeRule.onNodeWithTag("recipe_safety_panel").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription(
-            "Grupo de seguridad alimentaria: Cereales que contienen gluten",
+        composeRule.onNode(
+            hasContentDescription("Grupo de seguridad alimentaria: Cereales que contienen gluten") and
+                hasAnyAncestor(hasTestTag("recipe_safety_panel")),
         ).assertIsDisplayed()
         composeRule.onNodeWithText("Cereales que contienen gluten").assertIsDisplayed()
         composeRule.onNodeWithText("Presencia identificada").assertIsDisplayed()

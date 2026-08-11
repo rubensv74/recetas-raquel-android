@@ -85,7 +85,7 @@ class RecipeCatalogUiTest {
         composeRule.onNodeWithText("Tortilla de patatas").performClick()
         waitForText("Ingredientes")
         composeRule.onNodeWithText("1/2 kg · Patatas").assertIsDisplayed()
-        composeRule.onNodeWithText("1. Cortar las patatas.").assertIsDisplayed()
+        composeRule.onNodeWithText("Cortar las patatas.").assertIsDisplayed()
         composeRule.onNodeWithText("Volver").performClick()
         waitForText("Buscar por receta o ingrediente")
     }
