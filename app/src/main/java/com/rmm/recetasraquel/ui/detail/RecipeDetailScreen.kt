@@ -2,6 +2,7 @@ package com.rmm.recetasraquel.ui.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,6 +37,7 @@ import com.rmm.recetasraquel.domain.ingredient.RecipeSafetyPresentationState
 import com.rmm.recetasraquel.domain.ingredient.RecipeSafetyRelationType
 import com.rmm.recetasraquel.domain.ingredient.RecipeSafetySummary
 import com.rmm.recetasraquel.domain.model.Recipe
+import com.rmm.recetasraquel.ui.components.SafetyGroupPictogram
 import com.rmm.recetasraquel.ui.components.formatIngredient
 import com.rmm.recetasraquel.ui.components.formatTotalTime
 
@@ -275,23 +277,33 @@ private fun RecipeSafetyPanel(
 
 @Composable
 private fun SafetyGroupBlock(group: RecipeSafetyGroupSummary) {
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("recipe_safety_group_${group.safetyGroupId}"),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.Top,
     ) {
-        Text(
-            group.safetyGroupName,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
+        SafetyGroupPictogram(
+            safetyGroupId = group.safetyGroupId,
+            safetyGroupName = group.safetyGroupName,
         )
-        Text(
-            group.presentationState.presentationLabel(),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        group.observations.forEach { observation ->
-            SafetyObservationLine(observation)
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                group.safetyGroupName,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                group.presentationState.presentationLabel(),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            group.observations.forEach { observation ->
+                SafetyObservationLine(observation)
+            }
         }
     }
 }
