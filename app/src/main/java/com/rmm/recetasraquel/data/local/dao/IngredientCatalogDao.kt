@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
+import com.rmm.recetasraquel.data.local.entity.CatalogIngredientComponentEntity
 import com.rmm.recetasraquel.data.local.entity.CatalogIngredientEntity
 import com.rmm.recetasraquel.data.local.entity.CatalogIngredientRelationEntity
 import com.rmm.recetasraquel.data.local.entity.CatalogMetadataEntity
@@ -60,6 +61,17 @@ data class CatalogIngredientRelatedRow(
     val canonicalName: String,
     val relationType: String,
     val direction: String,
+)
+
+data class CatalogIngredientComponentRow(
+    val id: String,
+    val parentIngredientId: String,
+    val componentIngredientId: String,
+    val componentName: String,
+    val presenceType: String,
+    val reviewedAt: String,
+    val sourceReference: String?,
+    val notes: String?,
 )
 
 @Dao
@@ -219,6 +231,9 @@ interface IngredientCatalogDao {
     @Query("SELECT description FROM catalog_ingredients WHERE id = :ingredientId AND isActive = 1 LIMIT 1")
     suspend fun getIngredientDescription(ingredientId: String): String?
 
+    @Query("SELECT compositionCoverage FROM catalog_ingredients WHERE id = :ingredientId AND isActive = 1 LIMIT 1")
+    suspend fun getIngredientCompositionCoverage(ingredientId: String): String?
+
     @Query(
         "SELECT alias FROM ingredient_aliases " +
             "WHERE ingredientId = :ingredientId " +
@@ -255,8 +270,35 @@ interface IngredientCatalogDao {
     )
     suspend fun getCulinaryRelatedPresentations(ingredientId: String): List<CatalogIngredientRelatedRow>
 
+    @Query(
+        """
+        SELECT
+            component.id AS id,
+            component.parentIngredientId AS parentIngredientId,
+            component.componentIngredientId AS componentIngredientId,
+            child.canonicalName AS componentName,
+            component.presenceType AS presenceType,
+            component.reviewedAt AS reviewedAt,
+            component.sourceReference AS sourceReference,
+            component.notes AS notes
+        FROM catalog_ingredient_components component
+        INNER JOIN catalog_ingredients child ON child.id = component.componentIngredientId
+        WHERE component.parentIngredientId = :ingredientId
+          AND component.isActive = 1
+          AND child.isActive = 1
+        ORDER BY
+            CASE component.presenceType WHEN 'REQUIRED' THEN 0 ELSE 1 END,
+            child.canonicalName COLLATE NOCASE ASC,
+            component.id ASC
+        """,
+    )
+    suspend fun getActiveIngredientComponents(ingredientId: String): List<CatalogIngredientComponentRow>
+
     @Query("SELECT COUNT(*) FROM catalog_ingredient_relations WHERE isActive = 1")
     suspend fun countActiveIngredientRelations(): Int
+
+    @Query("SELECT COUNT(*) FROM catalog_ingredient_components WHERE isActive = 1")
+    suspend fun countActiveIngredientComponents(): Int
 
     @Query(
         "SELECT * FROM catalog_ingredient_relations " +
@@ -384,6 +426,9 @@ interface IngredientCatalogDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertIngredientRelations(items: List<CatalogIngredientRelationEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertIngredientComponents(items: List<CatalogIngredientComponentEntity>)
+
     @Upsert
     suspend fun upsertSafetyGroups(items: List<FoodSafetyGroupEntity>)
 
@@ -414,6 +459,9 @@ interface IngredientCatalogDao {
     @Query("DELETE FROM catalog_ingredient_relations")
     suspend fun deleteAllIngredientRelations()
 
+    @Query("DELETE FROM catalog_ingredient_components")
+    suspend fun deleteAllIngredientComponents()
+
     @Query("DELETE FROM ingredient_safety_relations")
     suspend fun deleteAllSafetyRelations()
 
@@ -423,6 +471,7 @@ interface IngredientCatalogDao {
         ingredients: List<CatalogIngredientEntity>,
         aliases: List<IngredientAliasEntity>,
         ingredientRelations: List<CatalogIngredientRelationEntity>,
+        ingredientComponents: List<CatalogIngredientComponentEntity>,
         safetyGroups: List<FoodSafetyGroupEntity>,
         safetySources: List<SafetySourceEntity>,
         safetyRelations: List<IngredientSafetyRelationEntity>,
@@ -434,11 +483,13 @@ interface IngredientCatalogDao {
         deactivateAllSafetyGroups()
         deleteAllAliases()
         deleteAllIngredientRelations()
+        deleteAllIngredientComponents()
         deleteAllSafetyRelations()
         upsertCategories(categories)
         upsertIngredients(ingredients)
         insertAliases(aliases)
         insertIngredientRelations(ingredientRelations)
+        insertIngredientComponents(ingredientComponents)
         upsertSafetyGroups(safetyGroups)
         upsertSafetySources(safetySources)
         insertSafetyRelations(safetyRelations)
