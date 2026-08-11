@@ -1,0 +1,58 @@
+[
+  {
+    "id": "rex-eu-wheat-glucose-syrup",
+    "ingredientId": "ing-wheat-glucose-syrup",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "jurisdiction": "EU-ES",
+    "regulatoryEffect": "EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION",
+    "conditions": "Jarabe de glucosa a base de trigo, conforme al punto 1(a) del Anexo II del Reglamento (UE) 1169/2011. La extensión a productos derivados solo procede cuando el proceso posterior no sea susceptible de aumentar la alergenicidad evaluada para el producto de origen; el catálogo no infiere ese cumplimiento.",
+    "sourceId": "EU_FIC_1169_2011",
+    "effectiveFrom": null,
+    "effectiveTo": null,
+    "reviewedAt": "2026-08-09",
+    "notes": "Exención regulatoria de declaración obligatoria. No expresa ausencia de gluten, ausencia de trigo, ausencia de riesgo ni aptitud clínica.",
+    "isActive": true
+  },
+  {
+    "id": "rex-eu-wheat-dextrose",
+    "ingredientId": "ing-wheat-dextrose",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "jurisdiction": "EU-ES",
+    "regulatoryEffect": "EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION",
+    "conditions": "Dextrosa a base de trigo, incluida expresamente en el punto 1(a) del Anexo II del Reglamento (UE) 1169/2011. La extensión a productos derivados solo procede cuando el proceso posterior no sea susceptible de aumentar la alergenicidad evaluada para el producto de origen; el catálogo no infiere ese cumplimiento.",
+    "sourceId": "EU_FIC_1169_2011",
+    "effectiveFrom": null,
+    "effectiveTo": null,
+    "reviewedAt": "2026-08-09",
+    "notes": "Exención regulatoria de declaración obligatoria. No expresa ausencia de gluten, ausencia de trigo, ausencia de riesgo ni aptitud clínica.",
+    "isActive": true
+  },
+  {
+    "id": "rex-eu-wheat-maltodextrin",
+    "ingredientId": "ing-wheat-maltodextrin",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "jurisdiction": "EU-ES",
+    "regulatoryEffect": "EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION",
+    "conditions": "Maltodextrina a base de trigo, conforme al punto 1(b) del Anexo II del Reglamento (UE) 1169/2011. La extensión a productos derivados solo procede cuando el proceso posterior no sea susceptible de aumentar la alergenicidad evaluada para el producto de origen; el catálogo no infiere ese cumplimiento.",
+    "sourceId": "EU_FIC_1169_2011",
+    "effectiveFrom": null,
+    "effectiveTo": null,
+    "reviewedAt": "2026-08-09",
+    "notes": "Exención regulatoria de declaración obligatoria. No expresa ausencia de gluten, ausencia de trigo, ausencia de riesgo ni aptitud clínica.",
+    "isActive": true
+  },
+  {
+    "id": "rex-eu-barley-glucose-syrup",
+    "ingredientId": "ing-barley-glucose-syrup",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "jurisdiction": "EU-ES",
+    "regulatoryEffect": "EXEMPT_FROM_MANDATORY_ALLERGEN_DECLARATION",
+    "conditions": "Jarabe de glucosa a base de cebada, conforme al punto 1(c) del Anexo II del Reglamento (UE) 1169/2011.",
+    "sourceId": "EU_FIC_1169_2011",
+    "effectiveFrom": null,
+    "effectiveTo": null,
+    "reviewedAt": "2026-08-09",
+    "notes": "Exención regulatoria de declaración obligatoria. No expresa ausencia de gluten, ausencia de cebada, ausencia de riesgo ni aptitud clínica.",
+    "isActive": true
+  }
+]

@@ -482,6 +482,12 @@ private fun IngredientEditorRow(
     onMoveDown: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val originLabel = when {
+        item.catalogIngredientId != null -> "Ingrediente de biblioteca"
+        item.customIngredientId != null -> "Ingrediente personalizado"
+        else -> null
+    }
+
     Card(modifier = modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -507,10 +513,15 @@ private fun IngredientEditorRow(
             OutlinedTextField(
                 value = item.name,
                 onValueChange = onNameChange,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().testTag("ingredient_name_${item.key}"),
                 label = { Text("Ingrediente *") },
+                readOnly = originLabel != null,
                 isError = error != null,
-                supportingText = error?.let { e -> { Text(e) } },
+                supportingText = when {
+                    error != null -> { { Text(error) } }
+                    originLabel != null -> { { Text(originLabel) } }
+                    else -> null
+                },
                 singleLine = true,
             )
             OutlinedTextField(

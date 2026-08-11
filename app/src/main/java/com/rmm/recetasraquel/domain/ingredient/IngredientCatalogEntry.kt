@@ -1,0 +1,60 @@
+package com.rmm.recetasraquel.domain.ingredient
+
+data class IngredientCatalogCategory(
+    val id: String,
+    val code: String,
+    val name: String,
+    val sortOrder: Int,
+    val iconKey: String?,
+)
+
+enum class IngredientCatalogInformationStatus {
+    SAFETY_RELATIONS_RECORDED,
+    REGULATORY_EXEMPTION_RECORDED,
+    NO_DIRECT_SAFETY_RELATION_RECORDED,
+}
+
+data class IngredientCatalogEntry(
+    val id: String,
+    val canonicalName: String,
+    val categoryId: String,
+    val categoryName: String,
+    val defaultUnit: String?,
+    val verificationStatus: String,
+    val informationStatus: IngredientCatalogInformationStatus,
+)
+
+data class FrequentIngredientCatalogEntry(
+    val ingredient: IngredientCatalogEntry,
+    val recipeCount: Int,
+)
+
+enum class IngredientCatalogRelationDirection {
+    PARENT,
+    CHILD,
+}
+
+data class IngredientCatalogRelatedPresentation(
+    val ingredientId: String,
+    val canonicalName: String,
+    val relationType: IngredientLineageType,
+    val direction: IngredientCatalogRelationDirection,
+)
+
+data class IngredientCatalogDetail(
+    val description: String? = null,
+    val aliases: List<String> = emptyList(),
+    val relatedPresentations: List<IngredientCatalogRelatedPresentation> = emptyList(),
+)
+
+data class CatalogIngredientSafetyRecord(
+    val safetyGroupId: String,
+    val safetyGroupName: String,
+    val jurisdiction: String,
+    val relationType: String,
+    val evidenceLevel: String,
+    val sourceId: String,
+    val sourceDetails: String?,
+    val notes: String?,
+    val reviewedAt: String,
+)

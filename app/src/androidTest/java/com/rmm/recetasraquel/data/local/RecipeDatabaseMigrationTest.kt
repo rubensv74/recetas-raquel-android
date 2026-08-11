@@ -31,11 +31,17 @@ class RecipeDatabaseMigrationTest {
     }
 
     @Test
-    fun migrate1To2PreservesLegacyRecipeDataAndCreatesCustomIngredientOrigins() = runBlocking {
+    fun migrate1To6PreservesLegacyRecipeDataAndAddsVersionedRegulatoryInfrastructure() = runBlocking {
         createVersion1Database()
 
         val database = Room.databaseBuilder(context, RecipeDatabase::class.java, TEST_DB)
-            .addMigrations(RecipeDatabaseMigrations.MIGRATION_1_2)
+            .addMigrations(
+                RecipeDatabaseMigrations.MIGRATION_1_2,
+                IngredientLibraryMigrations.MIGRATION_2_3,
+                IngredientLibraryMigrations.MIGRATION_3_4,
+                IngredientLibraryMigrations.MIGRATION_4_5,
+                IngredientLibraryMigrations.MIGRATION_5_6,
+            )
             .build()
 
         try {
@@ -72,7 +78,6 @@ class RecipeDatabaseMigrationTest {
                 """.trimIndent(),
             ).use { cursor ->
                 assertEquals(2, cursor.count)
-
                 assertTrue(cursor.moveToFirst())
                 assertEquals("ingredient-1", cursor.getString(0))
                 assertEquals("1/2", cursor.getString(1))
@@ -115,6 +120,53 @@ class RecipeDatabaseMigrationTest {
                 assertEquals(1, cursor.getInt(8))
             }
 
+            migrated.query("SELECT COUNT(*) FROM catalog_ingredient_relations").use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals(0, cursor.getInt(0))
+            }
+
+            migrated.query("SELECT COUNT(*) FROM regulatory_exemptions").use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals(0, cursor.getInt(0))
+            }
+
+            migrated.query("PRAGMA table_info(`regulatory_exemptions`)").use { cursor ->
+                val columns = mutableSetOf<String>()
+                while (cursor.moveToNext()) columns += cursor.getString(1)
+                assertTrue("catalogVersion" in columns)
+                assertTrue("ingredientId" in columns)
+                assertTrue("safetyGroupId" in columns)
+                assertTrue("jurisdiction" in columns)
+                assertTrue("regulatoryEffect" in columns)
+                assertTrue("conditions" in columns)
+                assertTrue("sourceId" in columns)
+                assertTrue("effectiveFrom" in columns)
+                assertTrue("effectiveTo" in columns)
+                assertTrue("reviewedAt" in columns)
+                assertTrue("isActive" in columns)
+            }
+
+            migrated.query("PRAGMA table_info(`custom_ingredient_safety_relations`)").use { cursor ->
+                val columns = mutableSetOf<String>()
+                while (cursor.moveToNext()) columns += cursor.getString(1)
+                assertTrue("sourceId" in columns)
+                assertTrue("sourceDetails" in columns)
+                assertFalse("sourceDescription" in columns)
+            }
+
+            migrated.query("PRAGMA table_info(`catalog_ingredients`)").use { cursor ->
+                var catalogRoleFound = false
+                while (cursor.moveToNext()) {
+                    if (cursor.getString(1) == "catalogRole") {
+                        catalogRoleFound = true
+                        assertEquals("TEXT", cursor.getString(2))
+                        assertEquals(1, cursor.getInt(3))
+                        assertEquals("'CULINARY'", cursor.getString(4))
+                    }
+                }
+                assertTrue(catalogRoleFound)
+            }
+
             migrated.query(
                 """
                 SELECT instruction, timerMinutes, photoPath, sortOrder
@@ -134,7 +186,7 @@ class RecipeDatabaseMigrationTest {
 
             migrated.query("PRAGMA user_version").use { cursor ->
                 assertTrue(cursor.moveToFirst())
-                assertEquals(2, cursor.getInt(0))
+                assertEquals(6, cursor.getInt(0))
             }
 
             val recipe = database.recipeDao().getRecipeWithDetails("recipe-1")
@@ -256,6 +308,6 @@ class RecipeDatabaseMigrationTest {
     }
 
     private companion object {
-        const val TEST_DB = "recipes-migration-1-2-test.db"
+        const val TEST_DB = "recipes-migration-1-6-test.db"
     }
 }

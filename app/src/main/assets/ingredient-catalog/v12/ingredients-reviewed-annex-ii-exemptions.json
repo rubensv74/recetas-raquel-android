@@ -1,0 +1,80 @@
+[
+  {
+    "id": "ing-gluten-cereals-alcoholic-distillates",
+    "canonicalName": "Cereales con gluten utilizados para hacer destilados alcohólicos",
+    "normalizedName": "cereales con gluten utilizados para hacer destilados alcoholicos",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria limitada a cereales con gluten utilizados para producir destilados alcohólicos, incluido el alcohol etílico de origen agrícola. La exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "catalogRole": "REGULATORY_TECHNICAL",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-fish-gelatine-vitamin-carotenoid-carrier",
+    "canonicalName": "Gelatina de pescado utilizada como soporte de vitaminas o carotenoides",
+    "normalizedName": "gelatina de pescado utilizada como soporte de vitaminas o carotenoides",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria limitada al uso de gelatina de pescado como soporte de vitaminas o preparados de carotenoides. La exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "catalogRole": "REGULATORY_TECHNICAL",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-fish-gelatine-isinglass-beer-wine-fining",
+    "canonicalName": "Gelatina de pescado o ictiocola utilizada como clarificante en cerveza y vino",
+    "normalizedName": "gelatina de pescado o ictiocola utilizada como clarificante en cerveza y vino",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria limitada al uso de gelatina de pescado o ictiocola como clarificante en cerveza y vino. La exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "catalogRole": "REGULATORY_TECHNICAL",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-whey-alcoholic-distillates",
+    "canonicalName": "Lactosuero utilizado para hacer destilados alcohólicos",
+    "normalizedName": "lactosuero utilizado para hacer destilados alcoholicos",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria limitada al lactosuero utilizado para producir destilados alcohólicos, incluido el alcohol etílico de origen agrícola. La exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "catalogRole": "REGULATORY_TECHNICAL",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-lactitol",
+    "canonicalName": "Lactitol",
+    "normalizedName": "lactitol",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad regulatoria incluida expresamente entre las excepciones del grupo leche del Anexo II. La exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "STABLE",
+    "catalogRole": "CULINARY",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-nuts-alcoholic-distillates",
+    "canonicalName": "Frutos de cáscara utilizados para hacer destilados alcohólicos",
+    "normalizedName": "frutos de cascara utilizados para hacer destilados alcoholicos",
+    "categoryId": "cat-prepared-compound",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria limitada a los frutos de cáscara del Anexo II utilizados para producir destilados alcohólicos, incluido el alcohol etílico de origen agrícola. La exención de declaración obligatoria no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "catalogRole": "REGULATORY_TECHNICAL",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  }
+]

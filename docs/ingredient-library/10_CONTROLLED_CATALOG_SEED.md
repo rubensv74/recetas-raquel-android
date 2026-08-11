@@ -1,0 +1,137 @@
+# 10 — CONTROLLED CATALOG SEED
+
+**Status:** VALIDATED — local gate passed  
+**Branch:** `program/ingredient-library-food-safety`  
+**Date:** 2026-08-08
+
+## Purpose
+
+Start catalog population with a deliberately small, high-confidence batch whose food-safety relations are directly traceable to current EU legal sources.
+
+This is not the 600-ingredient production catalog. The active manifest remains `DRAFT`.
+
+## Versioning decision
+
+Catalog versions are immutable once created. Therefore:
+
+- `ingredient-catalog/v1/` remains the validated infrastructure-only bundle (`catalogVersion = 1`);
+- `ingredient-catalog/v2/` is the first populated draft (`catalogVersion = 2`);
+- the asset reader points to `ingredient-catalog/v2` as the active shipped bundle.
+
+This guarantees that a database which had already imported v1 can detect v2 and perform a real catalog upgrade instead of treating changed content as `AlreadyCurrent`.
+
+## Seed contents — v2
+
+```text
+categories              20
+ingredients              27
+aliases                  22
+EU safety groups         14
+safety sources            3
+safety relations         27
+```
+
+The 27 canonical entries are regulatory anchor ingredients/categories taken directly from Annex II terminology:
+
+- wheat, spelt, khorasan wheat, rye, barley and oats;
+- crustaceans;
+- egg;
+- fish;
+- peanut;
+- soybean;
+- milk;
+- almond, hazelnut, walnut, cashew, pecan, Brazil nut, pistachio and macadamia;
+- celery;
+- mustard;
+- sesame;
+- sulphur dioxide and sulphites;
+- lupin;
+- molluscs.
+
+Spanish canonical names are used in the asset bundle.
+
+## Authoritative sources embedded in the catalog
+
+1. `EU_FIC_1169_2011` — Regulation (EU) No 1169/2011, consolidated text applicable from 2025-04-01, Annex II.
+2. `EU_ALLERGEN_NOTICE_2017` — Commission Notice 2017/C 428/01, including interpretative guidance on the exhaustive cereal/nut lists and the meaning of egg/milk.
+3. `EU_MUSTARD_2024_2512` — Commission Delegated Regulation (EU) 2024/2512, current mustard/behenic-acid exemption.
+
+## Safety mapping policy used
+
+Each relation has:
+
+```text
+sourceId
+evidenceLevel
+relationType
+reviewedAt
+```
+
+For direct Annex II source ingredients, the relation is `INHERENT_SOURCE` with `EU_LEGAL` evidence.
+
+Sulphur dioxide/sulphites use `REGULATED_COMPONENT`, not an unconditional inherent-source rule, because Annex II regulation depends on the total SO2 concentration exceeding 10 mg/kg or 10 mg/l in the ready-to-consume or reconstituted food.
+
+Mustard points to the current 2024/2512 source and explicitly records that the behenic-acid exemption is narrow: minimum 85% purity, two distillation steps and use in E470a/E471/E477. It is not generalized to mustard as a culinary ingredient.
+
+## Clinical taxonomy guardrail
+
+The 14 Annex II groups are regulatory groups, not a complete clinical taxonomy.
+
+Where an Annex II group spans more than one clinical mechanism, the seed avoids pretending that the regulatory label itself is a diagnosis. In particular:
+
+- cereals containing gluten are not reduced to a generic `gluten allergy` concept;
+- the milk group does not collapse milk-protein allergy and lactose intolerance;
+- sulphites are not forced into a single allergy diagnosis.
+
+Separate condition-specific modeling remains required for later celiac, lactose-intolerance and other clinical flows.
+
+## Deliberate non-expansion
+
+The seed does **not** expand broad legal categories into species through model knowledge or taxonomy inference. Therefore it currently contains generic `Crustáceos`, `Pescado` and `Moluscos`, rather than automatically generating shrimp, crab, salmon, mussel, etc.
+
+Likewise it does not automatically generate derivatives such as flour, bread, cheese, butter, soy sauce or tahini. Those require explicit identity/composition rules and source-backed relation review.
+
+This is intentional and follows `DATA_QUALITY_POLICY.md`.
+
+## Aliases
+
+The initial 22 aliases are conservative search variants: singular/plural forms, accent-insensitive-compatible forms, `soya`, `SO2`, `trigo espelta`, `Khorasan`, and directly equivalent common forms such as `nuez de macadamia`.
+
+Aliases improve search only; they do not create or infer food-safety relations.
+
+## Validation evidence
+
+User-executed local validation completed on 2026-08-08 with:
+
+```text
+clean assembleDebug                 PASS
+testDebugUnitTest                   PASS
+lintDebug                           PASS
+compileDebugAndroidTestKotlin       PASS
+connectedDebugAndroidTest           PASS — 36/36
+skipped                             0
+failed                              0
+assembleRelease                     PASS
+Room schemas                        1.json + 2.json only
+working tree                        CLEAN
+```
+
+The instrumented catalog test asserts catalog version 2, the exact seed counts, the complete 14-code Annex II set, the sulphite threshold relation, import idempotency and invalid-version-3 rollback.
+
+The absence of `3.json` confirms that this content release changes the catalog version only and does not alter the Room schema.
+
+## Gate decision
+
+```text
+CONTROLLED CATALOG SEED v2           VALIDATED ✅
+NEXT REVIEWED CULINARY BATCH         AUTHORIZED TO PREPARE
+PRODUCTION_CANDIDATE                 NOT YET
+MASS UNREVIEWED SAFETY MAPPING       NOT AUTHORIZED
+MERGE TO master                      NOT AUTHORIZED YET
+```
+
+## Next content step
+
+Expand the culinary catalog in reviewed batches. Priority is common raw culinary ingredients and search aliases. Ingredients without a verified safety relation may exist in the catalog without one; absence of a relation must never be interpreted as proof of absence of risk.
+
+Source-backed derivatives and compound ingredients should be added only after explicit identity/composition review. Mass unreviewed allergen mapping remains forbidden.

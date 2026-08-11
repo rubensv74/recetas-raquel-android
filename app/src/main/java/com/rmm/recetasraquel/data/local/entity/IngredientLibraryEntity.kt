@@ -1,5 +1,6 @@
 package com.rmm.recetasraquel.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -45,6 +46,8 @@ data class CatalogIngredientEntity(
     val compositionVariability: String,
     val sourceUpdatedAt: Long?,
     val isActive: Boolean = true,
+    @ColumnInfo(defaultValue = "'CULINARY'")
+    val catalogRole: String = "CULINARY",
 )
 
 @Entity(
@@ -69,6 +72,39 @@ data class IngredientAliasEntity(
     val normalizedAlias: String,
     val languageCode: String,
     val aliasType: String,
+)
+
+@Entity(
+    tableName = "catalog_ingredient_relations",
+    foreignKeys = [
+        ForeignKey(
+            entity = CatalogIngredientEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["childIngredientId"],
+            onDelete = ForeignKey.NO_ACTION,
+        ),
+        ForeignKey(
+            entity = CatalogIngredientEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["parentIngredientId"],
+            onDelete = ForeignKey.NO_ACTION,
+        ),
+    ],
+    indices = [
+        Index(value = ["childIngredientId"]),
+        Index(value = ["parentIngredientId"]),
+        Index(value = ["childIngredientId", "parentIngredientId", "relationType"], unique = true),
+    ],
+)
+data class CatalogIngredientRelationEntity(
+    @PrimaryKey val id: String,
+    val childIngredientId: String,
+    val parentIngredientId: String,
+    val relationType: String,
+    val reviewedAt: String,
+    val sourceReference: String?,
+    val notes: String?,
+    val isActive: Boolean = true,
 )
 
 @Entity(
@@ -209,10 +245,17 @@ data class CustomIngredientAliasEntity(
             childColumns = ["safetyGroupId"],
             onDelete = ForeignKey.NO_ACTION,
         ),
+        ForeignKey(
+            entity = SafetySourceEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["sourceId"],
+            onDelete = ForeignKey.NO_ACTION,
+        ),
     ],
     indices = [
         Index(value = ["customIngredientId"]),
         Index(value = ["safetyGroupId"]),
+        Index(value = ["sourceId"]),
     ],
 )
 data class CustomIngredientSafetyRelationEntity(
@@ -221,7 +264,8 @@ data class CustomIngredientSafetyRelationEntity(
     val safetyGroupId: String,
     val relationType: String,
     val evidenceLevel: String,
-    val sourceDescription: String?,
+    val sourceId: String,
+    val sourceDetails: String?,
     val notes: String?,
     val reviewedAt: String,
 )

@@ -2,11 +2,13 @@ package com.rmm.recetasraquel.data.catalog
 
 import com.rmm.recetasraquel.data.local.dao.IngredientCatalogDao
 import com.rmm.recetasraquel.data.local.entity.CatalogIngredientEntity
+import com.rmm.recetasraquel.data.local.entity.CatalogIngredientRelationEntity
 import com.rmm.recetasraquel.data.local.entity.CatalogMetadataEntity
 import com.rmm.recetasraquel.data.local.entity.FoodSafetyGroupEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientAliasEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientCategoryEntity
 import com.rmm.recetasraquel.data.local.entity.IngredientSafetyRelationEntity
+import com.rmm.recetasraquel.data.local.entity.RegulatoryExemptionEntity
 import com.rmm.recetasraquel.data.local.entity.SafetySourceEntity
 import com.rmm.recetasraquel.util.TimeProvider
 
@@ -42,13 +44,18 @@ class CatalogImporter(
             }
         }
 
+        val incomingSafetySources = bundle.safetySources.map { it.toEntity() }
+        requireStableSafetySources(incomingSafetySources)
+
         dao.replaceShippedCatalog(
             categories = bundle.categories.map { it.toEntity() },
             ingredients = bundle.ingredients.map { it.toEntity(manifest.catalogVersion) },
             aliases = bundle.aliases.map { it.toEntity() },
+            ingredientRelations = bundle.ingredientRelations.map { it.toEntity() },
             safetyGroups = bundle.safetyGroups.map { it.toEntity() },
-            safetySources = bundle.safetySources.map { it.toEntity() },
+            safetySources = incomingSafetySources,
             safetyRelations = bundle.safetyRelations.map { it.toEntity() },
+            regulatoryExemptions = bundle.regulatoryExemptions.map { it.toEntity(manifest.catalogVersion) },
             metadata = CatalogMetadataEntity(
                 key = METADATA_KEY,
                 catalogVersion = manifest.catalogVersion,
@@ -62,6 +69,22 @@ class CatalogImporter(
         return CatalogImportResult.Imported(manifest.catalogVersion)
     }
 
+    private suspend fun requireStableSafetySources(incoming: List<SafetySourceEntity>) {
+        if (incoming.isEmpty()) return
+
+        val existingById = dao
+            .getSafetySourcesByIds(incoming.map { it.id })
+            .associateBy { it.id }
+
+        incoming.forEach { next ->
+            val previous = existingById[next.id] ?: return@forEach
+            require(previous == next) {
+                "Safety source '${next.id}' changed after publication. " +
+                    "Historical provenance is immutable; publish changed source metadata under a new source id."
+            }
+        }
+    }
+
     private fun CatalogCategoryRecord.toEntity() = IngredientCategoryEntity(
         id = id,
         code = code,
@@ -71,19 +94,26 @@ class CatalogImporter(
         isActive = isActive,
     )
 
-    private fun CatalogIngredientRecord.toEntity(catalogVersion: Int) = CatalogIngredientEntity(
-        id = id,
-        canonicalName = canonicalName,
-        normalizedName = normalizedName,
-        categoryId = categoryId,
-        defaultUnit = defaultUnit,
-        description = description,
-        catalogVersion = catalogVersion,
-        verificationStatus = verificationStatus,
-        compositionVariability = compositionVariability,
-        sourceUpdatedAt = sourceUpdatedAt,
-        isActive = isActive,
-    )
+    private fun CatalogIngredientRecord.toEntity(catalogVersion: Int): CatalogIngredientEntity {
+        val role = catalogRole ?: DEFAULT_CATALOG_ROLE
+        require(role in SUPPORTED_CATALOG_ROLES) {
+            "Ingredient '$id' has unsupported catalogRole '$role'."
+        }
+        return CatalogIngredientEntity(
+            id = id,
+            canonicalName = canonicalName,
+            normalizedName = normalizedName,
+            categoryId = categoryId,
+            defaultUnit = defaultUnit,
+            description = description,
+            catalogVersion = catalogVersion,
+            verificationStatus = verificationStatus,
+            compositionVariability = compositionVariability,
+            catalogRole = role,
+            sourceUpdatedAt = sourceUpdatedAt,
+            isActive = isActive,
+        )
+    }
 
     private fun CatalogAliasRecord.toEntity() = IngredientAliasEntity(
         id = id,
@@ -92,6 +122,17 @@ class CatalogImporter(
         normalizedAlias = normalizedAlias,
         languageCode = languageCode,
         aliasType = aliasType,
+    )
+
+    private fun CatalogIngredientRelationRecord.toEntity() = CatalogIngredientRelationEntity(
+        id = id,
+        childIngredientId = childIngredientId,
+        parentIngredientId = parentIngredientId,
+        relationType = relationType,
+        reviewedAt = reviewedAt,
+        sourceReference = sourceReference,
+        notes = notes,
+        isActive = isActive,
     )
 
     private fun CatalogSafetyGroupRecord.toEntity() = FoodSafetyGroupEntity(
@@ -128,7 +169,25 @@ class CatalogImporter(
         reviewedAt = reviewedAt,
     )
 
+    private fun CatalogRegulatoryExemptionRecord.toEntity(catalogVersion: Int) = RegulatoryExemptionEntity(
+        id = id,
+        catalogVersion = catalogVersion,
+        ingredientId = ingredientId,
+        safetyGroupId = safetyGroupId,
+        jurisdiction = jurisdiction,
+        regulatoryEffect = regulatoryEffect,
+        conditions = conditions,
+        sourceId = sourceId,
+        effectiveFrom = effectiveFrom,
+        effectiveTo = effectiveTo,
+        reviewedAt = reviewedAt,
+        notes = notes,
+        isActive = isActive,
+    )
+
     companion object {
         const val METADATA_KEY = "master"
+        const val DEFAULT_CATALOG_ROLE = "CULINARY"
+        val SUPPORTED_CATALOG_ROLES = setOf("CULINARY", "REGULATORY_TECHNICAL")
     }
 }

@@ -1,6 +1,6 @@
 # SOURCE REGISTER
 
-Access date: 2026-08-07. Primary jurisdiction: Spain / European Union.
+Access date: 2026-08-08. Primary jurisdiction: Spain / European Union.
 
 | sourceId | organization | document | jurisdiction | status | official reference | topics |
 |---|---|---|---|---|---|---|
@@ -12,6 +12,7 @@ Access date: 2026-08-07. Primary jurisdiction: Spain / European Union.
 | ES_RD_126_2015 | BOE | Real Decreto 126/2015 | Spain | In force | BOE-A-2015-2293 | allergen information for non-prepacked foods |
 | AESAN_ALLERGY_INTOLERANCE | AESAN | Alergias e Intolerancias alimentarias | Spain | Institutional source | aesan.gob.es | allergy vs intolerance |
 | AESAN_PNCOCA_2024 | AESAN | Programa 5. Alérgenos y sustancias que causan intolerancias | Spain | Official control programme | AESAN PNCOCA | allergy, intolerance, coeliac disease |
+| AESAN_GLUTEN_LABEL_GUIDE | AESAN | Guía de etiquetado de alimentos que contienen cereales con gluten | Spain | Current institutional guidance reviewed 2026-08-08 | AESAN publicaciones / seguridad alimentaria | cereal-with-gluten labelling, gluten absence/reduction claims, practical examples |
 | AESAN_UNKNOWN_2026_085 | AESAN | Salsa brava: unknown composition of chicken-broth ingredient | Spain | Official alert | ES2026/085 | unknown compound ingredient / possible undeclared allergens |
 | AESAN_CHICKPEA_2026_431 | AESAN | Gluten found in chickpea flour | Spain | Official alert | ES2026/431 | undeclared gluten / identity does not guarantee absence of cross-contact |
 | EFSA_ALLERGENS_2014 | EFSA NDA Panel | Updated scientific advice on food allergens | EU scientific | Published | EFSA news 141126 / related scientific opinion | prevalence, proteins, cross-reactivity, processing, eliciting doses |
@@ -28,4 +29,6 @@ Access date: 2026-08-07. Primary jurisdiction: Spain / European Union.
 
 ## Policy
 
-Sources above do not all have the same legal weight. EU law governs the ES/EU regulatory layer; Codex and FAO/WHO are international scientific/standard-setting references; WHO/IUIS is nomenclature; manufacturer labels and user declarations are separate evidence classes.
+Sources above do not all have the same legal weight. EU law governs the ES/EU regulatory layer; AESAN guidance and alerts support Spanish interpretation and operational risk examples without replacing EU law; Codex and FAO/WHO are international scientific/standard-setting references; WHO/IUIS is nomenclature; manufacturer labels and user declarations are separate evidence classes.
+
+A product-specific alert is evidence about the notified product/lot and may justify a design rule such as `identity is not proof of absence`. It must not be transformed into a universal ingredient-allergen relation without separate evidence.

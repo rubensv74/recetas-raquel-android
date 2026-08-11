@@ -1,0 +1,90 @@
+package com.rmm.recetasraquel.ui.editor
+
+import androidx.activity.ComponentActivity
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
+import com.rmm.recetasraquel.ui.theme.RecetasRaquelTheme
+import org.junit.Rule
+import org.junit.Test
+
+class RecipeEditorIngredientIdentityUiTest {
+    @get:Rule
+    val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+    @Test
+    fun catalogIngredientShowsLibraryOriginAndUsageFields() {
+        setScreen(
+            EditorIngredientItem(
+                key = "catalog-row",
+                name = "Trigo",
+                unit = "g",
+                catalogIngredientId = "ing-wheat",
+            ),
+        )
+
+        composeRule.onNodeWithText("Ingrediente de biblioteca").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Cantidad").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Unidad").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Observaciones").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun customIngredientShowsPersonalizedOrigin() {
+        setScreen(
+            EditorIngredientItem(
+                key = "custom-row",
+                name = "Salsa de la casa",
+                unit = "g",
+                customIngredientId = "custom-1",
+            ),
+        )
+
+        composeRule.onNodeWithText("Ingrediente personalizado").performScrollTo().assertIsDisplayed()
+    }
+
+    private fun setScreen(ingredient: EditorIngredientItem) {
+        composeRule.setContent {
+            RecetasRaquelTheme {
+                RecipeEditorScreen(
+                    state = RecipeEditorUiState.forCreate().copy(ingredients = listOf(ingredient)),
+                    onNameChange = {},
+                    onCategoryChange = {},
+                    onDescriptionChange = {},
+                    onServingsChange = {},
+                    onPreparationMinutesChange = {},
+                    onCookingMinutesChange = {},
+                    onNotesChange = {},
+                    onAddIngredient = {},
+                    onIngredientQuantityChange = { _, _ -> },
+                    onIngredientUnitChange = { _, _ -> },
+                    onIngredientNameChange = { _, _ -> },
+                    onIngredientNotesChange = { _, _ -> },
+                    onRemoveIngredient = {},
+                    onMoveIngredientUp = {},
+                    onMoveIngredientDown = {},
+                    onAddStep = {},
+                    onStepInstructionChange = { _, _ -> },
+                    onStepTimerChange = { _, _ -> },
+                    onRemoveStep = {},
+                    onMoveStepUp = {},
+                    onMoveStepDown = {},
+                    onCoverPhotoSelected = {},
+                    onRemoveCoverPhoto = {},
+                    onStepPhotoSelected = { _, _ -> },
+                    onRemoveStepPhoto = {},
+                    onSave = {},
+                    onNavigateBack = {},
+                    onDelete = {},
+                    onConfirmDelete = {},
+                    onCancelDelete = {},
+                    onConfirmDiscard = {},
+                    onCancelDiscard = {},
+                    onDismissSaveError = {},
+                    onDismissPhotoError = {},
+                )
+            }
+        }
+    }
+}

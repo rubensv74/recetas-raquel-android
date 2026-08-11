@@ -14,8 +14,14 @@ data class CatalogManifest(
 
 data class CatalogFiles(
     val categories: String,
-    val ingredients: String,
-    val aliases: String,
+    val ingredients: String? = null,
+    val aliases: String? = null,
+    val ingredientShards: List<String>? = null,
+    val aliasShards: List<String>? = null,
+    val ingredientRelations: String? = null,
+    val ingredientRelationShards: List<String>? = null,
+    val regulatoryExemptions: String? = null,
+    val regulatoryExemptionShards: List<String>? = null,
     val safetyGroups: String,
     val safetySources: String,
     val safetyRelations: String,
@@ -28,6 +34,8 @@ data class CatalogCounts(
     val safetyGroups: Int,
     val safetySources: Int,
     val safetyRelations: Int,
+    val ingredientRelations: Int = 0,
+    val regulatoryExemptions: Int = 0,
 )
 
 data class CatalogCategoryRecord(
@@ -48,6 +56,7 @@ data class CatalogIngredientRecord(
     val description: String? = null,
     val verificationStatus: String,
     val compositionVariability: String,
+    val catalogRole: String? = null,
     val sourceUpdatedAt: Long? = null,
     val isActive: Boolean = true,
 )
@@ -59,6 +68,17 @@ data class CatalogAliasRecord(
     val normalizedAlias: String,
     val languageCode: String,
     val aliasType: String,
+)
+
+data class CatalogIngredientRelationRecord(
+    val id: String,
+    val childIngredientId: String,
+    val parentIngredientId: String,
+    val relationType: String,
+    val reviewedAt: String,
+    val sourceReference: String? = null,
+    val notes: String? = null,
+    val isActive: Boolean = true,
 )
 
 data class CatalogSafetyGroupRecord(
@@ -95,12 +115,29 @@ data class CatalogSafetyRelationRecord(
     val reviewedAt: String,
 )
 
+data class CatalogRegulatoryExemptionRecord(
+    val id: String,
+    val ingredientId: String,
+    val safetyGroupId: String,
+    val jurisdiction: String,
+    val regulatoryEffect: String,
+    val conditions: String,
+    val sourceId: String,
+    val effectiveFrom: String? = null,
+    val effectiveTo: String? = null,
+    val reviewedAt: String,
+    val notes: String? = null,
+    val isActive: Boolean = true,
+)
+
 data class IngredientCatalogBundle(
     val manifest: CatalogManifest,
     val categories: List<CatalogCategoryRecord>,
     val ingredients: List<CatalogIngredientRecord>,
     val aliases: List<CatalogAliasRecord>,
+    val ingredientRelations: List<CatalogIngredientRelationRecord> = emptyList(),
     val safetyGroups: List<CatalogSafetyGroupRecord>,
     val safetySources: List<CatalogSafetySourceRecord>,
     val safetyRelations: List<CatalogSafetyRelationRecord>,
+    val regulatoryExemptions: List<CatalogRegulatoryExemptionRecord> = emptyList(),
 )

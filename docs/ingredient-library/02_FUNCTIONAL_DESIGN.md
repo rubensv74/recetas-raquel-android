@@ -10,7 +10,7 @@ Replace the current manual-first ingredient entry with a library-first flow whil
 Recipe editor
  -> Add ingredient
  -> Ingredient library
- -> search / category / recent / frequent
+ -> search / category / frequent
  -> select catalog ingredient
  -> quantity + unit + notes
  -> add to recipe
@@ -24,7 +24,11 @@ Library -> Create new ingredient
 
 ## Library
 
-When query is empty: recent, frequent when meaningful local history exists, then categories. With query: ranked local results plus optional category filter.
+When query is empty: frequent ingredients when meaningful local recipe history exists, then categories. With query: ranked local results plus optional category filter.
+
+`Frequent` is derived from distinct saved recipes that reference the catalog ingredient. It does not require additional behavioral history.
+
+`Recent` is deliberately not implemented under Gate 48 / Option A because the current model does not store an explicit ingredient-selection timestamp. Recipe modification time must not be used as a surrogate for recent ingredient use.
 
 Search supports canonical name, aliases, accent-insensitive and case-insensitive matching. No fuzzy identity matching.
 
