@@ -1,37 +1,76 @@
 # Recetas de Raquel
 
-Aplicación Android privada y local-first para guardar y consultar recetas sin conexión.
+Aplicación Android privada, local-first y completamente offline para guardar, consultar y cocinar recetas personales.
 
-## Requisitos
+## Estado del producto
+
+**Estado actual: candidata a v1.0 — cierre de producto en curso.**
+
+La aplicación ya incluye:
+
+- catálogo local de recetas con búsqueda, filtros y favoritas;
+- creación, edición y eliminación de recetas;
+- ingredientes y pasos ordenables;
+- fotografías de portada y por paso mediante Android Photo Picker;
+- modo cocina guiado, un paso cada vez;
+- biblioteca maestra de ingredientes por categorías y alias;
+- ingredientes personalizados y productos comerciales;
+- información de seguridad alimentaria con fuentes y jurisdicción;
+- tratamiento explícito de composición desconocida;
+- información regulatoria separada de las advertencias de seguridad;
+- roles `CULINARY` y `REGULATORY_TECHNICAL` para evitar que identidades jurídicas artificiales aparezcan como ingredientes culinarios normales;
+- sección de ingredientes frecuentes derivada de recetas guardadas;
+- preservación del origen de cada ingrediente al guardar una receta.
+
+La base de producción es `recipes.db` y actualmente utiliza **Room v6**. Los esquemas históricos `1.json` a `6.json` están versionados en `app/schemas`. El catálogo maestro activo es **ingredient-catalog v12**.
+
+La evolución de biblioteca y seguridad alimentaria se integró en `master` mediante PR #9 después de una validación completa con 82 pruebas instrumentadas, 0 fallos, build debug/release, unitarias, lint y guards de Room en verde.
+
+## Qué falta para declarar v1.0 cerrada
+
+La funcionalidad principal está terminada. El cierre de producto se concentra en:
+
+1. aceptación manual en un teléfono real;
+2. decidir e implementar Backup/Restore para proteger los datos de la usuaria;
+3. corregir únicamente incidencias encontradas durante aceptación;
+4. generar y validar la build candidata a v1.0.
+
+Mejoras como selectores premium, rediseño visual adicional o temporizadores ejecutables no bloquean v1.0.
+
+## Principios
+
+- **Offline-first:** no existe backend, autenticación ni dependencia de red para las funciones esenciales.
+- **Privacidad local:** recetas, fotografías y datos personalizados se almacenan en el dispositivo.
+- **Seguridad alimentaria conservadora:** una exención regulatoria nunca significa ausencia de alérgeno, ausencia de riesgo ni aptitud clínica.
+- **Trazabilidad:** catálogo, fuentes, revisiones y cambios regulatorios se versionan y documentan.
+- **Evolución no destructiva:** Room utiliza migraciones explícitas y conserva sus contratos históricos.
+
+## Requisitos de desarrollo
 
 - Android Studio compatible con AGP 9.0.1
 - JDK de Android Studio o compatible con Gradle 9.2.1
 - Android SDK 36.1 instalado
-
-## Estado
-
-El Sprint 3 incorpora editor de recetas con creación, edición y eliminación. La pantalla única del editor permite campos obligatorios, ingredientes y pasos con reordenamiento, validación en línea, detección de cambios sin guardar y eliminación con confirmación. La UI consume Room exclusivamente mediante ViewModels y `RecipeRepository`.
-
-El Sprint 4 añade soporte para fotos de portada y por paso. El editor permite seleccionar, previsualizar y eliminar fotos con el Android Photo Picker; las imágenes se comprimen y almacenan en almacenamiento privado. El catálogo y el detalle muestran portadas con Coil.
-
-El Sprint 5 incorpora un modo cocina guiado: acceso desde el detalle, un paso cada vez, progreso, navegación anterior/siguiente, fotografía del paso, consulta rápida de ingredientes, visualización del tiempo configurado y pantalla activa mientras se cocina. Los temporizadores ejecutables permanecen fuera de alcance.
-
-La base de producción se llama `recipes.db`. El esquema continúa en versión 1 y se exporta a `app/schemas`. Los IDs son UUID almacenados como `String` y los timestamps son milisegundos Unix UTC (`Long`).
-
-En debug, Ajustes permite cargar y retirar de forma idempotente cinco recetas de demostración. Nunca se insertan automáticamente y el controlador no existe en release.
+- Android 8.0 / API 26 o posterior en dispositivo
 
 ## Validación
 
+Flujo local ordinario:
+
 ```shell
-./gradlew clean
 ./gradlew assembleDebug
-./gradlew assembleRelease
 ./gradlew testDebugUnitTest
 ./gradlew lintDebug
-./gradlew compileDebugAndroidTestKotlin
-./gradlew connectedDebugAndroidTest
 ```
 
-En Windows se puede usar `gradlew.bat`. La aplicación requiere Android 8.0 (API 26) o posterior.
+Para cambios que afecten UI, navegación, persistencia o integración Android se ejecutan además las pruebas instrumentadas relevantes. GitHub Actions se reserva como gate remoto de Pull Request o validación manual deliberada, según `AGENTS.md`.
 
-La documentación se encuentra en [`docs`](docs/). El encargo y criterios del Sprint 5 están en [`docs/SPRINT_05_COOKING_MODE.md`](docs/SPRINT_05_COOKING_MODE.md).
+## Documentación
+
+- [`docs/PRODUCT_SPEC.md`](docs/PRODUCT_SPEC.md) — alcance funcional vigente.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arquitectura actual.
+- [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) — modelo de datos Room v6.
+- [`docs/SPRINT_PLAN.md`](docs/SPRINT_PLAN.md) — estado y próximos bloques.
+- [`docs/ingredient-library`](docs/ingredient-library) — diseño, ADR y gates de biblioteca/seguridad.
+- [`docs/food-safety`](docs/food-safety) — dossier y mantenimiento de conocimiento sensible.
+
+En `debug`, Ajustes permite cargar y retirar recetas de demostración de forma idempotente. No se insertan automáticamente y el controlador no existe en `release`.
