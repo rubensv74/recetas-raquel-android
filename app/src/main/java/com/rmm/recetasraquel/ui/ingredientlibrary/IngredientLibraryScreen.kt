@@ -122,7 +122,7 @@ fun IngredientLibraryScreen(
                     onClick = onAddManualIngredient,
                     modifier = Modifier.testTag("ingredient_library_manual"),
                 ) {
-                    Text("Introducir manualmente")
+                    Text("Crear ingrediente nuevo")
                 }
                 if (state.hasActiveSearch) {
                     TextButton(
@@ -204,7 +204,7 @@ fun IngredientLibraryScreen(
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
-                        text = "Puedes cambiar la búsqueda o introducir el ingrediente manualmente.",
+                        text = "Puedes cambiar la búsqueda o crear un ingrediente nuevo.",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
