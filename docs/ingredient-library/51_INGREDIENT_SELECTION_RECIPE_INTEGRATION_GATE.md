@@ -1,6 +1,6 @@
 # Gate 51 — Integración de selección de ingrediente con el editor de receta
 
-**Estado:** IMPLEMENTADO — GATE MANUAL DE CI PENDIENTE  
+**Estado:** IMPLEMENTADO — REINTENTO MANUAL DE CI PENDIENTE  
 **Fecha:** 2026-08-11  
 **Rama:** `program/ingredient-library-food-safety`
 
@@ -121,7 +121,9 @@ Se añade `RecipeEditorIngredientIdentityUiTest`:
 
 - una identidad de catálogo muestra `Ingrediente de biblioteca`;
 - una identidad personalizada muestra `Ingrediente personalizado`;
-- la fila vinculada mantiene visibles cantidad, unidad y observaciones.
+- la fila vinculada mantiene disponibles cantidad, unidad y observaciones.
+
+Las aserciones de campos dentro del `LazyColumn` usan `performScrollTo()` antes de exigir visibilidad, para comprobar el contenido sin depender de la altura concreta de la pantalla del emulador.
 
 ## 8. Arquitectura
 
@@ -139,9 +141,43 @@ No se modifica:
 
 No aparece un gate de arquitectura.
 
-## 9. Criterio de cierre
+## 9. Primera ejecución manual — Android CI #152
 
-El bloque pasará a `VALIDADO` tras un único gate manual que confirme:
+Run: `31444999852`  
+SHA ejecutado: `de5cea23fe2a135d168d318be006166a0757c028`
+
+Resultado:
+
+```text
+PR gate                         PASS
+assembleRelease                 PASS
+connectedDebugAndroidTest       FAIL
+Pruebas instrumentadas          82 total / 1 fallo
+Room guard post-emulator        SKIPPED por fallo anterior
+```
+
+Único fallo:
+
+```text
+RecipeEditorIngredientIdentityUiTest
+catalogIngredientShowsLibraryOriginAndUsageFields
+```
+
+La prueba intentaba ejecutar `assertIsDisplayed()` sobre `Observaciones` después de haber desplazado la lista únicamente hasta `Ingrediente de biblioteca`. El campo existía en la composición, pero quedaba fuera del viewport del emulador al aumentar la altura de la fila con el nuevo rótulo de origen.
+
+Diagnóstico: **fallo de prueba de UI dependiente del viewport, no fallo funcional de la app**.
+
+Corrección aplicada en commit:
+
+```text
+9fe5541e8c1d318ac2ade8534f663822242ea6de
+```
+
+La prueba desplaza ahora explícitamente cada campo relevante antes de comprobar su visibilidad. No se modificó código de producto.
+
+## 10. Criterio de cierre
+
+El bloque pasará a `VALIDADO` tras un nuevo gate manual que confirme:
 
 ```text
 assembleDebug                    PASS
@@ -153,4 +189,4 @@ connectedDebugAndroidTest        PASS
 Room schema guard post-emulator  PASS
 ```
 
-Hasta entonces este documento debe permanecer en estado **IMPLEMENTADO — GATE MANUAL DE CI PENDIENTE**.
+Hasta entonces este documento debe permanecer en estado **IMPLEMENTADO — REINTENTO MANUAL DE CI PENDIENTE**.
