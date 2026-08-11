@@ -1,11 +1,11 @@
 {
   "catalogId": "rmm-es-eu",
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "catalogVersion": 13,
   "releaseStatus": "DRAFT",
   "locale": "es-ES",
   "jurisdiction": "EU-ES",
-  "reviewedAt": "2026-08-11",
+  "reviewedAt": "2026-08-12",
   "files": {
     "categories": "categories.json",
     "ingredientShards": [
@@ -30,7 +30,8 @@
       "ingredients-culinary-pantry-v13.json",
       "ingredients-culinary-everyday-v13.json",
       "ingredients-culinary-dairy-eggs-v13.json",
-      "ingredients-culinary-aquatic-v13.json"
+      "ingredients-culinary-aquatic-v13.json",
+      "ingredients-compound-v13.json"
     ],
     "aliasShards": [
       "aliases-regulatory.json",
@@ -54,6 +55,9 @@
       "ingredient-relations-annex-ii-exemptions.json",
       "ingredient-relations-culinary-regulated-v13.json"
     ],
+    "ingredientComponentShards": [
+      "ingredient-components-compound-v13.json"
+    ],
     "safetyGroups": "safety-groups.json",
     "safetySources": "safety-sources.json",
     "safetyRelations": "safety-relations.json",
@@ -67,9 +71,10 @@
   },
   "counts": {
     "categories": 20,
-    "ingredients": 554,
+    "ingredients": 584,
     "aliases": 335,
     "ingredientRelations": 143,
+    "ingredientComponents": 48,
     "safetyGroups": 14,
     "safetySources": 3,
     "safetyRelations": 133,
