@@ -1,0 +1,42 @@
+[
+  {
+    "id": "rel-wheat-glucose-syrup-wheat",
+    "childIngredientId": "ing-wheat-glucose-syrup",
+    "parentIngredientId": "ing-wheat",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-09",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Linaje de origen regulatorio no clínico. No propaga relaciones de seguridad ni exenciones a derivados posteriores.",
+    "isActive": true
+  },
+  {
+    "id": "rel-wheat-dextrose-wheat",
+    "childIngredientId": "ing-wheat-dextrose",
+    "parentIngredientId": "ing-wheat",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-09",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Linaje de origen regulatorio no clínico. No propaga relaciones de seguridad ni exenciones a derivados posteriores.",
+    "isActive": true
+  },
+  {
+    "id": "rel-wheat-maltodextrin-wheat",
+    "childIngredientId": "ing-wheat-maltodextrin",
+    "parentIngredientId": "ing-wheat",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-09",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Linaje de origen regulatorio no clínico. No propaga relaciones de seguridad ni exenciones a derivados posteriores.",
+    "isActive": true
+  },
+  {
+    "id": "rel-barley-glucose-syrup-barley",
+    "childIngredientId": "ing-barley-glucose-syrup",
+    "parentIngredientId": "ing-barley",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-09",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Linaje de origen regulatorio no clínico. No propaga relaciones de seguridad ni exenciones a derivados posteriores.",
+    "isActive": true
+  }
+]
