@@ -1,6 +1,7 @@
 package com.rmm.recetasraquel.data.catalog
 
 import com.rmm.recetasraquel.data.local.dao.IngredientCatalogDao
+import com.rmm.recetasraquel.data.local.entity.CatalogIngredientComponentEntity
 import com.rmm.recetasraquel.data.local.entity.CatalogIngredientEntity
 import com.rmm.recetasraquel.data.local.entity.CatalogIngredientRelationEntity
 import com.rmm.recetasraquel.data.local.entity.CatalogMetadataEntity
@@ -52,6 +53,7 @@ class CatalogImporter(
             ingredients = bundle.ingredients.map { it.toEntity(manifest.catalogVersion) },
             aliases = bundle.aliases.map { it.toEntity() },
             ingredientRelations = bundle.ingredientRelations.map { it.toEntity() },
+            ingredientComponents = bundle.ingredientComponents.map { it.toEntity() },
             safetyGroups = bundle.safetyGroups.map { it.toEntity() },
             safetySources = incomingSafetySources,
             safetyRelations = bundle.safetyRelations.map { it.toEntity() },
@@ -99,6 +101,10 @@ class CatalogImporter(
         require(role in SUPPORTED_CATALOG_ROLES) {
             "Ingredient '$id' has unsupported catalogRole '$role'."
         }
+        val coverage = compositionCoverage ?: DEFAULT_COMPOSITION_COVERAGE
+        require(coverage in SUPPORTED_COMPOSITION_COVERAGE) {
+            "Ingredient '$id' has unsupported compositionCoverage '$coverage'."
+        }
         return CatalogIngredientEntity(
             id = id,
             canonicalName = canonicalName,
@@ -109,6 +115,7 @@ class CatalogImporter(
             catalogVersion = catalogVersion,
             verificationStatus = verificationStatus,
             compositionVariability = compositionVariability,
+            compositionCoverage = coverage,
             catalogRole = role,
             sourceUpdatedAt = sourceUpdatedAt,
             isActive = isActive,
@@ -129,6 +136,17 @@ class CatalogImporter(
         childIngredientId = childIngredientId,
         parentIngredientId = parentIngredientId,
         relationType = relationType,
+        reviewedAt = reviewedAt,
+        sourceReference = sourceReference,
+        notes = notes,
+        isActive = isActive,
+    )
+
+    private fun CatalogIngredientComponentRecord.toEntity() = CatalogIngredientComponentEntity(
+        id = id,
+        parentIngredientId = parentIngredientId,
+        componentIngredientId = componentIngredientId,
+        presenceType = presenceType,
         reviewedAt = reviewedAt,
         sourceReference = sourceReference,
         notes = notes,
@@ -188,6 +206,8 @@ class CatalogImporter(
     companion object {
         const val METADATA_KEY = "master"
         const val DEFAULT_CATALOG_ROLE = "CULINARY"
+        const val DEFAULT_COMPOSITION_COVERAGE = "NONE"
         val SUPPORTED_CATALOG_ROLES = setOf("CULINARY", "REGULATORY_TECHNICAL")
+        val SUPPORTED_COMPOSITION_COVERAGE = setOf("NONE", "COMPLETE", "PARTIAL")
     }
 }
