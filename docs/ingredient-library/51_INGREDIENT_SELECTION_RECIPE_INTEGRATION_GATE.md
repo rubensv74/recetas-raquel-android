@@ -1,6 +1,6 @@
 # Gate 51 — Integración de selección de ingrediente con el editor de receta
 
-**Estado:** IMPLEMENTADO — REINTENTO MANUAL DE CI PENDIENTE  
+**Estado:** VALIDADO  
 **Fecha:** 2026-08-11  
 **Rama:** `program/ingredient-library-food-safety`
 
@@ -175,9 +175,14 @@ Corrección aplicada en commit:
 
 La prueba desplaza ahora explícitamente cada campo relevante antes de comprobar su visibilidad. No se modificó código de producto.
 
-## 10. Criterio de cierre
+## 10. Gate definitivo — Android CI #153
 
-El bloque pasará a `VALIDADO` tras un nuevo gate manual que confirme:
+Run: `31461553912`  
+SHA ejecutado: `fd93f58945b6e1862fdbdb24555f8b43f3350711`  
+Evento: `workflow_dispatch`  
+Resultado global: `success`
+
+Resultado verificado:
 
 ```text
 assembleDebug                    PASS
@@ -189,4 +194,19 @@ connectedDebugAndroidTest        PASS
 Room schema guard post-emulator  PASS
 ```
 
-Hasta entonces este documento debe permanecer en estado **IMPLEMENTADO — REINTENTO MANUAL DE CI PENDIENTE**.
+Pruebas instrumentadas:
+
+```text
+82 tests
+0 skipped
+0 failed
+BUILD SUCCESSFUL
+```
+
+Room conserva exactamente los esquemas históricos `1.json` a `6.json`, sin diferencias respecto al contrato versionado antes ni después de la ejecución en emulador.
+
+## 11. Estado final
+
+**GATE SUPERADO.**
+
+El recorrido biblioteca → selección → editor → guardado queda validado de extremo a extremo, preservando la identidad de origen necesaria para la posterior resolución de seguridad alimentaria y manteniendo editables únicamente los datos de uso propios de la receta.
