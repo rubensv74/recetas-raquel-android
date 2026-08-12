@@ -1,0 +1,14 @@
+[
+  {
+    "id": "ing-mustard-behenic-acid",
+    "canonicalName": "Ácido behénico de semillas de mostaza",
+    "normalizedName": "acido behenico de semillas de mostaza",
+    "categoryId": "cat-oils-fats",
+    "defaultUnit": null,
+    "description": "Identidad técnica regulatoria. La exención del Anexo II solo aplica bajo las condiciones documentadas en RegulatoryExemption.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  }
+]
