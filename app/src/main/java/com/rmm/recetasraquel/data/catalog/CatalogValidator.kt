@@ -183,9 +183,7 @@ object CatalogValidator {
             errors = errors,
         )
 
-        if (manifest.releaseStatus in setOf("PRODUCTION_CANDIDATE", "RELEASED")) {
-            validateProductionCandidate(bundle, errors)
-        }
+        if (manifest.releaseStatus == "PRODUCTION_CANDIDATE") validateProductionCandidate(bundle, errors)
 
         return CatalogValidationResult(errors.distinct())
     }
