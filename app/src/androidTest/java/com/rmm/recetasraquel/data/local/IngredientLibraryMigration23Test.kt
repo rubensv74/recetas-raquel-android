@@ -39,7 +39,7 @@ class IngredientLibraryMigration23Test {
                 IngredientLibraryMigrations.MIGRATION_2_3,
                 IngredientLibraryMigrations.MIGRATION_3_4,
                 IngredientLibraryMigrations.MIGRATION_4_5,
-                IngredientLibraryMigrations.MIGRATION_5_6,
+                IngredientLibraryMigrations.MIGRATION_5_6,\n                IngredientCompositionMigrations.MIGRATION_6_7,
             )
             .build()
 
@@ -104,7 +104,7 @@ class IngredientLibraryMigration23Test {
 
             db.query("PRAGMA user_version").use { cursor ->
                 assertTrue(cursor.moveToFirst())
-                assertEquals(6, cursor.getInt(0))
+                assertEquals(7, cursor.getInt(0))
             }
         } finally {
             database.close()
