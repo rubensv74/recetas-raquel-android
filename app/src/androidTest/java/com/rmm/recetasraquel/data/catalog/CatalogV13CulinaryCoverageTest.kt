@@ -32,7 +32,7 @@ class CatalogV13CulinaryCoverageTest {
             assertEquals(13, bundle.manifest.catalogVersion)
             assertEquals("DRAFT", bundle.manifest.releaseStatus)
             assertEquals(20, bundle.categories.size)
-            assertEquals(584, bundle.ingredients.size)
+            assertEquals(808, bundle.ingredients.size)
             assertEquals(335, bundle.aliases.size)
             assertEquals(143, bundle.ingredientRelations.size)
             assertEquals(48, bundle.ingredientComponents.size)
@@ -119,7 +119,7 @@ class CatalogV13CulinaryCoverageTest {
 
             val v13 = importer.ensureImported("ingredient-catalog/v13")
             assertTrue(v13 is CatalogImportResult.Imported)
-            assertEquals(584, dao.countActiveIngredients())
+            assertEquals(808, dao.countActiveIngredients())
             assertEquals(143, dao.countActiveIngredientRelations())
             assertEquals(48, dao.countActiveIngredientComponents())
             assertEquals(133, dao.countSafetyRelations())
