@@ -1,6 +1,6 @@
 # Gate 55 — Validación instrumentada de v13 bloqueada por el runner Android
 
-**Estado:** BLOQUEADO — ENTORNO DE VALIDACIÓN  
+**Estado:** SUPERADO — VALIDACIÓN LOCAL COMPLETA  
 **Fecha:** 2026-08-13  
 **Rama:** `program/culinary-catalog-v13`
 
@@ -95,3 +95,28 @@ El gate queda cerrado cuando:
 5. el manifiesto puede pasar de `DRAFT` a `RELEASED`.
 
 Hasta entonces v13 no debe integrarse en `master`.
+
+
+## Evidencia de cierre
+
+Ejecución local realizada el 2026-08-13 sobre `Medium_Phone(AVD) - 16`:
+
+```text
+BUILD SUCCESSFUL — compileDebugAndroidTestKotlin
+Starting 84 tests on Medium_Phone(AVD) - 16
+Finished 84 tests on Medium_Phone(AVD) - 16
+BUILD SUCCESSFUL in 1m 27s
+0 skipped, 0 failed
+```
+
+Resultado:
+
+- 84/84 pruebas instrumentadas superadas;
+- ninguna prueba omitida;
+- ninguna prueba fallida;
+- rutas históricas de migración 1/2/4/5 → 7 validadas;
+- catálogo v13 importado y consultado;
+- composición explícita Room v7 validada;
+- manifiesto autorizado para pasar de `DRAFT` a `RELEASED`.
+
+El Gate 55 queda cerrado.
