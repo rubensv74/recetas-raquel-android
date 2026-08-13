@@ -35,7 +35,10 @@ class IngredientCatalogRoleMigration56Test {
         createVersion5DatabaseWithCatalogIngredient()
 
         val database = Room.databaseBuilder(context, RecipeDatabase::class.java, TEST_DB)
-            .addMigrations(\n                IngredientLibraryMigrations.MIGRATION_5_6,\n                IngredientCompositionMigrations.MIGRATION_6_7,\n            )
+            .addMigrations(
+                IngredientLibraryMigrations.MIGRATION_5_6,
+                IngredientCompositionMigrations.MIGRATION_6_7,
+            )
             .build()
 
         try {
