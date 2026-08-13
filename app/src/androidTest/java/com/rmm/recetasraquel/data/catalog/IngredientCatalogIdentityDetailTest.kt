@@ -31,7 +31,7 @@ class IngredientCatalogIdentityDetailTest {
             )
             val repository = LocalIngredientCatalogRepository(importer, database.ingredientCatalogDao())
 
-            assertEquals(12, repository.ensureCatalogImported().getOrThrow().catalogVersion)
+            assertEquals(13, repository.ensureCatalogImported().getOrThrow().catalogVersion)
 
             val detail = repository.getIngredientDetail("ing-wheat-flour").getOrThrow()
             assertTrue("Harina trigo" in detail.aliases)
