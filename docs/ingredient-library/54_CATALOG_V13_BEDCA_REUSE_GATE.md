@@ -1,6 +1,6 @@
 # Gate 54 — Reutilización de BEDCA para la expansión culinaria v13
 
-**Estado:** BLOQUEADO — DECISIÓN DE FUENTE Y LICENCIA  
+**Estado:** RESUELTO — OPCIÓN A  
 **Fecha:** 2026-08-13  
 **Rama:** `program/culinary-catalog-v13`
 
@@ -97,3 +97,4 @@ Hasta que se resuelva este gate:
 - no se presentará v13 como catálogo oficial o derivado de BEDCA;
 - v13 permanecerá en `DRAFT`;
 - no se integrará la rama en `master`.
+\n## Resolución\n\nEl 2026-08-13 se adoptó la opción A. La ampliación se realizó mediante curación editorial propia, sin extracción masiva de BEDCA, sin datos nutricionales externos y sin declarar equivalencia oficial con BEDCA. El primer lote independiente añade 228 identidades; después de retirar cuatro duplicados previos, v13 alcanza 808 ingredientes.\n
