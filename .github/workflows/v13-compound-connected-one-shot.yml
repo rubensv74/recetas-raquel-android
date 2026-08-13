@@ -100,7 +100,7 @@ jobs:
           set -euo pipefail
           SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
           yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" "platform-tools" "platforms;android-36.1" "emulator" "system-images;android-36;google_apis;x86_64"
+          "$SDKMANAGER" "platform-tools" "platforms;android-36.1" "emulator" "system-images;android-35;google_apis;x86_64"
 
       - name: Run JVM tests
         run: ./gradlew --no-daemon testDebugUnitTest
@@ -111,7 +111,7 @@ jobs:
       - name: Run connected tests
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         with:
-          api-level: 36
+          api-level: 35
           target: google_apis
           arch: x86_64
           profile: pixel_6
