@@ -1,119 +1,13 @@
 name: V13 compound connected one-shot gate
 
 on:
-  push:
-    branches:
-      - program/culinary-catalog-v13
+  workflow_dispatch:
 
 permissions:
   contents: write
 
-concurrency:
-  group: v13-compound-connected-one-shot
-  cancel-in-progress: true
-
 jobs:
-  connected-gate:
-    if: github.actor != 'github-actions[bot]'
+  pending-catalog-update:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
-        with:
-          ref: program/culinary-catalog-v13
-
-      - name: Normalize known v13 duplicate flour identities
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-
-          catalog_dir = Path("app/src/main/assets/ingredient-catalog/v13")
-          staples_path = catalog_dir / "ingredients-culinary-staples-v13.json"
-          duplicate_ids = {
-              "ing-rice-flour",
-              "ing-corn-flour",
-              "ing-chickpea-flour",
-              "ing-buckwheat-flour",
-          }
-          items = json.loads(staples_path.read_text(encoding="utf-8"))
-          found = {item["id"] for item in items if item["id"] in duplicate_ids}
-          if found != duplicate_ids:
-              raise SystemExit(f"Expected duplicate ids {sorted(duplicate_ids)}, found {sorted(found)}")
-          filtered = [item for item in items if item["id"] not in duplicate_ids]
-          if len(items) - len(filtered) != 4:
-              raise SystemExit("Expected to remove exactly four duplicate flour records")
-          staples_path.write_text(json.dumps(filtered, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-
-          manifest_path = catalog_dir / "manifest.json"
-          manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-          if manifest["counts"]["ingredients"] != 584:
-              raise SystemExit(f"Unexpected starting ingredient count: {manifest['counts']['ingredients']}")
-          manifest["counts"]["ingredients"] = 580
-          manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-          test_path = Path("app/src/androidTest/java/com/rmm/recetasraquel/data/catalog/CatalogV13CulinaryCoverageTest.kt")
-          text = test_path.read_text(encoding="utf-8")
-          if text.count("assertEquals(584,") != 2:
-              raise SystemExit("Expected exactly two v13 ingredient-count assertions at 584")
-          test_path.write_text(text.replace("assertEquals(584,", "assertEquals(580,"), encoding="utf-8")
-          PY
-
-      - name: Make Gradle wrapper executable
-        run: chmod +x gradlew
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
-        with:
-          distribution: temurin
-          java-version: "21"
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
-
-      - name: Install Android SDK packages
-        shell: bash
-        run: |
-          set -euo pipefail
-          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
-          yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" "platform-tools" "platforms;android-36.1" "emulator" "system-images;android-36;google_apis;x86_64"
-
-      - name: Compile instrumentation tests
-        run: ./gradlew --no-daemon compileDebugAndroidTestKotlin
-
-      - name: Run connected tests
-        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
-        with:
-          api-level: 36
-          target: google_apis
-          arch: x86_64
-          profile: pixel_6
-          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          disable-animations: true
-          script: ./gradlew --no-daemon connectedDebugAndroidTest
-
-      - name: Room schema guard
-        shell: bash
-        run: |
-          set -euo pipefail
-          git diff --exit-code -- app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase
-          test -f app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/7.json
-
-      - name: Commit normalized catalog and remove one-shot workflow after green gate
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm .github/workflows/v13-compound-connected-one-shot.yml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            app/src/main/assets/ingredient-catalog/v13/ingredients-culinary-staples-v13.json \
-            app/src/main/assets/ingredient-catalog/v13/manifest.json \
-            app/src/androidTest/java/com/rmm/recetasraquel/data/catalog/CatalogV13CulinaryCoverageTest.kt \
-            .github/workflows/v13-compound-connected-one-shot.yml
-          git commit -m "fix: deduplicate v13 flour identities [connected-v13]"
-          git push origin HEAD:program/culinary-catalog-v13
+      - run: echo "Temporarily disabled while the editorial v13 batch is applied."
