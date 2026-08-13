@@ -30,7 +30,7 @@ class IngredientCatalogSafetyDetailTest {
             val repository = LocalIngredientCatalogRepository(importer, database.ingredientCatalogDao())
 
             val importResult = repository.ensureCatalogImported().getOrThrow()
-            assertEquals(12, importResult.catalogVersion)
+            assertEquals(13, importResult.catalogVersion)
 
             val relation = repository.getSafetyRelations("ing-wheat").getOrThrow().single()
             assertEquals("sg-eu-cereals-gluten", relation.safetyGroupId)
