@@ -35,7 +35,7 @@ class IngredientCatalogRoleMigration56Test {
         createVersion5DatabaseWithCatalogIngredient()
 
         val database = Room.databaseBuilder(context, RecipeDatabase::class.java, TEST_DB)
-            .addMigrations(IngredientLibraryMigrations.MIGRATION_5_6)
+            .addMigrations(\n                IngredientLibraryMigrations.MIGRATION_5_6,\n                IngredientCompositionMigrations.MIGRATION_6_7,\n            )
             .build()
 
         try {
@@ -84,7 +84,7 @@ class IngredientCatalogRoleMigration56Test {
 
             db.query("PRAGMA user_version").use { cursor ->
                 assertTrue(cursor.moveToFirst())
-                assertEquals(6, cursor.getInt(0))
+                assertEquals(7, cursor.getInt(0))
             }
         } finally {
             database.close()
