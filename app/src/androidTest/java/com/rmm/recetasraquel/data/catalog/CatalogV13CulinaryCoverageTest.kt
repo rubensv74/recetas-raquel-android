@@ -30,7 +30,7 @@ class CatalogV13CulinaryCoverageTest {
             assertTrue(validation.errors.joinToString(separator = "\n"), validation.isValid)
             assertEquals(5, bundle.manifest.schemaVersion)
             assertEquals(13, bundle.manifest.catalogVersion)
-            assertEquals("DRAFT", bundle.manifest.releaseStatus)
+            assertEquals("RELEASED", bundle.manifest.releaseStatus)
             assertEquals(20, bundle.categories.size)
             assertEquals(808, bundle.ingredients.size)
             assertEquals(335, bundle.aliases.size)

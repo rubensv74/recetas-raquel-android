@@ -19,7 +19,7 @@ data class CatalogValidationResult(
 
 object CatalogValidator {
     private val supportedSchemaVersions = setOf(1, 2, 3, 4, 5)
-    private val releaseStatuses = setOf("INFRASTRUCTURE", "DRAFT", "PRODUCTION_CANDIDATE")
+    private val releaseStatuses = setOf("INFRASTRUCTURE", "DRAFT", "PRODUCTION_CANDIDATE", "RELEASED")
     private val verificationStatuses = setOf("VERIFIED", "REVIEW_REQUIRED", "UNVERIFIED")
     private val compositionVariability = setOf("STABLE", "VARIABLE_BY_BRAND", "VARIABLE_BY_PREPARATION", "UNKNOWN")
     private val compositionCoverage = setOf("NONE", "COMPLETE", "PARTIAL")
@@ -183,7 +183,9 @@ object CatalogValidator {
             errors = errors,
         )
 
-        if (manifest.releaseStatus == "PRODUCTION_CANDIDATE") validateProductionCandidate(bundle, errors)
+        if (manifest.releaseStatus in setOf("PRODUCTION_CANDIDATE", "RELEASED")) {
+            validateProductionCandidate(bundle, errors)
+        }
 
         return CatalogValidationResult(errors.distinct())
     }
