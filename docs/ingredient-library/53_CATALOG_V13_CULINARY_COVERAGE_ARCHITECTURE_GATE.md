@@ -1,6 +1,6 @@
 # Gate 53 — Catálogo v13: cobertura culinaria y arquitectura de ingredientes compuestos
 
-**Estado:** PENDIENTE — DECISIÓN DE ARQUITECTURA
+**Estado:** RESUELTO — OPCIÓN B IMPLEMENTADA
 
 **Fecha:** 2026-08-11
 
@@ -12,13 +12,13 @@ La rama `program/culinary-catalog-v13` amplía el catálogo sin modificar v12 y 
 
 ## Estado actual de v13
 
-v13 sigue utilizando `schemaVersion = 4` y permanece en estado `DRAFT`.
+v13 utiliza `schemaVersion = 5`, incorpora composición explícita y permanece en estado `DRAFT` hasta cerrar la validación Android.
 
 Conteos actuales:
 
 - categorías: 20
-- ingredientes: 554
-- alias: 335
+- ingredientes: 808
+- alias: 335\n- componentes explícitos: 48
 - relaciones de linaje culinario: 143
 - grupos de seguridad: 14
 - fuentes de seguridad: 3
@@ -66,7 +66,7 @@ Se ha añadido `CatalogV13CulinaryCoverageTest`, que valida:
 - transición de importación v12 → v13;
 - conservación del historial regulatorio por versión.
 
-**Todavía no se ha ejecutado el gate Android CI completo de v13.** La ejecución se realizará después de resolver el presente gate arquitectónico, para evitar validar dos veces una fotografía que aún puede cambiar materialmente.
+El gate arquitectónico quedó resuelto mediante la opción B. La ejecución Android CI completa permanece como gate de liberación independiente.
 
 ## Límite alcanzado
 
@@ -86,7 +86,7 @@ La mayor parte de los huecos restantes ya no son alimentos simples o especies co
 
 Añadir estos productos como simples nombres al catálogo es técnicamente posible, pero el modelo actual no representa su composición de forma estructurada. Esto afecta directamente a la utilidad y fiabilidad de la información de seguridad.
 
-## Decisión requerida
+## Decisión adoptada
 
 ### Opción A — Identidades compuestas genéricas sin composición estructurada
 
@@ -135,3 +135,4 @@ Los productos compuestos o comerciales se crean mediante el formulario de ingred
 La pregunta ya no es cuántos ingredientes añadir, sino qué debe significar una identidad compuesta dentro del catálogo maestro y qué evidencia puede utilizar el motor de seguridad.
 
 Hasta resolver este gate no deben añadirse masivamente alimentos preparados o de formulación variable.
+\n## Resolución posterior\n\nSe adoptó la opción B y se implementaron `schemaVersion = 5`, Room v7 y componentes explícitos. La expansión editorial independiente documentada en el Gate 54 elevó el catálogo deduplicado a 808 ingredientes.\n
