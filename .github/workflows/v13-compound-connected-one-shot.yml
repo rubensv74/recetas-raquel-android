@@ -1,13 +1,138 @@
-name: V13 compound connected one-shot gate
+name: V13 808-entry release gate
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - program/culinary-catalog-v13
 
 permissions:
   contents: write
 
+concurrency:
+  group: v13-808-release-gate
+  cancel-in-progress: true
+
 jobs:
-  pending-catalog-update:
+  catalog-and-android-gate:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     steps:
-      - run: echo "Temporarily disabled while the editorial v13 batch is applied."
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: program/culinary-catalog-v13
+
+      - name: Validate catalog snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path("app/src/main/assets/ingredient-catalog/v13")
+          manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+          files = manifest["files"]
+
+          def load_many(names):
+              result = []
+              for name in names:
+                  result.extend(json.loads((root / name).read_text(encoding="utf-8")))
+              return result
+
+          ingredients = load_many(files["ingredientShards"])
+          aliases = load_many(files["aliasShards"])
+          relations = load_many(files["ingredientRelationShards"])
+          components = load_many(files["ingredientComponentShards"])
+          exemptions = load_many(files["regulatoryExemptionShards"])
+          safety_groups = json.loads((root / files["safetyGroups"]).read_text(encoding="utf-8"))
+          safety_sources = json.loads((root / files["safetySources"]).read_text(encoding="utf-8"))
+          safety_relations = json.loads((root / files["safetyRelations"]).read_text(encoding="utf-8"))
+          categories = json.loads((root / files["categories"]).read_text(encoding="utf-8"))
+
+          actual = {
+              "categories": len(categories),
+              "ingredients": len(ingredients),
+              "aliases": len(aliases),
+              "ingredientRelations": len(relations),
+              "ingredientComponents": len(components),
+              "safetyGroups": len(safety_groups),
+              "safetySources": len(safety_sources),
+              "safetyRelations": len(safety_relations),
+              "regulatoryExemptions": len(exemptions),
+          }
+          if actual != manifest["counts"]:
+              raise SystemExit(f"Manifest mismatch: expected {manifest['counts']}, actual {actual}")
+          if len(ingredients) < 800:
+              raise SystemExit(f"Coverage gate failed: {len(ingredients)} ingredients")
+          ids = [item["id"] for item in ingredients]
+          names = [item["normalizedName"] for item in ingredients]
+          if len(ids) != len(set(ids)):
+              raise SystemExit("Duplicate ingredient ids detected")
+          if len(names) != len(set(names)):
+              raise SystemExit("Duplicate normalized ingredient names detected")
+          editorial = [item for item in ingredients if item["id"].startswith("ing-editorial-")]
+          if len(editorial) != 228:
+              raise SystemExit(f"Expected 228 editorial records, found {len(editorial)}")
+          if any(item.get("verificationStatus") != "REVIEW_REQUIRED" for item in editorial):
+              raise SystemExit("Editorial records must remain REVIEW_REQUIRED")
+          if any(item.get("catalogRole") != "CULINARY" for item in editorial):
+              raise SystemExit("Editorial records must remain CULINARY")
+          print(actual)
+          PY
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b1d30dcc455b5382be2fdbfb
+
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36.1" "emulator" "system-images;android-36;google_apis;x86_64"
+
+      - name: Run JVM tests
+        run: ./gradlew --no-daemon testDebugUnitTest
+
+      - name: Compile instrumentation tests
+        run: ./gradlew --no-daemon compileDebugAndroidTestKotlin
+
+      - name: Run connected tests
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          script: ./gradlew --no-daemon connectedDebugAndroidTest
+
+      - name: Room schema guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase
+          test -f app/schemas/com.rmm.recetasraquel.data.local.RecipeDatabase/7.json
+
+      - name: Remove one-shot workflow after green gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/v13-compound-connected-one-shot.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/v13-compound-connected-one-shot.yml
+          git commit -m "ci: close green v13 808-entry release gate"
+          git push origin HEAD:program/culinary-catalog-v13
