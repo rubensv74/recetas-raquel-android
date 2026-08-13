@@ -5,7 +5,7 @@
   "releaseStatus": "DRAFT",
   "locale": "es-ES",
   "jurisdiction": "EU-ES",
-  "reviewedAt": "2026-08-12",
+  "reviewedAt": "2026-08-13",
   "files": {
     "categories": "categories.json",
     "ingredientShards": [
@@ -31,7 +31,8 @@
       "ingredients-culinary-everyday-v13.json",
       "ingredients-culinary-dairy-eggs-v13.json",
       "ingredients-culinary-aquatic-v13.json",
-      "ingredients-compound-v13.json"
+      "ingredients-compound-v13.json",
+      "ingredients-editorial-independent-v13.json"
     ],
     "aliasShards": [
       "aliases-regulatory.json",
@@ -71,7 +72,7 @@
   },
   "counts": {
     "categories": 20,
-    "ingredients": 584,
+    "ingredients": 808,
     "aliases": 335,
     "ingredientRelations": 143,
     "ingredientComponents": 48,
