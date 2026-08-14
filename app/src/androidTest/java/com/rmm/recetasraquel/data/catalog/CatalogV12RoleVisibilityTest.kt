@@ -14,7 +14,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
-// Contract gate: technical regulatory identities stay addressable internally but never enter normal culinary search.
+// Historical contract: v12 established the technical-role boundary; current snapshots must preserve it.
 @RunWith(AndroidJUnit4::class)
 class CatalogV12RoleVisibilityTest {
     @Test
@@ -24,11 +24,11 @@ class CatalogV12RoleVisibilityTest {
 
         try {
             val reader = IngredientCatalogAssetReader(AndroidAssetCatalogTextSource(context.assets))
-            val bundle = reader.read()
-            val technicalRecords = bundle.ingredients.filter { it.catalogRole == "REGULATORY_TECHNICAL" }
+            val v12Bundle = reader.read("ingredient-catalog/v12")
+            val v12TechnicalRecords = v12Bundle.ingredients.filter { it.catalogRole == "REGULATORY_TECHNICAL" }
 
-            assertEquals(12, bundle.manifest.catalogVersion)
-            assertEquals(TECHNICAL_IDENTITIES.keys, technicalRecords.map { it.id }.toSet())
+            assertEquals(12, v12Bundle.manifest.catalogVersion)
+            assertEquals(TECHNICAL_IDENTITIES.keys, v12TechnicalRecords.map { it.id }.toSet())
 
             val importer = CatalogImporter(
                 reader = reader,
@@ -37,7 +37,7 @@ class CatalogV12RoleVisibilityTest {
             )
             val repository = LocalIngredientCatalogRepository(importer, database.ingredientCatalogDao())
             val importResult = repository.ensureCatalogImported().getOrThrow()
-            assertEquals(12, importResult.catalogVersion)
+            assertEquals(13, importResult.catalogVersion)
 
             TECHNICAL_IDENTITIES.forEach { (id, canonicalName) ->
                 assertNotNull(repository.getIngredient(id).getOrThrow())

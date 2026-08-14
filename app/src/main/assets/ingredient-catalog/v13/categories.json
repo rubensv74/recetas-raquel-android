@@ -1,0 +1,22 @@
+[
+  {"id":"cat-vegetables","code":"VEGETABLES","name":"Verduras y hortalizas","sortOrder":10,"iconKey":"vegetables","isActive":true},
+  {"id":"cat-fruits","code":"FRUITS","name":"Frutas","sortOrder":20,"iconKey":"fruits","isActive":true},
+  {"id":"cat-herbs","code":"HERBS","name":"Hierbas aromáticas","sortOrder":30,"iconKey":"herbs","isActive":true},
+  {"id":"cat-spices","code":"SPICES","name":"Especias","sortOrder":40,"iconKey":"spices","isActive":true},
+  {"id":"cat-cereals-flours","code":"CEREALS_FLOURS","name":"Cereales y harinas","sortOrder":50,"iconKey":"cereals","isActive":true},
+  {"id":"cat-legumes","code":"LEGUMES","name":"Legumbres","sortOrder":60,"iconKey":"legumes","isActive":true},
+  {"id":"cat-nuts-seeds","code":"NUTS_SEEDS","name":"Frutos de cáscara y semillas","sortOrder":70,"iconKey":"nuts-seeds","isActive":true},
+  {"id":"cat-dairy-alternatives","code":"DAIRY_ALTERNATIVES","name":"Lácteos y alternativas","sortOrder":80,"iconKey":"dairy","isActive":true},
+  {"id":"cat-eggs","code":"EGGS","name":"Huevos","sortOrder":90,"iconKey":"eggs","isActive":true},
+  {"id":"cat-meat","code":"MEAT","name":"Carnes","sortOrder":100,"iconKey":"meat","isActive":true},
+  {"id":"cat-poultry","code":"POULTRY","name":"Aves","sortOrder":110,"iconKey":"poultry","isActive":true},
+  {"id":"cat-fish","code":"FISH","name":"Pescados","sortOrder":120,"iconKey":"fish","isActive":true},
+  {"id":"cat-seafood","code":"SEAFOOD","name":"Mariscos","sortOrder":130,"iconKey":"seafood","isActive":true},
+  {"id":"cat-oils-fats","code":"OILS_FATS","name":"Aceites y grasas","sortOrder":140,"iconKey":"oils","isActive":true},
+  {"id":"cat-sweeteners","code":"SWEETENERS","name":"Azúcares y endulzantes","sortOrder":150,"iconKey":"sweeteners","isActive":true},
+  {"id":"cat-sauces-condiments","code":"SAUCES_CONDIMENTS","name":"Salsas y condimentos","sortOrder":160,"iconKey":"sauces","isActive":true},
+  {"id":"cat-bakery","code":"BAKERY","name":"Panadería y repostería","sortOrder":170,"iconKey":"bakery","isActive":true},
+  {"id":"cat-beverages","code":"BEVERAGES","name":"Bebidas","sortOrder":180,"iconKey":"beverages","isActive":true},
+  {"id":"cat-preserves-pickles","code":"PRESERVES_PICKLES","name":"Conservas y encurtidos","sortOrder":190,"iconKey":"preserves","isActive":true},
+  {"id":"cat-prepared-compound","code":"PREPARED_COMPOUND","name":"Preparados e ingredientes compuestos","sortOrder":200,"iconKey":"compound","isActive":true}
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ing-fully-refined-soybean-oil",
+    "canonicalName": "Aceite de soja totalmente refinado",
+    "normalizedName": "aceite de soja totalmente refinado",
+    "categoryId": "cat-oils-fats",
+    "defaultUnit": null,
+    "description": "Identidad técnica condicionada por el nivel de refinado; no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  },
+  {
+    "id": "ing-fully-refined-soybean-fat",
+    "canonicalName": "Grasa de soja totalmente refinada",
+    "normalizedName": "grasa de soja totalmente refinada",
+    "categoryId": "cat-oils-fats",
+    "defaultUnit": null,
+    "description": "Identidad técnica condicionada por el nivel de refinado; no equivale a una afirmación clínica de seguridad.",
+    "verificationStatus": "VERIFIED",
+    "compositionVariability": "VARIABLE_BY_PREPARATION",
+    "sourceUpdatedAt": null,
+    "isActive": true
+  }
+]

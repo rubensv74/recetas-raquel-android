@@ -2,6 +2,7 @@ package com.rmm.recetasraquel.data.repository
 
 import com.rmm.recetasraquel.data.catalog.CatalogImportResult
 import com.rmm.recetasraquel.data.catalog.CatalogImporter
+import com.rmm.recetasraquel.data.local.dao.CatalogIngredientComponentRow
 import com.rmm.recetasraquel.data.local.dao.CatalogIngredientFrequencyRow
 import com.rmm.recetasraquel.data.local.dao.CatalogIngredientRelatedRow
 import com.rmm.recetasraquel.data.local.dao.CatalogIngredientSafetyRow
@@ -17,6 +18,10 @@ import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogEntry
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogInformationStatus
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogRelatedPresentation
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogRelationDirection
+import com.rmm.recetasraquel.domain.ingredient.IngredientComponent
+import com.rmm.recetasraquel.domain.ingredient.IngredientComponentPresence
+import com.rmm.recetasraquel.domain.ingredient.IngredientComposition
+import com.rmm.recetasraquel.domain.ingredient.IngredientCompositionCoverage
 import com.rmm.recetasraquel.domain.ingredient.IngredientLineageRelation
 import com.rmm.recetasraquel.domain.ingredient.IngredientLineageType
 import com.rmm.recetasraquel.domain.ingredient.IngredientTextNormalizer
@@ -112,6 +117,17 @@ class LocalIngredientCatalogRepository(
         )
     }
 
+    override suspend fun getComposition(ingredientId: String): Result<IngredientComposition> = runCatching {
+        requireCatalogReady()
+        val coverage = dao.getIngredientCompositionCoverage(ingredientId)
+            ?.let(IngredientCompositionCoverage::valueOf)
+            ?: IngredientCompositionCoverage.NONE
+        IngredientComposition(
+            coverage = coverage,
+            components = dao.getActiveIngredientComponents(ingredientId).map { it.toDomain() },
+        )
+    }
+
     override suspend fun getParentRelations(ingredientId: String): Result<List<IngredientLineageRelation>> = runCatching {
         dao.getParentRelations(ingredientId).map { it.toDomain() }
     }
@@ -178,6 +194,17 @@ class LocalIngredientCatalogRepository(
         canonicalName = canonicalName,
         relationType = IngredientLineageType.valueOf(relationType),
         direction = IngredientCatalogRelationDirection.valueOf(direction),
+    )
+
+    private fun CatalogIngredientComponentRow.toDomain() = IngredientComponent(
+        id = id,
+        parentIngredientId = parentIngredientId,
+        componentIngredientId = componentIngredientId,
+        componentName = componentName,
+        presence = IngredientComponentPresence.valueOf(presenceType),
+        reviewedAt = reviewedAt,
+        sourceReference = sourceReference,
+        notes = notes,
     )
 
     private fun CatalogIngredientSafetyRow.toDomain() = CatalogIngredientSafetyRecord(

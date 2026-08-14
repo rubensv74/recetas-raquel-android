@@ -1,0 +1,84 @@
+{
+  "catalogId": "rmm-es-eu",
+  "schemaVersion": 5,
+  "catalogVersion": 13,
+  "releaseStatus": "RELEASED",
+  "locale": "es-ES",
+  "jurisdiction": "EU-ES",
+  "reviewedAt": "2026-08-13",
+  "files": {
+    "categories": "categories.json",
+    "ingredientShards": [
+      "ingredients-regulatory.json",
+      "ingredients-regulatory-exemptions.json",
+      "ingredients-reviewed-soy-exemptions.json",
+      "ingredients-reviewed-soy-derivatives.json",
+      "ingredients-reviewed-cereal-exemptions.json",
+      "ingredients-reviewed-annex-ii-exemptions.json",
+      "ingredients-vegetables.json",
+      "ingredients-fruits.json",
+      "ingredients-herbs-spices.json",
+      "ingredients-cereals-legumes.json",
+      "ingredients-meat-poultry.json",
+      "ingredients-seeds-spices-extra.json",
+      "ingredients-mushrooms-vegetables-extra.json",
+      "ingredients-fruits-extra.json",
+      "ingredients-lineage-cuts.json",
+      "ingredients-reviewed-flours.json",
+      "ingredients-culinary-staples-v13.json",
+      "ingredients-culinary-oils-sweeteners-v13.json",
+      "ingredients-culinary-pantry-v13.json",
+      "ingredients-culinary-everyday-v13.json",
+      "ingredients-culinary-dairy-eggs-v13.json",
+      "ingredients-culinary-aquatic-v13.json",
+      "ingredients-compound-v13.json",
+      "ingredients-editorial-independent-v13.json"
+    ],
+    "aliasShards": [
+      "aliases-regulatory.json",
+      "aliases-produce.json",
+      "aliases-pantry.json",
+      "aliases-meat-poultry.json",
+      "aliases-seeds-spices-extra.json",
+      "aliases-produce-extra.json",
+      "aliases-lineage-cuts.json",
+      "aliases-reviewed-flours.json",
+      "aliases-culinary-v13.json",
+      "aliases-culinary-regulated-v13.json"
+    ],
+    "ingredientRelationShards": [
+      "ingredient-relations-cuts.json",
+      "ingredient-relations-flours.json",
+      "ingredient-relations-regulatory-exemptions.json",
+      "ingredient-relations-soy-exemptions.json",
+      "ingredient-relations-soy-derivatives.json",
+      "ingredient-relations-cereal-exemptions.json",
+      "ingredient-relations-annex-ii-exemptions.json",
+      "ingredient-relations-culinary-regulated-v13.json"
+    ],
+    "ingredientComponentShards": [
+      "ingredient-components-compound-v13.json"
+    ],
+    "safetyGroups": "safety-groups.json",
+    "safetySources": "safety-sources.json",
+    "safetyRelations": "safety-relations.json",
+    "regulatoryExemptionShards": [
+      "regulatory-exemptions.json",
+      "regulatory-exemptions-soy.json",
+      "regulatory-exemptions-soy-derivatives.json",
+      "regulatory-exemptions-cereals.json",
+      "regulatory-exemptions-annex-ii.json"
+    ]
+  },
+  "counts": {
+    "categories": 20,
+    "ingredients": 808,
+    "aliases": 335,
+    "ingredientRelations": 143,
+    "ingredientComponents": 48,
+    "safetyGroups": 14,
+    "safetySources": 3,
+    "safetyRelations": 133,
+    "regulatoryExemptions": 20
+  }
+}

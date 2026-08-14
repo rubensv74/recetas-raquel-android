@@ -1,0 +1,22 @@
+[
+  {
+    "id": "lineage-fully-refined-soybean-oil",
+    "childIngredientId": "ing-fully-refined-soybean-oil",
+    "parentIngredientId": "ing-soybean",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-08",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Relación técnica de origen. No crea, hereda ni elimina relaciones de seguridad alimentaria.",
+    "isActive": true
+  },
+  {
+    "id": "lineage-fully-refined-soybean-fat",
+    "childIngredientId": "ing-fully-refined-soybean-fat",
+    "parentIngredientId": "ing-soybean",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-08",
+    "sourceReference": "EU_FIC_1169_2011",
+    "notes": "Relación técnica de origen. No crea, hereda ni elimina relaciones de seguridad alimentaria.",
+    "isActive": true
+  }
+]

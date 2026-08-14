@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import com.rmm.recetasraquel.data.local.dao.CustomIngredientDao
 import com.rmm.recetasraquel.data.local.dao.IngredientCatalogDao
 import com.rmm.recetasraquel.data.local.dao.RecipeDao
+import com.rmm.recetasraquel.data.local.entity.CatalogIngredientComponentEntity
 import com.rmm.recetasraquel.data.local.entity.CatalogIngredientEntity
 import com.rmm.recetasraquel.data.local.entity.CatalogIngredientRelationEntity
 import com.rmm.recetasraquel.data.local.entity.CatalogMetadataEntity
@@ -32,6 +33,7 @@ import com.rmm.recetasraquel.data.local.entity.SafetySourceEntity
         CatalogIngredientEntity::class,
         IngredientAliasEntity::class,
         CatalogIngredientRelationEntity::class,
+        CatalogIngredientComponentEntity::class,
         FoodSafetyGroupEntity::class,
         SafetySourceEntity::class,
         IngredientSafetyRelationEntity::class,
@@ -41,7 +43,7 @@ import com.rmm.recetasraquel.data.local.entity.SafetySourceEntity
         CustomIngredientSafetyRelationEntity::class,
         CatalogMetadataEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
 )
 abstract class RecipeDatabase : RoomDatabase() {
@@ -63,6 +65,7 @@ abstract class RecipeDatabase : RoomDatabase() {
                 IngredientLibraryMigrations.MIGRATION_3_4,
                 IngredientLibraryMigrations.MIGRATION_4_5,
                 IngredientLibraryMigrations.MIGRATION_5_6,
+                IngredientCompositionMigrations.MIGRATION_6_7,
             )
             .build()
     }

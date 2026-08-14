@@ -18,10 +18,12 @@ data class CatalogValidationResult(
 }
 
 object CatalogValidator {
-    private val supportedSchemaVersions = setOf(1, 2, 3, 4)
-    private val releaseStatuses = setOf("INFRASTRUCTURE", "DRAFT", "PRODUCTION_CANDIDATE")
+    private val supportedSchemaVersions = setOf(1, 2, 3, 4, 5)
+    private val releaseStatuses = setOf("INFRASTRUCTURE", "DRAFT", "PRODUCTION_CANDIDATE", "RELEASED")
     private val verificationStatuses = setOf("VERIFIED", "REVIEW_REQUIRED", "UNVERIFIED")
     private val compositionVariability = setOf("STABLE", "VARIABLE_BY_BRAND", "VARIABLE_BY_PREPARATION", "UNKNOWN")
+    private val compositionCoverage = setOf("NONE", "COMPLETE", "PARTIAL")
+    private val componentPresenceTypes = setOf("REQUIRED", "POSSIBLE")
     private val aliasTypes = setOf("COMMON", "REGIONAL", "SPELLING", "PRESENTATION", "SCIENTIFIC", "OTHER")
     private val conditionTypes = setOf(
         "FOOD_ALLERGY",
@@ -95,6 +97,7 @@ object CatalogValidator {
         validateUnique(errors, "ingredient normalizedName", bundle.ingredients.map { it.normalizedName })
         validateUnique(errors, "alias id", bundle.aliases.map { it.id })
         validateUnique(errors, "ingredient relation id", bundle.ingredientRelations.map { it.id })
+        validateUnique(errors, "ingredient component id", bundle.ingredientComponents.map { it.id })
         validateUnique(errors, "safety group id", bundle.safetyGroups.map { it.id })
         validateUnique(errors, "safety group code", bundle.safetyGroups.map { it.code })
         validateUnique(errors, "safety source id", bundle.safetySources.map { it.id })
@@ -126,6 +129,10 @@ object CatalogValidator {
             if (ingredient.compositionVariability !in compositionVariability) {
                 errors += "Ingredient ${ingredient.id} has unsupported compositionVariability ${ingredient.compositionVariability}"
             }
+            val coverage = ingredient.compositionCoverage ?: CatalogImporter.DEFAULT_COMPOSITION_COVERAGE
+            if (coverage !in compositionCoverage) {
+                errors += "Ingredient ${ingredient.id} has unsupported compositionCoverage $coverage"
+            }
         }
 
         bundle.aliases.forEach { alias ->
@@ -138,6 +145,7 @@ object CatalogValidator {
         }
 
         validateIngredientRelations(bundle.ingredientRelations, ingredientIds, errors)
+        validateIngredientComponents(bundle, ingredientIds, errors)
 
         bundle.safetyGroups.forEach { group ->
             requireNonBlank(errors, "safetyGroup.id", group.id)
@@ -209,6 +217,50 @@ object CatalogValidator {
         detectLineageCycles(relations, errors)
     }
 
+    private fun validateIngredientComponents(
+        bundle: IngredientCatalogBundle,
+        ingredientIds: Set<String>,
+        errors: MutableList<String>,
+    ) {
+        val edgeKeys = mutableSetOf<String>()
+        val activeComponentsByParent = bundle.ingredientComponents
+            .filter { it.isActive }
+            .groupBy { it.parentIngredientId }
+
+        bundle.ingredientComponents.forEach { component ->
+            requireNonBlank(errors, "ingredientComponent.id", component.id)
+            if (component.parentIngredientId !in ingredientIds) {
+                errors += "Ingredient component ${component.id} references missing parent ingredient ${component.parentIngredientId}"
+            }
+            if (component.componentIngredientId !in ingredientIds) {
+                errors += "Ingredient component ${component.id} references missing component ingredient ${component.componentIngredientId}"
+            }
+            if (component.parentIngredientId == component.componentIngredientId) {
+                errors += "Ingredient component ${component.id} cannot reference the same ingredient as parent and component"
+            }
+            if (component.presenceType !in componentPresenceTypes) {
+                errors += "Ingredient component ${component.id} has unsupported presenceType ${component.presenceType}"
+            }
+            requireDate(errors, "ingredientComponent.reviewedAt", component.reviewedAt)
+
+            val edgeKey = "${component.parentIngredientId}|${component.componentIngredientId}"
+            if (!edgeKeys.add(edgeKey)) errors += "Duplicate ingredient component edge: $edgeKey"
+        }
+
+        bundle.ingredients.forEach { ingredient ->
+            val coverage = ingredient.compositionCoverage ?: CatalogImporter.DEFAULT_COMPOSITION_COVERAGE
+            val activeComponents = activeComponentsByParent[ingredient.id].orEmpty()
+            if (coverage == "NONE" && activeComponents.isNotEmpty()) {
+                errors += "Ingredient ${ingredient.id} has active components but compositionCoverage is NONE"
+            }
+            if (coverage != "NONE" && activeComponents.isEmpty()) {
+                errors += "Ingredient ${ingredient.id} declares compositionCoverage $coverage but has no active components"
+            }
+        }
+
+        detectComponentCycles(bundle.ingredientComponents.filter { it.isActive }, errors)
+    }
+
     private fun validateRegulatoryExemptions(
         exemptions: List<CatalogRegulatoryExemptionRecord>,
         ingredientIds: Set<String>,
@@ -253,6 +305,18 @@ object CatalogValidator {
         errors: MutableList<String>,
     ) {
         val adjacency = relations.groupBy { it.childIngredientId }.mapValues { (_, edges) -> edges.map { it.parentIngredientId } }
+        if (hasCycle(adjacency)) errors += "Ingredient lineage contains a cycle"
+    }
+
+    private fun detectComponentCycles(
+        components: List<CatalogIngredientComponentRecord>,
+        errors: MutableList<String>,
+    ) {
+        val adjacency = components.groupBy { it.parentIngredientId }.mapValues { (_, edges) -> edges.map { it.componentIngredientId } }
+        if (hasCycle(adjacency)) errors += "Ingredient composition contains a cycle"
+    }
+
+    private fun hasCycle(adjacency: Map<String, List<String>>): Boolean {
         val visiting = mutableSetOf<String>()
         val visited = mutableSetOf<String>()
 
@@ -260,18 +324,13 @@ object CatalogValidator {
             if (node in visiting) return true
             if (node in visited) return false
             visiting += node
-            val hasCycle = adjacency[node].orEmpty().any { parent -> visit(parent) }
+            val cycle = adjacency[node].orEmpty().any(::visit)
             visiting -= node
             visited += node
-            return hasCycle
+            return cycle
         }
 
-        adjacency.keys.forEach { node ->
-            if (visit(node)) {
-                errors += "Ingredient lineage contains a cycle involving $node"
-                return
-            }
-        }
+        return adjacency.keys.any(::visit)
     }
 
     private fun validateFileLayout(files: CatalogFiles, schemaVersion: Int, errors: MutableList<String>) {
@@ -283,10 +342,12 @@ object CatalogValidator {
         val ingredientShards = files.ingredientShards.orEmpty()
         val aliasShards = files.aliasShards.orEmpty()
         val ingredientRelationShards = files.ingredientRelationShards.orEmpty()
+        val ingredientComponentShards = files.ingredientComponentShards.orEmpty()
         val regulatoryExemptionShards = files.regulatoryExemptionShards.orEmpty()
         val hasIngredientSingle = !files.ingredients.isNullOrBlank()
         val hasAliasSingle = !files.aliases.isNullOrBlank()
         val hasIngredientRelationSingle = !files.ingredientRelations.isNullOrBlank()
+        val hasIngredientComponentSingle = !files.ingredientComponents.isNullOrBlank()
         val hasRegulatoryExemptionSingle = !files.regulatoryExemptions.isNullOrBlank()
 
         if (hasIngredientSingle == ingredientShards.isNotEmpty()) {
@@ -297,6 +358,9 @@ object CatalogValidator {
         }
         if (hasIngredientRelationSingle && ingredientRelationShards.isNotEmpty()) {
             errors += "Manifest cannot declare both ingredientRelations and ingredientRelationShards"
+        }
+        if (hasIngredientComponentSingle && ingredientComponentShards.isNotEmpty()) {
+            errors += "Manifest cannot declare both ingredientComponents and ingredientComponentShards"
         }
         if (hasRegulatoryExemptionSingle && regulatoryExemptionShards.isNotEmpty()) {
             errors += "Manifest cannot declare both regulatoryExemptions and regulatoryExemptionShards"
@@ -310,14 +374,19 @@ object CatalogValidator {
         if (schemaVersion < 4 && (hasRegulatoryExemptionSingle || regulatoryExemptionShards.isNotEmpty())) {
             errors += "Catalog schemaVersion $schemaVersion does not support regulatory exemption files"
         }
+        if (schemaVersion < 5 && (hasIngredientComponentSingle || ingredientComponentShards.isNotEmpty())) {
+            errors += "Catalog schemaVersion $schemaVersion does not support ingredient component files"
+        }
 
         ingredientShards.forEach { requireNonBlank(errors, "manifest.files.ingredientShards", it) }
         aliasShards.forEach { requireNonBlank(errors, "manifest.files.aliasShards", it) }
         ingredientRelationShards.forEach { requireNonBlank(errors, "manifest.files.ingredientRelationShards", it) }
+        ingredientComponentShards.forEach { requireNonBlank(errors, "manifest.files.ingredientComponentShards", it) }
         regulatoryExemptionShards.forEach { requireNonBlank(errors, "manifest.files.regulatoryExemptionShards", it) }
         validateUnique(errors, "ingredient shard file", ingredientShards)
         validateUnique(errors, "alias shard file", aliasShards)
         validateUnique(errors, "ingredient relation shard file", ingredientRelationShards)
+        validateUnique(errors, "ingredient component shard file", ingredientComponentShards)
         validateUnique(errors, "regulatory exemption shard file", regulatoryExemptionShards)
     }
 
@@ -327,6 +396,7 @@ object CatalogValidator {
         compareCount(errors, "ingredients", c.ingredients, bundle.ingredients.size)
         compareCount(errors, "aliases", c.aliases, bundle.aliases.size)
         compareCount(errors, "ingredientRelations", c.ingredientRelations, bundle.ingredientRelations.size)
+        compareCount(errors, "ingredientComponents", c.ingredientComponents, bundle.ingredientComponents.size)
         compareCount(errors, "safetyGroups", c.safetyGroups, bundle.safetyGroups.size)
         compareCount(errors, "safetySources", c.safetySources, bundle.safetySources.size)
         compareCount(errors, "safetyRelations", c.safetyRelations, bundle.safetyRelations.size)

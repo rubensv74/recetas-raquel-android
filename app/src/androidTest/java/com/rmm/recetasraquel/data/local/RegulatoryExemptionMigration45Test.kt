@@ -38,6 +38,7 @@ class RegulatoryExemptionMigration45Test {
             .addMigrations(
                 IngredientLibraryMigrations.MIGRATION_4_5,
                 IngredientLibraryMigrations.MIGRATION_5_6,
+                IngredientCompositionMigrations.MIGRATION_6_7,
             )
             .build()
 
@@ -89,7 +90,7 @@ class RegulatoryExemptionMigration45Test {
 
             db.query("PRAGMA user_version").use { cursor ->
                 assertTrue(cursor.moveToFirst())
-                assertEquals(6, cursor.getInt(0))
+                assertEquals(7, cursor.getInt(0))
             }
         } finally {
             database.close()
