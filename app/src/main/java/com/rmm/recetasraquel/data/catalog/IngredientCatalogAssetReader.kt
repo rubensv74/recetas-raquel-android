@@ -39,6 +39,11 @@ class IngredientCatalogAssetReader(
                 singleFile = manifest.files.ingredientRelations,
                 shards = manifest.files.ingredientRelationShards,
             ),
+            ingredientComponents = readFileSet(
+                versionDirectory = versionDirectory,
+                singleFile = manifest.files.ingredientComponents,
+                shards = manifest.files.ingredientComponentShards,
+            ),
             safetyGroups = readList(versionDirectory, manifest.files.safetyGroups),
             safetySources = readList(versionDirectory, manifest.files.safetySources),
             safetyRelations = readList(versionDirectory, manifest.files.safetyRelations),
@@ -69,6 +74,6 @@ class IngredientCatalogAssetReader(
     }
 
     companion object {
-        const val DEFAULT_VERSION_DIRECTORY = "ingredient-catalog/v12"
+        const val DEFAULT_VERSION_DIRECTORY = "ingredient-catalog/v13"
     }
 }

@@ -29,7 +29,7 @@ class IngredientCatalogFrequentUsageTest {
                 timeProvider = TimeProvider { 1700L },
             )
             val repository = LocalIngredientCatalogRepository(importer, database.ingredientCatalogDao())
-            assertEquals(12, repository.ensureCatalogImported().getOrThrow().catalogVersion)
+            assertEquals(13, repository.ensureCatalogImported().getOrThrow().catalogVersion)
 
             val recipeDao = database.recipeDao()
             listOf("recipe-a", "recipe-b", "recipe-c").forEachIndexed { index, recipeId ->

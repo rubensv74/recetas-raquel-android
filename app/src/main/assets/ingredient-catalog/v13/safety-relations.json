@@ -1,0 +1,1332 @@
+[
+  {
+    "id": "rel-wheat",
+    "ingredientId": "ing-wheat",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "Incluido expresamente en el punto 1 del Anexo II. Las excepciones legales de determinados derivados no se aplican automáticamente a esta entrada.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-spelt",
+    "ingredientId": "ing-spelt",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "Incluido expresamente en el punto 1 del Anexo II. Las excepciones legales de determinados derivados no se aplican automáticamente a esta entrada.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-khorasan",
+    "ingredientId": "ing-khorasan",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "Incluido expresamente en el punto 1 del Anexo II. Las excepciones legales de determinados derivados no se aplican automáticamente a esta entrada.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-rye",
+    "ingredientId": "ing-rye",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "Incluido expresamente en el punto 1 del Anexo II. Las excepciones legales de determinados derivados no se aplican automáticamente a esta entrada.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-barley",
+    "ingredientId": "ing-barley",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "Incluido expresamente en el punto 1 del Anexo II. Las excepciones legales de determinados derivados no se aplican automáticamente a esta entrada.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-oats",
+    "ingredientId": "ing-oats",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "Incluido expresamente en el punto 1 del Anexo II. Las excepciones legales de determinados derivados no se aplican automáticamente a esta entrada.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-crustaceans",
+    "ingredientId": "ing-crustaceans",
+    "safetyGroupId": "sg-eu-crustaceans",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-egg",
+    "ingredientId": "ing-egg",
+    "safetyGroupId": "sg-eu-eggs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-fish",
+    "ingredientId": "ing-fish",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "El Anexo II contempla excepciones específicas para determinados usos de gelatina/ictiocola de pescado; no se generalizan a pescado como ingrediente.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-peanut",
+    "ingredientId": "ing-peanut",
+    "safetyGroupId": "sg-eu-peanuts",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-soybean",
+    "ingredientId": "ing-soybean",
+    "safetyGroupId": "sg-eu-soybeans",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "El Anexo II contempla excepciones específicas para determinados derivados de soja; no se generalizan a soja como ingrediente.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-milk",
+    "ingredientId": "ing-milk",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "El grupo regulatorio incluye lactosa, pero alergia a proteínas de leche e intolerancia a lactosa deben tratarse como condiciones distintas.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-almond",
+    "ingredientId": "ing-almond",
+    "safetyGroupId": "sg-eu-nuts",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-hazelnut",
+    "ingredientId": "ing-hazelnut",
+    "safetyGroupId": "sg-eu-nuts",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-walnut",
+    "ingredientId": "ing-walnut",
+    "safetyGroupId": "sg-eu-nuts",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-cashew",
+    "ingredientId": "ing-cashew",
+    "safetyGroupId": "sg-eu-nuts",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-pecan",
+    "ingredientId": "ing-pecan",
+    "safetyGroupId": "sg-eu-nuts",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-brazil-nut",
+    "ingredientId": "ing-brazil-nut",
+    "safetyGroupId": "sg-eu-nuts",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-pistachio",
+    "ingredientId": "ing-pistachio",
+    "safetyGroupId": "sg-eu-nuts",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-macadamia",
+    "ingredientId": "ing-macadamia",
+    "safetyGroupId": "sg-eu-nuts",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-celery",
+    "ingredientId": "ing-celery",
+    "safetyGroupId": "sg-eu-celery",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-mustard",
+    "ingredientId": "ing-mustard",
+    "safetyGroupId": "sg-eu-mustard",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_MUSTARD_2024_2512",
+    "notes": "La excepción vigente para ácido behénico exige pureza mínima del 85 % y dos etapas de destilación en usos concretos de E470a, E471 y E477; no se aplica a mostaza como ingrediente.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-sesame",
+    "ingredientId": "ing-sesame",
+    "safetyGroupId": "sg-eu-sesame",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-sulphur-dioxide",
+    "ingredientId": "ing-sulphur-dioxide",
+    "safetyGroupId": "sg-eu-sulphites",
+    "relationType": "REGULATED_COMPONENT",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "La obligación regulatoria depende de superar 10 mg/kg o 10 mg/l de SO2 total en el alimento listo para consumo o reconstituido; requiere contexto de concentración.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-sulphites",
+    "ingredientId": "ing-sulphites",
+    "safetyGroupId": "sg-eu-sulphites",
+    "relationType": "REGULATED_COMPONENT",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "La obligación regulatoria depende de superar 10 mg/kg o 10 mg/l de SO2 total en el alimento listo para consumo o reconstituido; requiere contexto de concentración.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-lupin",
+    "ingredientId": "ing-lupin",
+    "safetyGroupId": "sg-eu-lupin",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-molluscs",
+    "ingredientId": "ing-molluscs",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-wheat-flour",
+    "ingredientId": "ing-wheat-flour",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "Harina derivada de trigo, cereal incluido en el punto 1 del Anexo II. La harina genérica no figura entre las excepciones allí enumeradas. Esta relación no autoriza por sí sola declaraciones sobre ausencia o nivel de gluten.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-spelt-flour",
+    "ingredientId": "ing-spelt-flour",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "Harina derivada de espelta, cereal incluido en el punto 1 del Anexo II. La harina genérica no figura entre las excepciones allí enumeradas. Esta relación no autoriza por sí sola declaraciones sobre ausencia o nivel de gluten.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-khorasan-flour",
+    "ingredientId": "ing-khorasan-flour",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "Harina derivada de trigo khorasan, cubierto por el grupo de cereales del punto 1 del Anexo II. La harina genérica no figura entre las excepciones allí enumeradas.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-rye-flour",
+    "ingredientId": "ing-rye-flour",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "Harina derivada de centeno, cereal incluido en el punto 1 del Anexo II. La harina genérica no figura entre las excepciones allí enumeradas.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-barley-flour",
+    "ingredientId": "ing-barley-flour",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "Harina derivada de cebada, cereal incluido en el punto 1 del Anexo II. La harina genérica no figura entre las excepciones allí enumeradas.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-oats-flour",
+    "ingredientId": "ing-oats-flour",
+    "safetyGroupId": "sg-eu-cereals-gluten",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": "Harina derivada de avena, cereal incluido en el punto 1 del Anexo II. La identidad genérica no implica que cumpla condiciones específicas para una declaración sin gluten.",
+    "reviewedAt": "2026-08-08"
+  },
+  {
+    "id": "rel-v13-cow-milk",
+    "ingredientId": "ing-cow-milk",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-goat-milk",
+    "ingredientId": "ing-goat-milk",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-sheep-milk",
+    "ingredientId": "ing-sheep-milk",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-whole-milk",
+    "ingredientId": "ing-whole-milk",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-semi-skimmed-milk",
+    "ingredientId": "ing-semi-skimmed-milk",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-skimmed-milk",
+    "ingredientId": "ing-skimmed-milk",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-lactose-free-milk",
+    "ingredientId": "ing-lactose-free-milk",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-evaporated-milk",
+    "ingredientId": "ing-evaporated-milk",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-condensed-milk",
+    "ingredientId": "ing-condensed-milk",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-milk-powder",
+    "ingredientId": "ing-milk-powder",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-cream",
+    "ingredientId": "ing-cream",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-whipping-cream",
+    "ingredientId": "ing-whipping-cream",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-cooking-cream",
+    "ingredientId": "ing-cooking-cream",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-sour-cream",
+    "ingredientId": "ing-sour-cream",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-creme-fraiche",
+    "ingredientId": "ing-creme-fraiche",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-natural-yogurt",
+    "ingredientId": "ing-natural-yogurt",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-greek-yogurt",
+    "ingredientId": "ing-greek-yogurt",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-milk-kefir",
+    "ingredientId": "ing-milk-kefir",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-butter",
+    "ingredientId": "ing-butter",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-ghee",
+    "ingredientId": "ing-ghee",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-fresh-cheese",
+    "ingredientId": "ing-fresh-cheese",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-cream-cheese",
+    "ingredientId": "ing-cream-cheese",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-mozzarella",
+    "ingredientId": "ing-mozzarella",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-burrata",
+    "ingredientId": "ing-burrata",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-ricotta",
+    "ingredientId": "ing-ricotta",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-mascarpone",
+    "ingredientId": "ing-mascarpone",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-feta",
+    "ingredientId": "ing-feta",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-manchego-cheese",
+    "ingredientId": "ing-manchego-cheese",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-cheddar",
+    "ingredientId": "ing-cheddar",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-parmesan",
+    "ingredientId": "ing-parmesan",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-gouda",
+    "ingredientId": "ing-gouda",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-blue-cheese",
+    "ingredientId": "ing-blue-cheese",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-cottage-cheese",
+    "ingredientId": "ing-cottage-cheese",
+    "safetyGroupId": "sg-eu-milk",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-chicken-egg",
+    "ingredientId": "ing-chicken-egg",
+    "safetyGroupId": "sg-eu-eggs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-quail-egg",
+    "ingredientId": "ing-quail-egg",
+    "safetyGroupId": "sg-eu-eggs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-duck-egg",
+    "ingredientId": "ing-duck-egg",
+    "safetyGroupId": "sg-eu-eggs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-egg-white",
+    "ingredientId": "ing-egg-white",
+    "safetyGroupId": "sg-eu-eggs",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-egg-yolk",
+    "ingredientId": "ing-egg-yolk",
+    "safetyGroupId": "sg-eu-eggs",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-pasteurized-egg",
+    "ingredientId": "ing-pasteurized-egg",
+    "safetyGroupId": "sg-eu-eggs",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-pasteurized-egg-white",
+    "ingredientId": "ing-pasteurized-egg-white",
+    "safetyGroupId": "sg-eu-eggs",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-pasteurized-egg-yolk",
+    "ingredientId": "ing-pasteurized-egg-yolk",
+    "safetyGroupId": "sg-eu-eggs",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-powdered-egg",
+    "ingredientId": "ing-powdered-egg",
+    "safetyGroupId": "sg-eu-eggs",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-hake",
+    "ingredientId": "ing-hake",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-cod",
+    "ingredientId": "ing-cod",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-salmon",
+    "ingredientId": "ing-salmon",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-tuna",
+    "ingredientId": "ing-tuna",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-bonito",
+    "ingredientId": "ing-bonito",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-sardine",
+    "ingredientId": "ing-sardine",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-anchovy",
+    "ingredientId": "ing-anchovy",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-boqueron",
+    "ingredientId": "ing-boqueron",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-mackerel",
+    "ingredientId": "ing-mackerel",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-horse-mackerel",
+    "ingredientId": "ing-horse-mackerel",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-sea-bream",
+    "ingredientId": "ing-sea-bream",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-sea-bass",
+    "ingredientId": "ing-sea-bass",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-sole",
+    "ingredientId": "ing-sole",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-turbot",
+    "ingredientId": "ing-turbot",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-monkfish",
+    "ingredientId": "ing-monkfish",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-swordfish",
+    "ingredientId": "ing-swordfish",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-red-mullet",
+    "ingredientId": "ing-red-mullet",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-grouper",
+    "ingredientId": "ing-grouper",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-haddock",
+    "ingredientId": "ing-haddock",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-pollock",
+    "ingredientId": "ing-pollock",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-trout",
+    "ingredientId": "ing-trout",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-eel",
+    "ingredientId": "ing-eel",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-conger",
+    "ingredientId": "ing-conger",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-ray",
+    "ingredientId": "ing-ray",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-dogfish",
+    "ingredientId": "ing-dogfish",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-blue-whiting",
+    "ingredientId": "ing-blue-whiting",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-john-dory",
+    "ingredientId": "ing-john-dory",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-megrim",
+    "ingredientId": "ing-megrim",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-hake-loin",
+    "ingredientId": "ing-hake-loin",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-cod-loin",
+    "ingredientId": "ing-cod-loin",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-salmon-fillet",
+    "ingredientId": "ing-salmon-fillet",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-tuna-loin",
+    "ingredientId": "ing-tuna-loin",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-smoked-salmon",
+    "ingredientId": "ing-smoked-salmon",
+    "safetyGroupId": "sg-eu-fish",
+    "relationType": "DERIVED_FROM",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-shrimp",
+    "ingredientId": "ing-shrimp",
+    "safetyGroupId": "sg-eu-crustaceans",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-prawn",
+    "ingredientId": "ing-prawn",
+    "safetyGroupId": "sg-eu-crustaceans",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-king-prawn",
+    "ingredientId": "ing-king-prawn",
+    "safetyGroupId": "sg-eu-crustaceans",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-scampi",
+    "ingredientId": "ing-scampi",
+    "safetyGroupId": "sg-eu-crustaceans",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-lobster",
+    "ingredientId": "ing-lobster",
+    "safetyGroupId": "sg-eu-crustaceans",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-european-lobster",
+    "ingredientId": "ing-european-lobster",
+    "safetyGroupId": "sg-eu-crustaceans",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-crab",
+    "ingredientId": "ing-crab",
+    "safetyGroupId": "sg-eu-crustaceans",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-spider-crab",
+    "ingredientId": "ing-spider-crab",
+    "safetyGroupId": "sg-eu-crustaceans",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-velvet-crab",
+    "ingredientId": "ing-velvet-crab",
+    "safetyGroupId": "sg-eu-crustaceans",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-crayfish",
+    "ingredientId": "ing-crayfish",
+    "safetyGroupId": "sg-eu-crustaceans",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-goose-barnacle",
+    "ingredientId": "ing-goose-barnacle",
+    "safetyGroupId": "sg-eu-crustaceans",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-mussel",
+    "ingredientId": "ing-mussel",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-clam",
+    "ingredientId": "ing-clam",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-cockle",
+    "ingredientId": "ing-cockle",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-oyster",
+    "ingredientId": "ing-oyster",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-scallop",
+    "ingredientId": "ing-scallop",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-razor-clam",
+    "ingredientId": "ing-razor-clam",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-squid",
+    "ingredientId": "ing-squid",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-cuttlefish",
+    "ingredientId": "ing-cuttlefish",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-octopus",
+    "ingredientId": "ing-octopus",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-baby-squid",
+    "ingredientId": "ing-baby-squid",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-land-snail",
+    "ingredientId": "ing-land-snail",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-whelk",
+    "ingredientId": "ing-whelk",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-periwinkle",
+    "ingredientId": "ing-periwinkle",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  },
+  {
+    "id": "rel-v13-abalone",
+    "ingredientId": "ing-abalone",
+    "safetyGroupId": "sg-eu-molluscs",
+    "relationType": "INHERENT_SOURCE",
+    "evidenceLevel": "EU_LEGAL",
+    "sourceId": "EU_FIC_1169_2011",
+    "notes": null,
+    "reviewedAt": "2026-08-11"
+  }
+]

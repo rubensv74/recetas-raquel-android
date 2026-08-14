@@ -1,0 +1,1002 @@
+[
+  {
+    "id": "lin-v13-cow-milk",
+    "childIngredientId": "ing-cow-milk",
+    "parentIngredientId": "ing-milk",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-goat-milk",
+    "childIngredientId": "ing-goat-milk",
+    "parentIngredientId": "ing-milk",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-sheep-milk",
+    "childIngredientId": "ing-sheep-milk",
+    "parentIngredientId": "ing-milk",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-whole-milk",
+    "childIngredientId": "ing-whole-milk",
+    "parentIngredientId": "ing-milk",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-semi-skimmed-milk",
+    "childIngredientId": "ing-semi-skimmed-milk",
+    "parentIngredientId": "ing-milk",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-skimmed-milk",
+    "childIngredientId": "ing-skimmed-milk",
+    "parentIngredientId": "ing-milk",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-lactose-free-milk",
+    "childIngredientId": "ing-lactose-free-milk",
+    "parentIngredientId": "ing-milk",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-evaporated-milk",
+    "childIngredientId": "ing-evaporated-milk",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-condensed-milk",
+    "childIngredientId": "ing-condensed-milk",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-milk-powder",
+    "childIngredientId": "ing-milk-powder",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-cream",
+    "childIngredientId": "ing-cream",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-whipping-cream",
+    "childIngredientId": "ing-whipping-cream",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-cooking-cream",
+    "childIngredientId": "ing-cooking-cream",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-sour-cream",
+    "childIngredientId": "ing-sour-cream",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-creme-fraiche",
+    "childIngredientId": "ing-creme-fraiche",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-natural-yogurt",
+    "childIngredientId": "ing-natural-yogurt",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-greek-yogurt",
+    "childIngredientId": "ing-greek-yogurt",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-milk-kefir",
+    "childIngredientId": "ing-milk-kefir",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-butter",
+    "childIngredientId": "ing-butter",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-ghee",
+    "childIngredientId": "ing-ghee",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-fresh-cheese",
+    "childIngredientId": "ing-fresh-cheese",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-cream-cheese",
+    "childIngredientId": "ing-cream-cheese",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-mozzarella",
+    "childIngredientId": "ing-mozzarella",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-burrata",
+    "childIngredientId": "ing-burrata",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-ricotta",
+    "childIngredientId": "ing-ricotta",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-mascarpone",
+    "childIngredientId": "ing-mascarpone",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-feta",
+    "childIngredientId": "ing-feta",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-manchego-cheese",
+    "childIngredientId": "ing-manchego-cheese",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-cheddar",
+    "childIngredientId": "ing-cheddar",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-parmesan",
+    "childIngredientId": "ing-parmesan",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-gouda",
+    "childIngredientId": "ing-gouda",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-blue-cheese",
+    "childIngredientId": "ing-blue-cheese",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-cottage-cheese",
+    "childIngredientId": "ing-cottage-cheese",
+    "parentIngredientId": "ing-milk",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-chicken-egg",
+    "childIngredientId": "ing-chicken-egg",
+    "parentIngredientId": "ing-egg",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-quail-egg",
+    "childIngredientId": "ing-quail-egg",
+    "parentIngredientId": "ing-egg",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-duck-egg",
+    "childIngredientId": "ing-duck-egg",
+    "parentIngredientId": "ing-egg",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-egg-white",
+    "childIngredientId": "ing-egg-white",
+    "parentIngredientId": "ing-egg",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-egg-yolk",
+    "childIngredientId": "ing-egg-yolk",
+    "parentIngredientId": "ing-egg",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-pasteurized-egg",
+    "childIngredientId": "ing-pasteurized-egg",
+    "parentIngredientId": "ing-egg",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-pasteurized-egg-white",
+    "childIngredientId": "ing-pasteurized-egg-white",
+    "parentIngredientId": "ing-egg",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-pasteurized-egg-yolk",
+    "childIngredientId": "ing-pasteurized-egg-yolk",
+    "parentIngredientId": "ing-egg",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-powdered-egg",
+    "childIngredientId": "ing-powdered-egg",
+    "parentIngredientId": "ing-egg",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-hake",
+    "childIngredientId": "ing-hake",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-cod",
+    "childIngredientId": "ing-cod",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-salmon",
+    "childIngredientId": "ing-salmon",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-tuna",
+    "childIngredientId": "ing-tuna",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-bonito",
+    "childIngredientId": "ing-bonito",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-sardine",
+    "childIngredientId": "ing-sardine",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-anchovy",
+    "childIngredientId": "ing-anchovy",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-boqueron",
+    "childIngredientId": "ing-boqueron",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-mackerel",
+    "childIngredientId": "ing-mackerel",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-horse-mackerel",
+    "childIngredientId": "ing-horse-mackerel",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-sea-bream",
+    "childIngredientId": "ing-sea-bream",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-sea-bass",
+    "childIngredientId": "ing-sea-bass",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-sole",
+    "childIngredientId": "ing-sole",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-turbot",
+    "childIngredientId": "ing-turbot",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-monkfish",
+    "childIngredientId": "ing-monkfish",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-swordfish",
+    "childIngredientId": "ing-swordfish",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-red-mullet",
+    "childIngredientId": "ing-red-mullet",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-grouper",
+    "childIngredientId": "ing-grouper",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-haddock",
+    "childIngredientId": "ing-haddock",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-pollock",
+    "childIngredientId": "ing-pollock",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-trout",
+    "childIngredientId": "ing-trout",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-eel",
+    "childIngredientId": "ing-eel",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-conger",
+    "childIngredientId": "ing-conger",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-ray",
+    "childIngredientId": "ing-ray",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-dogfish",
+    "childIngredientId": "ing-dogfish",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-blue-whiting",
+    "childIngredientId": "ing-blue-whiting",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-john-dory",
+    "childIngredientId": "ing-john-dory",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-megrim",
+    "childIngredientId": "ing-megrim",
+    "parentIngredientId": "ing-fish",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-hake-loin",
+    "childIngredientId": "ing-hake-loin",
+    "parentIngredientId": "ing-hake",
+    "relationType": "FORM_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-cod-loin",
+    "childIngredientId": "ing-cod-loin",
+    "parentIngredientId": "ing-cod",
+    "relationType": "FORM_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-salmon-fillet",
+    "childIngredientId": "ing-salmon-fillet",
+    "parentIngredientId": "ing-salmon",
+    "relationType": "FORM_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-tuna-loin",
+    "childIngredientId": "ing-tuna-loin",
+    "parentIngredientId": "ing-tuna",
+    "relationType": "FORM_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-smoked-salmon",
+    "childIngredientId": "ing-smoked-salmon",
+    "parentIngredientId": "ing-salmon",
+    "relationType": "DERIVED_FROM",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-shrimp",
+    "childIngredientId": "ing-shrimp",
+    "parentIngredientId": "ing-crustaceans",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-prawn",
+    "childIngredientId": "ing-prawn",
+    "parentIngredientId": "ing-crustaceans",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-king-prawn",
+    "childIngredientId": "ing-king-prawn",
+    "parentIngredientId": "ing-crustaceans",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-scampi",
+    "childIngredientId": "ing-scampi",
+    "parentIngredientId": "ing-crustaceans",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-lobster",
+    "childIngredientId": "ing-lobster",
+    "parentIngredientId": "ing-crustaceans",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-european-lobster",
+    "childIngredientId": "ing-european-lobster",
+    "parentIngredientId": "ing-crustaceans",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-crab",
+    "childIngredientId": "ing-crab",
+    "parentIngredientId": "ing-crustaceans",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-spider-crab",
+    "childIngredientId": "ing-spider-crab",
+    "parentIngredientId": "ing-crustaceans",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-velvet-crab",
+    "childIngredientId": "ing-velvet-crab",
+    "parentIngredientId": "ing-crustaceans",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-crayfish",
+    "childIngredientId": "ing-crayfish",
+    "parentIngredientId": "ing-crustaceans",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-goose-barnacle",
+    "childIngredientId": "ing-goose-barnacle",
+    "parentIngredientId": "ing-crustaceans",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-mussel",
+    "childIngredientId": "ing-mussel",
+    "parentIngredientId": "ing-molluscs",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-clam",
+    "childIngredientId": "ing-clam",
+    "parentIngredientId": "ing-molluscs",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-cockle",
+    "childIngredientId": "ing-cockle",
+    "parentIngredientId": "ing-molluscs",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-oyster",
+    "childIngredientId": "ing-oyster",
+    "parentIngredientId": "ing-molluscs",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-scallop",
+    "childIngredientId": "ing-scallop",
+    "parentIngredientId": "ing-molluscs",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-razor-clam",
+    "childIngredientId": "ing-razor-clam",
+    "parentIngredientId": "ing-molluscs",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-squid",
+    "childIngredientId": "ing-squid",
+    "parentIngredientId": "ing-molluscs",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-cuttlefish",
+    "childIngredientId": "ing-cuttlefish",
+    "parentIngredientId": "ing-molluscs",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-octopus",
+    "childIngredientId": "ing-octopus",
+    "parentIngredientId": "ing-molluscs",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-baby-squid",
+    "childIngredientId": "ing-baby-squid",
+    "parentIngredientId": "ing-molluscs",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-land-snail",
+    "childIngredientId": "ing-land-snail",
+    "parentIngredientId": "ing-molluscs",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-whelk",
+    "childIngredientId": "ing-whelk",
+    "parentIngredientId": "ing-molluscs",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-periwinkle",
+    "childIngredientId": "ing-periwinkle",
+    "parentIngredientId": "ing-molluscs",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  },
+  {
+    "id": "lin-v13-abalone",
+    "childIngredientId": "ing-abalone",
+    "parentIngredientId": "ing-molluscs",
+    "relationType": "VARIANT_OF",
+    "reviewedAt": "2026-08-11",
+    "sourceReference": null,
+    "notes": "Linaje culinario curado para v13; no propaga relaciones de seguridad ni exenciones.",
+    "isActive": true
+  }
+]

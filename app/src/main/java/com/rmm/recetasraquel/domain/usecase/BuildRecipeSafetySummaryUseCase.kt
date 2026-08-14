@@ -1,6 +1,9 @@
 package com.rmm.recetasraquel.domain.usecase
 
+import com.rmm.recetasraquel.domain.ingredient.CatalogIngredientSafetyRecord
 import com.rmm.recetasraquel.domain.ingredient.FoodSafetyGroupOption
+import com.rmm.recetasraquel.domain.ingredient.IngredientComponentPresence
+import com.rmm.recetasraquel.domain.ingredient.IngredientCompositionCoverage
 import com.rmm.recetasraquel.domain.ingredient.RecipeReviewNotice
 import com.rmm.recetasraquel.domain.ingredient.RecipeSafetyAggregator
 import com.rmm.recetasraquel.domain.ingredient.RecipeSafetyObservation
@@ -79,7 +82,7 @@ class BuildRecipeSafetySummaryUseCase(
 
         aggregator.aggregate(
             observations = observations,
-            reviewNotices = reviewNotices,
+            reviewNotices = reviewNotices.distinct(),
             regulatoryExemptions = regulatoryExemptions.distinctBy { it.id },
         )
     }
@@ -101,6 +104,39 @@ class BuildRecipeSafetySummaryUseCase(
             return
         }
 
+        appendDirectCatalogSafety(
+            recipeIngredient = recipeIngredient,
+            catalogIngredientId = catalogIngredientId,
+            observations = observations,
+            reviewNotices = reviewNotices,
+        )
+
+        appendStructuredCompositionEvidence(
+            recipeIngredient = recipeIngredient,
+            parentIngredientId = catalogIngredientId,
+            path = listOf(catalogIngredient.canonicalName),
+            inheritedPossibility = false,
+            visited = setOf(catalogIngredientId),
+            depth = 0,
+            observations = observations,
+            reviewNotices = reviewNotices,
+        )
+
+        regulatoryExemptions += catalogRepository
+            .getApplicableRegulatoryExemptions(
+                ingredientId = catalogIngredientId,
+                jurisdiction = regulatoryJurisdiction,
+                asOfDate = regulatoryAsOfDate,
+            )
+            .getOrThrow()
+    }
+
+    private suspend fun appendDirectCatalogSafety(
+        recipeIngredient: Ingredient,
+        catalogIngredientId: String,
+        observations: MutableList<RecipeSafetyObservation>,
+        reviewNotices: MutableList<RecipeReviewNotice>,
+    ) {
         catalogRepository.getSafetyRelations(catalogIngredientId).getOrThrow().forEach { relation ->
             val relationType = relation.relationType.toRecipeRelationTypeOrNull()
             if (relationType == null) {
@@ -110,27 +146,101 @@ class BuildRecipeSafetySummaryUseCase(
                 )
                 return@forEach
             }
-            observations += RecipeSafetyObservation(
-                ingredientId = recipeIngredient.id,
-                ingredientName = recipeIngredient.name,
-                safetyGroupId = relation.safetyGroupId,
-                safetyGroupName = relation.safetyGroupName,
+            observations += relation.toObservation(
+                recipeIngredient = recipeIngredient,
                 relationType = relationType,
-                evidenceLevel = relation.evidenceLevel,
-                sourceId = relation.sourceId,
-                sourceDetails = relation.sourceDetails,
-                notes = relation.notes,
-                reviewedAt = relation.reviewedAt,
+            )
+        }
+    }
+
+    private suspend fun appendStructuredCompositionEvidence(
+        recipeIngredient: Ingredient,
+        parentIngredientId: String,
+        path: List<String>,
+        inheritedPossibility: Boolean,
+        visited: Set<String>,
+        depth: Int,
+        observations: MutableList<RecipeSafetyObservation>,
+        reviewNotices: MutableList<RecipeReviewNotice>,
+    ) {
+        if (depth >= MAX_COMPOSITION_DEPTH) {
+            reviewNotices += recipeIngredient.reviewNotice(
+                code = "COMPOSITION_DEPTH_LIMIT",
+                message = "La composición estructurada supera el límite de profundidad verificable. Requiere revisión.",
+            )
+            return
+        }
+
+        val composition = catalogRepository.getComposition(parentIngredientId).getOrThrow()
+        if (composition.coverage == IngredientCompositionCoverage.NONE) return
+
+        if (composition.coverage == IngredientCompositionCoverage.PARTIAL) {
+            reviewNotices += recipeIngredient.reviewNotice(
+                code = "PARTIAL_STRUCTURED_COMPOSITION",
+                message = "La composición estructurada de ${path.last()} es parcial y puede no incluir todos sus componentes. Requiere revisar el producto o formulación concreta.",
             )
         }
 
-        regulatoryExemptions += catalogRepository
-            .getApplicableRegulatoryExemptions(
-                ingredientId = catalogIngredientId,
-                jurisdiction = regulatoryJurisdiction,
-                asOfDate = regulatoryAsOfDate,
+        composition.components.forEach { component ->
+            if (component.componentIngredientId in visited) {
+                reviewNotices += recipeIngredient.reviewNotice(
+                    code = "COMPOSITION_CYCLE_DETECTED",
+                    message = "Se ha detectado una referencia circular en la composición estructurada. Requiere revisión.",
+                )
+                return@forEach
+            }
+
+            val componentIngredient = catalogRepository.getIngredient(component.componentIngredientId).getOrThrow()
+            if (componentIngredient == null) {
+                reviewNotices += recipeIngredient.reviewNotice(
+                    code = "COMPONENT_INGREDIENT_NOT_AVAILABLE",
+                    message = "Un componente estructurado ya no está disponible en el catálogo activo. Requiere revisión.",
+                )
+                return@forEach
+            }
+
+            val isPossible = inheritedPossibility || component.presence == IngredientComponentPresence.POSSIBLE
+            val componentPath = path + componentIngredient.canonicalName
+
+            if (component.presence == IngredientComponentPresence.POSSIBLE) {
+                reviewNotices += recipeIngredient.reviewNotice(
+                    code = "POSSIBLE_CATALOG_COMPONENT",
+                    message = "${componentIngredient.canonicalName} figura como componente posible de ${path.last()}, no como presencia confirmada. Requiere revisar la composición concreta.",
+                )
+            }
+
+            catalogRepository.getSafetyRelations(component.componentIngredientId).getOrThrow().forEach { relation ->
+                val originalType = relation.relationType.toRecipeRelationTypeOrNull()
+                if (originalType == null) {
+                    reviewNotices += recipeIngredient.reviewNotice(
+                        code = "UNSUPPORTED_COMPONENT_SAFETY_RELATION",
+                        message = "Existe información de seguridad de un componente cuyo tipo no puede interpretarse. Requiere revisión.",
+                    )
+                    return@forEach
+                }
+                val aggregatedType = if (isPossible) {
+                    RecipeSafetyRelationType.UNKNOWN
+                } else {
+                    originalType.asContainedComponentRelation()
+                }
+                observations += relation.toObservation(
+                    recipeIngredient = recipeIngredient,
+                    relationType = aggregatedType,
+                    compositionPath = componentPath,
+                )
+            }
+
+            appendStructuredCompositionEvidence(
+                recipeIngredient = recipeIngredient,
+                parentIngredientId = component.componentIngredientId,
+                path = componentPath,
+                inheritedPossibility = isPossible,
+                visited = visited + component.componentIngredientId,
+                depth = depth + 1,
+                observations = observations,
+                reviewNotices = reviewNotices,
             )
-            .getOrThrow()
+        }
     }
 
     private suspend fun appendCustomEvidence(
@@ -180,6 +290,38 @@ class BuildRecipeSafetySummaryUseCase(
         }
     }
 
+    private fun CatalogIngredientSafetyRecord.toObservation(
+        recipeIngredient: Ingredient,
+        relationType: RecipeSafetyRelationType,
+        compositionPath: List<String>? = null,
+    ) = RecipeSafetyObservation(
+        ingredientId = recipeIngredient.id,
+        ingredientName = recipeIngredient.name,
+        safetyGroupId = safetyGroupId,
+        safetyGroupName = safetyGroupName,
+        relationType = relationType,
+        evidenceLevel = evidenceLevel,
+        sourceId = sourceId,
+        sourceDetails = listOfNotNull(
+            sourceDetails,
+            compositionPath?.joinToString(" → ")?.let { "Composición estructurada: $it" },
+        ).filter(String::isNotBlank).joinToString(" · ").takeIf(String::isNotBlank),
+        notes = notes,
+        reviewedAt = reviewedAt,
+    )
+
+    private fun RecipeSafetyRelationType.asContainedComponentRelation(): RecipeSafetyRelationType = when (this) {
+        RecipeSafetyRelationType.INHERENT_SOURCE,
+        RecipeSafetyRelationType.CONTAINS,
+        RecipeSafetyRelationType.DERIVED_FROM,
+        RecipeSafetyRelationType.REGULATED_COMPONENT,
+        -> RecipeSafetyRelationType.CONTAINS
+
+        RecipeSafetyRelationType.DECLARED_MAY_CONTAIN -> RecipeSafetyRelationType.DECLARED_MAY_CONTAIN
+        RecipeSafetyRelationType.POSSIBLE_CROSS_REACTIVITY -> RecipeSafetyRelationType.POSSIBLE_CROSS_REACTIVITY
+        RecipeSafetyRelationType.UNKNOWN -> RecipeSafetyRelationType.UNKNOWN
+    }
+
     private fun currentRegulatoryDateIso(): String = SimpleDateFormat(DATE_PATTERN, Locale.ROOT).apply {
         timeZone = TimeZone.getTimeZone(regulatoryTimeZoneId)
     }.format(Date(timeProvider.nowEpochMillis()))
@@ -196,6 +338,7 @@ class BuildRecipeSafetySummaryUseCase(
 
     companion object {
         private const val DATE_PATTERN = "yyyy-MM-dd"
+        private const val MAX_COMPOSITION_DEPTH = 12
         const val DEFAULT_REGULATORY_JURISDICTION = "EU-ES"
         const val DEFAULT_REGULATORY_TIME_ZONE_ID = "Europe/Madrid"
     }
