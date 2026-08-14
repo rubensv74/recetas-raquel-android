@@ -66,7 +66,8 @@ class RecipeCatalogUiTest {
         waitForText("Tortilla de patatas")
         composeRule.onAllNodesWithText("Tarta de queso").assertCountEquals(0)
 
-        composeRule.onNodeWithTag("category_Principal").performClick()
+        composeRule.onNodeWithTag("filter_category").performClick()
+        composeRule.onNodeWithText("Principal").performClick()
         composeRule.onNodeWithTag("catalog_search").performTextInput("inexistente")
         waitForText("No se encontraron recetas con estos filtros.")
         composeRule.onNodeWithContentDescription("Limpiar filtros").performClick()
