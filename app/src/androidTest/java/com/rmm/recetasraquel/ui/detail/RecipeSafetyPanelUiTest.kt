@@ -69,7 +69,10 @@ class RecipeSafetyPanelUiTest {
             hasContentDescription("Grupo de seguridad alimentaria: Cereales que contienen gluten") and
                 hasAnyAncestor(hasTestTag("recipe_safety_panel")),
         ).assertIsDisplayed()
-        composeRule.onNodeWithText("Cereales que contienen gluten").assertIsDisplayed()
+        composeRule.onNode(
+            hasText("Cereales que contienen gluten") and
+                hasAnyAncestor(hasTestTag("recipe_safety_group_sg-eu-cereals-gluten")),
+        ).assertIsDisplayed()
         composeRule.onNodeWithText("Presencia identificada").assertIsDisplayed()
         composeRule.onNodeWithText("Requiere revisión").assertIsDisplayed()
     }
