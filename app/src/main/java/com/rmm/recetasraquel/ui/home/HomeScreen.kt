@@ -1,7 +1,6 @@
 package com.rmm.recetasraquel.ui.home
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -46,6 +44,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.rmm.recetasraquel.domain.model.RecipeSummary
+import com.rmm.recetasraquel.ui.components.SelectionDropdown
 import com.rmm.recetasraquel.ui.components.formatTotalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -193,9 +192,9 @@ private fun CatalogFilters(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
             .padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         FilterChip(
             selected = state.filter.favoritesOnly,
@@ -205,23 +204,16 @@ private fun CatalogFilters(
             shape = MaterialTheme.shapes.large,
             colors = premiumFilterChipColors(),
         )
-        FilterChip(
-            selected = state.filter.category == null,
-            onClick = { onSelectCategory(null) },
-            label = { Text("Todas") },
-            shape = MaterialTheme.shapes.large,
-            colors = premiumFilterChipColors(),
+        SelectionDropdown(
+            value = state.filter.category ?: "Todas",
+            options = listOf("Todas") + state.categories,
+            onSelect = { category ->
+                onSelectCategory(category.takeUnless { it == "Todas" })
+            },
+            label = "Categoría",
+            modifier = Modifier.weight(1f),
+            testTag = "filter_category",
         )
-        state.categories.forEach { category ->
-            FilterChip(
-                selected = state.filter.category == category,
-                onClick = { onSelectCategory(category) },
-                label = { Text(category) },
-                modifier = Modifier.testTag("category_$category"),
-                shape = MaterialTheme.shapes.large,
-                colors = premiumFilterChipColors(),
-            )
-        }
     }
 }
 

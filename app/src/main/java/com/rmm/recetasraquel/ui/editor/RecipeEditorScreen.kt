@@ -51,6 +51,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.rmm.recetasraquel.ui.components.SelectionDropdown
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -298,12 +299,16 @@ private fun EditorContent(
         }
 
         item {
-            OutlinedTextField(
+            SelectionDropdown(
                 value = state.category,
-                onValueChange = onCategoryChange,
-                modifier = Modifier.fillMaxWidth().testTag("editor_category"),
-                label = { Text("Categoría") },
-                singleLine = true,
+                options = (RecipeEditorOptions.categories + state.category)
+                    .filter(String::isNotBlank)
+                    .distinct(),
+                onSelect = onCategoryChange,
+                label = "Categoría",
+                placeholder = "Seleccionar categoría",
+                modifier = Modifier.fillMaxWidth(),
+                testTag = "editor_category",
             )
         }
 
@@ -498,12 +503,16 @@ private fun IngredientEditorRow(
                     label = { Text("Cantidad") },
                     singleLine = true,
                 )
-                OutlinedTextField(
+                SelectionDropdown(
                     value = item.unit,
-                    onValueChange = onUnitChange,
-                    modifier = Modifier.weight(0.3f),
-                    label = { Text("Unidad") },
-                    singleLine = true,
+                    options = (RecipeEditorOptions.units + item.unit)
+                        .filter(String::isNotBlank)
+                        .distinct(),
+                    onSelect = onUnitChange,
+                    label = "Unidad",
+                    placeholder = "Elegir",
+                    modifier = Modifier.weight(0.45f),
+                    testTag = "ingredient_unit_${item.key}",
                 )
                 IconButton(
                     onClick = onRemove,

@@ -3,7 +3,9 @@ package com.rmm.recetasraquel.ui.editor
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import com.rmm.recetasraquel.ui.theme.RecetasRaquelTheme
 import org.junit.Rule
@@ -28,6 +30,23 @@ class RecipeEditorIngredientIdentityUiTest {
         composeRule.onNodeWithText("Cantidad").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Unidad").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Observaciones").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun categoryAndUnitAreSelectedFromDropdowns() {
+        setScreen(
+            EditorIngredientItem(
+                key = "catalog-row",
+                name = "Trigo",
+                catalogIngredientId = "ing-wheat",
+            ),
+        )
+
+        composeRule.onNodeWithTag("editor_category").performClick()
+        composeRule.onNodeWithText("Arroces").assertIsDisplayed().performClick()
+
+        composeRule.onNodeWithTag("ingredient_unit_catalog-row").performScrollTo().performClick()
+        composeRule.onNodeWithText("kg").assertIsDisplayed()
     }
 
     @Test
