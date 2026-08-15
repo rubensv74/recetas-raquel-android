@@ -2,11 +2,11 @@
 
 **Estado:** base de diseño y calidad para implementación incremental  
 **Fecha:** 2026-08-11  
-**Ámbito:** experiencia completa de Recetas Raquel, con la pantalla de detalle de receta como primer patrón de referencia.
+**Ámbito:** experiencia completa de Recetoria, con la pantalla de detalle de receta como primer patrón de referencia.
 
 ## 1. Objetivo
 
-Recetas Raquel no debe limitarse a una aplicación funcional con una capa visual agradable. El objetivo es que se perciba premium de forma consistente en diseño, interacción, accesibilidad, rendimiento, robustez, seguridad alimentaria y calidad del dato.
+Recetoria no debe limitarse a una aplicación funcional con una capa visual agradable. El objetivo es que se perciba premium de forma consistente en diseño, interacción, accesibilidad, rendimiento, robustez, seguridad alimentaria y calidad del dato.
 
 La referencia visual aprobada define una dirección editorial cálida y limpia: fotografía protagonista, superficies marfil, acentos cobre/dorado, títulos con carácter editorial, textos de interfaz sobrios, tarjetas discretas, iconografía propia y una jerarquía muy clara entre contenido culinario, acciones y seguridad alimentaria.
 

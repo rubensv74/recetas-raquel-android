@@ -27,7 +27,6 @@ object RecipeMapper {
 
     fun normalizeDraft(draft: RecipeDraft): RecipeDraft {
         val filtered = draft.copy(
-            ingredients = draft.ingredients.filter { it.name.isNotBlank() },
             steps = draft.steps.filter { it.instruction.isNotBlank() || it.timerMinutes != null },
         )
         return RecipeValidator.normalize(filtered)

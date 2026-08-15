@@ -308,7 +308,8 @@ private fun EditorContent(
                 value = state.category,
                 options = (RecipeEditorOptions.categories + state.category)
                     .filter(String::isNotBlank)
-                    .distinct(),
+                    .distinct()
+                    .sortedBy { it.lowercase() },
                 onSelect = onCategoryChange,
                 label = "Categoría",
                 placeholder = "Seleccionar categoría",

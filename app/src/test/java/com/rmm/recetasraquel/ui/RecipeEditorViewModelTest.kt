@@ -180,6 +180,38 @@ class RecipeEditorViewModelTest {
     }
 
     @Test
+    fun legacyRecipeWithoutIngredientQuantityLoadsButCannotBeSavedUntilCorrected() = runTest(dispatcher) {
+        val legacyRecipe = existingRecipe().copy(
+            ingredients = existingRecipe().ingredients.map { it.copy(quantity = null) },
+        )
+        val repo = FakeEditorRepository(recipes = mutableMapOf("r1" to legacyRecipe))
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(
+            repository = repo,
+            recipeId = "r1",
+            saveRecipeUseCase = fakeUseCase,
+        )
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+
+        val ingredient = vm.uiState.value.ingredients.single()
+        assertEquals("", ingredient.quantity)
+
+        vm.save()
+        advanceUntilIdle()
+
+        assertEquals("La cantidad es obligatoria", vm.uiState.value.ingredientErrors[ingredient.key])
+        assertTrue(fakeUseCase.updatedInputs.isEmpty())
+
+        vm.updateIngredientQuantity(ingredient.key, "al gusto")
+        vm.save()
+        advanceUntilIdle()
+
+        assertEquals("al gusto", fakeUseCase.updatedInputs.getValue("r1").draft.ingredients.single().quantity)
+        job.cancel()
+    }
+
+    @Test
     fun editModeShowsNotFoundForMissingRecipe() = runTest(dispatcher) {
         val vm = createViewModel(repository = FakeEditorRepository(), recipeId = "missing")
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
