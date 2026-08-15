@@ -1,18 +1,26 @@
 package com.rmm.recetasraquel.ui.cooking
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -22,6 +30,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
@@ -53,14 +62,22 @@ fun CookingModeScreen(
     val content = state as? CookingUiState.Content
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Modo cocina") },
+                title = {
+                    Text(
+                        text = "Modo cocina",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                },
                 navigationIcon = {
                     TextButton(
                         onClick = onNavigateBack,
                         modifier = Modifier.semantics { contentDescription = "Salir del modo cocina" },
-                    ) { Text("Salir") }
+                    ) {
+                        Text("Salir")
+                    }
                 },
                 actions = {
                     if (content != null) {
@@ -69,9 +86,15 @@ fun CookingModeScreen(
                             modifier = Modifier
                                 .testTag("cooking_ingredients_button")
                                 .semantics { contentDescription = "Ver ingredientes" },
-                        ) { Text("Ingredientes") }
+                        ) {
+                            Text("Ingredientes")
+                        }
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background,
+                ),
             )
         },
         bottomBar = {
@@ -87,7 +110,9 @@ fun CookingModeScreen(
     ) { padding ->
         when (state) {
             CookingUiState.Loading -> Column(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
@@ -98,14 +123,18 @@ fun CookingModeScreen(
                 message = "La receta ya no está disponible.",
                 buttonText = "Volver",
                 onClick = onNavigateBack,
-                modifier = Modifier.padding(padding).testTag("cooking_not_found"),
+                modifier = Modifier
+                    .padding(padding)
+                    .testTag("cooking_not_found"),
             )
 
             is CookingUiState.Error -> CookingMessage(
                 message = state.message,
                 buttonText = "Volver",
                 onClick = onNavigateBack,
-                modifier = Modifier.padding(padding).testTag("cooking_error"),
+                modifier = Modifier
+                    .padding(padding)
+                    .testTag("cooking_error"),
             )
 
             is CookingUiState.Content -> CookingContent(
@@ -131,39 +160,89 @@ private fun CookingContent(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 20.dp)
             .testTag("cooking_screen"),
-        verticalArrangement = Arrangement.spacedBy(18.dp),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+        contentPadding = PaddingValues(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 28.dp),
     ) {
         item {
-            Text(
-                text = state.recipe.name,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                state.recipe.category?.takeIf(String::isNotBlank)?.let { category ->
+                    Text(
+                        text = category.uppercase(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                Text(
+                    text = state.recipe.name,
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+            }
         }
 
         val step = state.currentStep
         if (step == null) {
             item {
-                Text(
-                    text = "Esta receta todavía no tiene pasos de preparación.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.testTag("cooking_no_steps"),
-                )
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.extraLarge,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                    ),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            text = "Esta receta todavía no tiene pasos de preparación.",
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.testTag("cooking_no_steps"),
+                        )
+                        Text(
+                            text = "Añade los pasos desde la edición de la receta para utilizar el modo cocina.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
             }
         } else {
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "Paso ${state.currentStepIndex + 1} de ${state.totalSteps}",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.testTag("cooking_step_counter"),
-                    )
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = "Paso ${state.currentStepIndex + 1} de ${state.totalSteps}",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.testTag("cooking_step_counter"),
+                        )
+                        Surface(
+                            shape = MaterialTheme.shapes.small,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ) {
+                            Text(
+                                text = "${((state.progress * 100).toInt()).coerceIn(0, 100)}%",
+                                modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        }
+                    }
                     LinearProgressIndicator(
                         progress = { state.progress },
-                        modifier = Modifier.fillMaxWidth().testTag("cooking_progress"),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(6.dp)
+                            .clip(CircleShape)
+                            .testTag("cooking_progress"),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.primaryContainer,
                     )
                 }
             }
@@ -175,8 +254,8 @@ private fun CookingContent(
                         contentDescription = "Foto del paso ${state.currentStepIndex + 1}",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(240.dp)
-                            .clip(MaterialTheme.shapes.large)
+                            .height(260.dp)
+                            .clip(MaterialTheme.shapes.extraLarge)
                             .testTag("cooking_step_photo"),
                         contentScale = ContentScale.Crop,
                     )
@@ -186,8 +265,9 @@ private fun CookingContent(
             item {
                 Text(
                     text = step.instruction,
-                    style = MaterialTheme.typography.headlineMedium,
-                    lineHeight = MaterialTheme.typography.headlineMedium.lineHeight,
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    lineHeight = MaterialTheme.typography.headlineLarge.lineHeight,
                     modifier = Modifier.testTag("cooking_instruction"),
                 )
             }
@@ -195,24 +275,44 @@ private fun CookingContent(
             step.timerMinutes?.let { minutes ->
                 item {
                     Surface(
-                        tonalElevation = 2.dp,
-                        shape = MaterialTheme.shapes.medium,
+                        shape = MaterialTheme.shapes.large,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Column(
+                        Row(
                             modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text("Tiempo indicado", style = MaterialTheme.typography.labelLarge)
-                            Text(
-                                "$minutes min",
-                                style = MaterialTheme.typography.titleLarge,
-                                modifier = Modifier.testTag("cooking_timer_hint"),
-                            )
-                            Text(
-                                "El temporizador automático se añadirá en una fase posterior.",
-                                style = MaterialTheme.typography.bodySmall,
-                            )
+                            Surface(
+                                modifier = Modifier.size(42.dp),
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.surface,
+                                contentColor = MaterialTheme.colorScheme.primary,
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(
+                                        text = "⏱",
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                }
+                            }
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text(
+                                    text = "Tiempo indicado",
+                                    style = MaterialTheme.typography.labelLarge,
+                                )
+                                Text(
+                                    text = "$minutes min",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    modifier = Modifier.testTag("cooking_timer_hint"),
+                                )
+                                Text(
+                                    text = "El temporizador automático se añadirá en una fase posterior.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
                         }
                     }
                 }
@@ -228,16 +328,25 @@ private fun CookingNavigationBar(
     onNextStep: () -> Unit,
     onFinish: () -> Unit,
 ) {
-    Surface(shadowElevation = 8.dp) {
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 10.dp,
+    ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             OutlinedButton(
                 onClick = onPreviousStep,
                 enabled = state.canGoPrevious,
-                modifier = Modifier.weight(1f).testTag("cooking_previous"),
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = 54.dp)
+                    .testTag("cooking_previous"),
+                shape = MaterialTheme.shapes.large,
             ) {
                 Text("Anterior")
             }
@@ -245,9 +354,18 @@ private fun CookingNavigationBar(
                 onClick = if (state.isLastStep) onFinish else onNextStep,
                 modifier = Modifier
                     .weight(1f)
+                    .heightIn(min = 54.dp)
                     .testTag(if (state.isLastStep) "cooking_finish" else "cooking_next"),
+                shape = MaterialTheme.shapes.large,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
             ) {
-                Text(if (state.isLastStep) "Terminar" else "Siguiente")
+                Text(
+                    text = if (state.isLastStep) "Terminar" else "Siguiente",
+                    style = MaterialTheme.typography.titleSmall,
+                )
             }
         }
     }
@@ -262,30 +380,65 @@ private fun IngredientsSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         modifier = Modifier.testTag("cooking_ingredients_sheet"),
+        containerColor = MaterialTheme.colorScheme.surface,
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text("Ingredientes", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(
+                    text = "Ingredientes",
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+                Text(
+                    text = "Consulta la lista sin salir del paso actual.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
             if (ingredients.isEmpty()) {
                 Text("Esta receta no tiene ingredientes guardados.")
             } else {
                 LazyColumn(
-                    modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 420.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     items(ingredients, key = { it.id }) { ingredient ->
-                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text(formatIngredient(ingredient), style = MaterialTheme.typography.bodyLarge)
-                            ingredient.notes?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(
+                                text = formatIngredient(ingredient),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            ingredient.notes?.let {
+                                Text(
+                                    text = it,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f),
+                            )
                         }
                     }
                 }
             }
+
             Button(
                 onClick = onDismiss,
-                modifier = Modifier.fillMaxWidth().testTag("cooking_ingredients_close"),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 52.dp)
+                    .testTag("cooking_ingredients_close"),
+                shape = MaterialTheme.shapes.large,
             ) {
                 Text("Cerrar")
             }
@@ -301,12 +454,29 @@ private fun CookingMessage(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxSize().padding(24.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
     ) {
-        Text(message, style = MaterialTheme.typography.bodyLarge)
-        Button(onClick = onClick) { Text(buttonText) }
+        Surface(
+            modifier = Modifier.size(54.dp),
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text("R", style = MaterialTheme.typography.titleLarge)
+            }
+        }
+        Text(
+            text = message,
+            style = MaterialTheme.typography.titleLarge,
+        )
+        Button(onClick = onClick) {
+            Text(buttonText)
+        }
     }
 }
 

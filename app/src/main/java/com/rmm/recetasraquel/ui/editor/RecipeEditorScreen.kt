@@ -1,6 +1,7 @@
 package com.rmm.recetasraquel.ui.editor
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.rmm.recetasraquel.ui.components.SelectionDropdown
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,6 +93,10 @@ fun RecipeEditorScreen(
     onDismissSaveError: () -> Unit,
     onDismissPhotoError: () -> Unit,
 ) {
+    BackHandler(enabled = !state.isSaving && !state.isDeleting) {
+        onNavigateBack()
+    }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val title = when (state.mode) {
         is EditorMode.Create -> "Nueva receta"
@@ -298,12 +304,18 @@ private fun EditorContent(
         }
 
         item {
-            OutlinedTextField(
+            SelectionDropdown(
                 value = state.category,
-                onValueChange = onCategoryChange,
-                modifier = Modifier.fillMaxWidth().testTag("editor_category"),
-                label = { Text("Categoría") },
-                singleLine = true,
+                options = (RecipeEditorOptions.categories + state.category)
+                    .filter(String::isNotBlank)
+                    .distinct(),
+                onSelect = onCategoryChange,
+                label = "Categoría",
+                placeholder = "Seleccionar categoría",
+                helperText = "Desliza la lista para ver todas las categorías",
+                clearLabel = "Sin categoría",
+                modifier = Modifier.fillMaxWidth(),
+                testTag = "editor_category",
             )
         }
 
@@ -494,16 +506,27 @@ private fun IngredientEditorRow(
                 OutlinedTextField(
                     value = item.quantity,
                     onValueChange = onQuantityChange,
-                    modifier = Modifier.weight(0.4f),
-                    label = { Text("Cantidad") },
+                    modifier = Modifier.weight(0.4f).testTag("ingredient_quantity_${item.key}"),
+                    label = { Text("Cantidad *") },
                     singleLine = true,
+                    isError = error != null && item.quantity.isBlank(),
+                    supportingText = if (error != null && item.quantity.isBlank()) {
+                        { Text(error) }
+                    } else {
+                        null
+                    },
                 )
-                OutlinedTextField(
+                SelectionDropdown(
                     value = item.unit,
-                    onValueChange = onUnitChange,
-                    modifier = Modifier.weight(0.3f),
-                    label = { Text("Unidad") },
-                    singleLine = true,
+                    options = (RecipeEditorOptions.units + item.unit)
+                        .filter(String::isNotBlank)
+                        .distinct(),
+                    onSelect = onUnitChange,
+                    label = "Unidad",
+                    placeholder = "Elegir",
+                    clearLabel = "Sin unidad",
+                    modifier = Modifier.weight(0.45f),
+                    testTag = "ingredient_unit_${item.key}",
                 )
                 IconButton(
                     onClick = onRemove,
@@ -516,9 +539,9 @@ private fun IngredientEditorRow(
                 modifier = Modifier.fillMaxWidth().testTag("ingredient_name_${item.key}"),
                 label = { Text("Ingrediente *") },
                 readOnly = originLabel != null,
-                isError = error != null,
+                isError = error != null && item.name.isBlank(),
                 supportingText = when {
-                    error != null -> { { Text(error) } }
+                    error != null && item.name.isBlank() && item.quantity.isNotBlank() -> { { Text(error) } }
                     originLabel != null -> { { Text(originLabel) } }
                     else -> null
                 },

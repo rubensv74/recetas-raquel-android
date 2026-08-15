@@ -6,7 +6,7 @@
 
 ## 1. Propósito
 
-Este documento reúne las principales decisiones técnicas y regulatorias adoptadas para la biblioteca de ingredientes y el sistema de alertas de seguridad alimentaria de Recetas de Raquel.
+Este documento reúne las principales decisiones técnicas y regulatorias adoptadas para la biblioteca de ingredientes y el sistema de alertas de seguridad alimentaria de Recetoria.
 
 Su finalidad es servir como **evidencia técnica de apoyo** para futuros procesos de registro, publicación, auditoría o revisión de la aplicación. No sustituye una evaluación jurídica, sanitaria o regulatoria específica ni afirma por sí solo que la aplicación esté sujeta a un régimen concreto de registro.
 

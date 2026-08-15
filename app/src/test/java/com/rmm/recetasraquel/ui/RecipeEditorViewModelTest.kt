@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -202,6 +203,43 @@ class RecipeEditorViewModelTest {
         vm.save()
         advanceUntilIdle()
         assertTrue(vm.uiState.value.ingredientErrors.containsKey(key))
+        job.cancel()
+    }
+
+    @Test
+    fun ingredientWithNameButNoQuantityCannotBeSaved() = runTest(dispatcher) {
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("Receta")
+        vm.addIngredient()
+        val key = vm.uiState.value.ingredients.single().key
+        vm.updateIngredientName(key, "Patatas")
+
+        vm.save()
+        advanceUntilIdle()
+
+        assertEquals("La cantidad es obligatoria", vm.uiState.value.ingredientErrors[key])
+        assertTrue(fakeUseCase.createdInputs.isEmpty())
+        job.cancel()
+    }
+
+    @Test
+    fun completelyEmptyIngredientRowCannotBeSilentlyDiscardedOnSave() = runTest(dispatcher) {
+        val fakeUseCase = FakeSaveRecipeUseCase()
+        val vm = createViewModel(saveRecipeUseCase = fakeUseCase)
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateName("Receta")
+        vm.addIngredient()
+        val key = vm.uiState.value.ingredients.single().key
+
+        vm.save()
+        advanceUntilIdle()
+
+        assertEquals("El nombre y la cantidad son obligatorios", vm.uiState.value.ingredientErrors[key])
+        assertTrue(fakeUseCase.createdInputs.isEmpty())
         job.cancel()
     }
 
@@ -408,13 +446,53 @@ class RecipeEditorViewModelTest {
     }
 
     @Test
-    fun handleBackWithNoChangesDoesNotShowDialog() = runTest(dispatcher) {
+    fun handleBackWithNoChangesClosesEditorWithoutDialog() = runTest(dispatcher) {
         val vm = createViewModel()
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        val event = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            assertEquals(EditorNavigationEvent.EditorClosed, vm.navigation.first())
+        }
         advanceUntilIdle()
         vm.handleBack()
         advanceUntilIdle()
         assertFalse(vm.uiState.value.showDiscardConfirmation)
+        assertTrue(event.isCompleted)
+        job.cancel()
+    }
+
+    @Test
+    fun confirmingDiscardClosesEditor() = runTest(dispatcher) {
+        val vm = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        val event = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            assertEquals(EditorNavigationEvent.EditorClosed, vm.navigation.first())
+        }
+        advanceUntilIdle()
+        vm.updateName("Cambio")
+        vm.handleBack()
+        assertTrue(vm.uiState.value.showDiscardConfirmation)
+        vm.discardChanges()
+        advanceUntilIdle()
+        assertFalse(vm.uiState.value.showDiscardConfirmation)
+        assertTrue(event.isCompleted)
+        job.cancel()
+    }
+
+    @Test
+    fun categoryAndUnitCanBeCleared() = runTest(dispatcher) {
+        val vm = createViewModel()
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+        advanceUntilIdle()
+        vm.updateCategory("Postres")
+        vm.addIngredient()
+        val ingredientKey = vm.uiState.value.ingredients.single().key
+        vm.updateIngredientUnit(ingredientKey, "g")
+
+        vm.updateCategory("")
+        vm.updateIngredientUnit(ingredientKey, "")
+
+        assertEquals("", vm.uiState.value.category)
+        assertEquals("", vm.uiState.value.ingredients.single().unit)
         job.cancel()
     }
 

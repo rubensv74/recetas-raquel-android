@@ -301,7 +301,8 @@ private fun EditorRoute(
     LaunchedEffect(Unit) {
         viewModel.navigation.collect { event ->
             when (event) {
-                com.rmm.recetasraquel.ui.editor.EditorNavigationEvent.RecipeDeleted -> {
+                com.rmm.recetasraquel.ui.editor.EditorNavigationEvent.RecipeDeleted,
+                com.rmm.recetasraquel.ui.editor.EditorNavigationEvent.EditorClosed -> {
                     navController.popBackStack()
                 }
                 is com.rmm.recetasraquel.ui.editor.EditorNavigationEvent.RecipeCreated,

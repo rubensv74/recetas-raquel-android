@@ -55,7 +55,7 @@ class IngredientOriginMapperTest {
             Ingredient(
                 id = "i1",
                 recipeId = "r1",
-                quantity = null,
+                quantity = "1",
                 unit = null,
                 name = "Leche",
                 notes = null,
@@ -68,6 +68,7 @@ class IngredientOriginMapperTest {
             ingredients = listOf(
                 IngredientDraft(
                     id = "i1",
+                    quantity = "1",
                     name = "Leche",
                     catalogIngredientId = "catalog:milk",
                     customIngredientId = null,
@@ -115,7 +116,7 @@ class IngredientOriginMapperTest {
             Ingredient(
                 id = "i1",
                 recipeId = "r1",
-                quantity = null,
+                quantity = "1",
                 unit = null,
                 name = "Tomate",
                 notes = null,
@@ -137,7 +138,7 @@ class IngredientOriginMapperTest {
             Ingredient(
                 id = "i1",
                 recipeId = "r1",
-                quantity = null,
+                quantity = "1",
                 unit = null,
                 name = "Leche",
                 notes = null,

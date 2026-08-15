@@ -66,7 +66,8 @@ class RecipeCatalogUiTest {
         waitForText("Tortilla de patatas")
         composeRule.onAllNodesWithText("Tarta de queso").assertCountEquals(0)
 
-        composeRule.onNodeWithTag("category_Principal").performClick()
+        composeRule.onNodeWithTag("filter_category").performClick()
+        composeRule.onNodeWithText("Principal").performClick()
         composeRule.onNodeWithTag("catalog_search").performTextInput("inexistente")
         waitForText("No se encontraron recetas con estos filtros.")
         composeRule.onNodeWithContentDescription("Limpiar filtros").performClick()
@@ -85,7 +86,7 @@ class RecipeCatalogUiTest {
         composeRule.onNodeWithText("Tortilla de patatas").performClick()
         waitForText("Ingredientes")
         composeRule.onNodeWithText("1/2 kg · Patatas").assertIsDisplayed()
-        composeRule.onNodeWithText("1. Cortar las patatas.").assertIsDisplayed()
+        composeRule.onNodeWithText("Cortar las patatas.").assertIsDisplayed()
         composeRule.onNodeWithText("Volver").performClick()
         waitForText("Buscar por receta o ingrediente")
     }

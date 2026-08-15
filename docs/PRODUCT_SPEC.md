@@ -2,7 +2,7 @@
 
 ## Problema y usuaria
 
-Las recetas personales pueden quedar dispersas o ser difíciles de localizar durante un servicio. Recetas de Raquel ofrece a una única usuaria un archivo privado, rápido y disponible sin conexión.
+Las recetas personales pueden quedar dispersas o ser difíciles de localizar durante un servicio. Recetoria ofrece a una única usuaria un archivo privado, rápido y disponible sin conexión.
 
 ## Casos de uso principales
 

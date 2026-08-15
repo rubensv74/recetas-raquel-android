@@ -32,6 +32,7 @@ sealed interface EditorNavigationEvent {
     data class RecipeCreated(val recipeId: String) : EditorNavigationEvent
     data class RecipeUpdated(val recipeId: String) : EditorNavigationEvent
     data object RecipeDeleted : EditorNavigationEvent
+    data object EditorClosed : EditorNavigationEvent
     data class ShowMessage(val message: String) : EditorNavigationEvent
 }
 
@@ -280,6 +281,7 @@ class RecipeEditorViewModel(
                 ingredients = state.ingredients.map {
                     if (it.key == key) it.copy(quantity = value) else it
                 },
+                ingredientErrors = state.ingredientErrors - key,
             )
         }
         checkForUnsavedChanges()
@@ -598,8 +600,14 @@ class RecipeEditorViewModel(
 
         val ingredientErrors = mutableMapOf<String, String>()
         state.ingredients.forEach { item ->
-            if (item.name.isBlank() && (item.quantity.isNotBlank() || item.unit.isNotBlank() || item.notes.isNotBlank())) {
-                ingredientErrors[item.key] = "El nombre es obligatorio"
+            val error = when {
+                item.name.isBlank() && item.quantity.isBlank() -> "El nombre y la cantidad son obligatorios"
+                item.name.isBlank() -> "El nombre es obligatorio"
+                item.quantity.isBlank() -> "La cantidad es obligatoria"
+                else -> null
+            }
+            if (error != null) {
+                ingredientErrors[item.key] = error
                 valid = false
             }
         }
@@ -789,13 +797,21 @@ class RecipeEditorViewModel(
     }
 
     fun discardChanges() {
-        cleanStaging()
+        val state = _uiState.value
         _uiState.update { it.copy(showDiscardConfirmation = false) }
+        viewModelScope.launch {
+            cleanStaging(state)
+            _navigation.emit(EditorNavigationEvent.EditorClosed)
+        }
     }
 
     fun handleBack() {
         if (_uiState.value.hasUnsavedChanges) {
             _uiState.update { it.copy(showDiscardConfirmation = true) }
+        } else {
+            viewModelScope.launch {
+                _navigation.emit(EditorNavigationEvent.EditorClosed)
+            }
         }
     }
 
@@ -803,13 +819,12 @@ class RecipeEditorViewModel(
         _uiState.update { it.copy(saveError = null) }
     }
 
-    private fun cleanStaging() {
-        val state = _uiState.value
+    private suspend fun cleanStaging(state: RecipeEditorUiState) {
         if (state.coverPhotoState is EditorPhotoState.Staged) {
-            viewModelScope.launch { photoStorage.deleteStaged(state.coverPhotoState.stagedPhoto) }
+            photoStorage.deleteStaged(state.coverPhotoState.stagedPhoto)
         }
         state.stepPhotoStates.values.filterIsInstance<EditorPhotoState.Staged>().forEach { staged ->
-            viewModelScope.launch { photoStorage.deleteStaged(staged.stagedPhoto) }
+            photoStorage.deleteStaged(staged.stagedPhoto)
         }
     }
 

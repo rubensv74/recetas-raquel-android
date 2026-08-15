@@ -38,6 +38,18 @@ class RecipeValidatorTest {
     }
 
     @Test
+    fun rejectsIngredientDraftWithoutQuantity() {
+        assertThrows(RecipeValidationException::class.java) {
+            RecipeValidator.normalize(
+                RecipeDraft(
+                    name = "R",
+                    ingredients = listOf(IngredientDraft(name = "Sal", quantity = " ")),
+                ),
+            )
+        }
+    }
+
+    @Test
     fun rejectsNegativeChildValues() {
         val ingredient = ingredient(sortOrder = -1)
         assertThrows(RecipeValidationException::class.java) { RecipeValidator.normalize(recipe(ingredients = listOf(ingredient))) }
@@ -53,7 +65,7 @@ class RecipeValidatorTest {
                 description = "   ",
                 ingredients = listOf(
                     ingredient(id = "i2", name = " Sal ", quantity = " al gusto ", sortOrder = 9),
-                    ingredient(id = "i1", name = " Agua ", notes = " ", sortOrder = 4),
+                    ingredient(id = "i1", name = " Agua ", quantity = "1", notes = " ", sortOrder = 4),
                 ),
                 steps = listOf(
                     step(id = "s2", instruction = " Hervir ", sortOrder = 7),
@@ -84,7 +96,7 @@ class RecipeValidatorTest {
     private fun ingredient(
         id: String = "i1",
         name: String = "Sal",
-        quantity: String? = null,
+        quantity: String? = "1",
         notes: String? = null,
         sortOrder: Int = 0,
     ) = Ingredient(id, "r1", quantity, null, name, notes, sortOrder)
