@@ -354,7 +354,7 @@ private fun RecipeHero(recipe: Recipe) {
                 verticalArrangement = Arrangement.Bottom,
             ) {
                 Text(
-                    text = "Recetas Raquel",
+                    text = "Recetoria",
                     style = MaterialTheme.typography.headlineMedium,
                 )
                 Text(

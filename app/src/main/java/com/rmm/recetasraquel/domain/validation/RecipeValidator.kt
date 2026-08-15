@@ -18,7 +18,7 @@ object RecipeValidator {
             cookingMinutes = draft.cookingMinutes,
         )
         draft.ingredients.forEach {
-            validateIngredient(it.name, 0)
+            validateIngredient(it.name, it.quantity, 0)
             validateIngredientOrigin(it.catalogIngredientId, it.customIngredientId)
         }
         draft.steps.forEach { validateStep(it.instruction, it.timerMinutes, 0) }
@@ -54,7 +54,7 @@ object RecipeValidator {
             notes = recipe.notes.normalizedOrNull(),
             coverPhotoPath = recipe.coverPhotoPath.normalizedOrNull(),
             ingredients = recipe.ingredients.mapIndexed { index, ingredient ->
-                validateIngredient(ingredient.name, ingredient.sortOrder)
+                validateIngredient(ingredient.name, ingredient.quantity, ingredient.sortOrder)
                 validateIngredientOrigin(ingredient.catalogIngredientId, ingredient.customIngredientId)
                 ingredient.normalized(index)
             },
@@ -81,8 +81,9 @@ object RecipeValidator {
         }
     }
 
-    private fun validateIngredient(name: String, sortOrder: Int) {
+    private fun validateIngredient(name: String, quantity: String?, sortOrder: Int) {
         if (name.isBlank()) throw RecipeValidationException("El nombre del ingrediente es obligatorio")
+        if (quantity.isNullOrBlank()) throw RecipeValidationException("La cantidad del ingrediente es obligatoria")
         if (sortOrder < 0) throw RecipeValidationException("El orden del ingrediente no puede ser negativo")
     }
 

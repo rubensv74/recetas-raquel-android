@@ -1,4 +1,4 @@
-# Recetas de Raquel
+# Recetoria
 
 Aplicación Android privada y local-first para guardar y consultar recetas sin conexión.
 

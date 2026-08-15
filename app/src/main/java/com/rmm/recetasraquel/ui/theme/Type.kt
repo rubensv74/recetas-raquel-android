@@ -7,7 +7,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 /**
- * Editorial hierarchy for Recetas Raquel.
+ * Editorial hierarchy for Recetoria.
  *
  * Display and headline roles use the platform serif family to give recipes a
  * cookbook character without adding a network or font-file dependency. UI

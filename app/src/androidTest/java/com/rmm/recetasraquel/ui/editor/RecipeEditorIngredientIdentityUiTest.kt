@@ -27,7 +27,7 @@ class RecipeEditorIngredientIdentityUiTest {
         )
 
         composeRule.onNodeWithText("Ingrediente de biblioteca").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("Cantidad").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("ingredient_quantity_catalog-row").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Unidad").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Observaciones").performScrollTo().assertIsDisplayed()
     }
@@ -51,6 +51,22 @@ class RecipeEditorIngredientIdentityUiTest {
         composeRule.onNodeWithTag("ingredient_unit_catalog-row").performScrollTo().performClick()
         composeRule.onNodeWithText("Sin unidad").assertIsDisplayed()
         composeRule.onNodeWithText("kg").assertIsDisplayed()
+    }
+
+    @Test
+    fun categorySelectorExplainsThatMoreOptionsCanBeReachedByScrolling() {
+        setScreen(
+            EditorIngredientItem(
+                key = "catalog-row",
+                name = "Trigo",
+                unit = "g",
+                catalogIngredientId = "ing-wheat",
+            ),
+        )
+
+        composeRule.onNodeWithText("Desliza la lista para ver todas las categorías")
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     @Test

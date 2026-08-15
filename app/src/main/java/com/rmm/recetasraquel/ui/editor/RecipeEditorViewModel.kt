@@ -281,6 +281,7 @@ class RecipeEditorViewModel(
                 ingredients = state.ingredients.map {
                     if (it.key == key) it.copy(quantity = value) else it
                 },
+                ingredientErrors = state.ingredientErrors - key,
             )
         }
         checkForUnsavedChanges()
@@ -599,8 +600,14 @@ class RecipeEditorViewModel(
 
         val ingredientErrors = mutableMapOf<String, String>()
         state.ingredients.forEach { item ->
-            if (item.name.isBlank() && (item.quantity.isNotBlank() || item.unit.isNotBlank() || item.notes.isNotBlank())) {
-                ingredientErrors[item.key] = "El nombre es obligatorio"
+            val error = when {
+                item.name.isBlank() && item.quantity.isBlank() -> "El nombre y la cantidad son obligatorios"
+                item.name.isBlank() -> "El nombre es obligatorio"
+                item.quantity.isBlank() -> "La cantidad es obligatoria"
+                else -> null
+            }
+            if (error != null) {
+                ingredientErrors[item.key] = error
                 valid = false
             }
         }

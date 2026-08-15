@@ -312,6 +312,7 @@ private fun EditorContent(
                 onSelect = onCategoryChange,
                 label = "Categoría",
                 placeholder = "Seleccionar categoría",
+                helperText = "Desliza la lista para ver todas las categorías",
                 clearLabel = "Sin categoría",
                 modifier = Modifier.fillMaxWidth(),
                 testTag = "editor_category",
@@ -505,9 +506,15 @@ private fun IngredientEditorRow(
                 OutlinedTextField(
                     value = item.quantity,
                     onValueChange = onQuantityChange,
-                    modifier = Modifier.weight(0.4f),
-                    label = { Text("Cantidad") },
+                    modifier = Modifier.weight(0.4f).testTag("ingredient_quantity_${item.key}"),
+                    label = { Text("Cantidad *") },
                     singleLine = true,
+                    isError = error != null && item.quantity.isBlank(),
+                    supportingText = if (error != null && item.quantity.isBlank()) {
+                        { Text(error) }
+                    } else {
+                        null
+                    },
                 )
                 SelectionDropdown(
                     value = item.unit,
@@ -532,9 +539,9 @@ private fun IngredientEditorRow(
                 modifier = Modifier.fillMaxWidth().testTag("ingredient_name_${item.key}"),
                 label = { Text("Ingrediente *") },
                 readOnly = originLabel != null,
-                isError = error != null,
+                isError = error != null && item.name.isBlank(),
                 supportingText = when {
-                    error != null -> { { Text(error) } }
+                    error != null && item.name.isBlank() && item.quantity.isNotBlank() -> { { Text(error) } }
                     originLabel != null -> { { Text(originLabel) } }
                     else -> null
                 },

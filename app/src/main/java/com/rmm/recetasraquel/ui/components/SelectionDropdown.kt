@@ -25,6 +25,7 @@ fun SelectionDropdown(
     label: String,
     modifier: Modifier = Modifier,
     placeholder: String = "Seleccionar",
+    helperText: String? = null,
     clearLabel: String? = null,
     testTag: String? = null,
 ) {
@@ -50,6 +51,7 @@ fun SelectionDropdown(
             readOnly = true,
             label = { Text(label) },
             placeholder = { Text(placeholder) },
+            supportingText = helperText?.let { text -> { Text(text) } },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },

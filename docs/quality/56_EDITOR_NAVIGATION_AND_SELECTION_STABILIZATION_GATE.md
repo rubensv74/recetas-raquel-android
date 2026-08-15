@@ -1,6 +1,6 @@
 # Gate 56 — Estabilización funcional del editor
 
-**Estado:** LISTO PARA VALIDACIÓN LOCAL  
+**Estado:** SUPERADO
 **Fecha:** 2026-08-15  
 **Rama:** `program/premium-experience-foundation`
 
@@ -41,13 +41,18 @@ El trabajo de identidad visual queda expresamente fuera de este gate.
 - referencias de categoría, alias, seguridad y composición: válidas;
 - revisión estática de navegación y contratos del editor: PASS.
 
-## Gate local pendiente
+## Evidencia de cierre
 
-La distribución Gradle 9.2.1 no estaba disponible en el entorno de auditoría y su descarga estaba bloqueada. Antes de integrar en `master` se debe ejecutar en Windows, con el AVD estable iniciado:
+Validación ejecutada en Windows con el AVD `Medium_Phone(AVD) - 16`:
 
 ```powershell
 .\gradlew -g "C:\Temp\gradle_home_editor_gate56" assembleDebug testDebugUnitTest lintDebug compileDebugAndroidTestKotlin connectedDebugAndroidTest
 ```
+
+- `BUILD SUCCESSFUL` en 2 min 14 s;
+- 85 de 85 pruebas instrumentadas ejecutadas;
+- 0 omitidas y 0 fallidas;
+- aceptación manual completada para navegación, descarte, limpieza de selecciones y filtro por categoría.
 
 ## Criterio de cierre
 
@@ -65,4 +70,4 @@ El gate solo puede marcarse `SUPERADO` cuando:
    - `Sin categoría` y `Sin unidad` restauran valores vacíos;
    - el filtro por categoría devuelve únicamente recetas de la categoría elegida.
 
-Hasta entonces no se debe integrar la rama en `master`.
+Los criterios de cierre han sido satisfechos. Gate 56 superado el 15 de agosto de 2026.

@@ -67,7 +67,7 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Recetas de Raquel",
+                        text = "Recetoria",
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onBackground,
                     )
