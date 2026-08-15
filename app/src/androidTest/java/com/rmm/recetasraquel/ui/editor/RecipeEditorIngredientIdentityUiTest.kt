@@ -38,14 +38,18 @@ class RecipeEditorIngredientIdentityUiTest {
             EditorIngredientItem(
                 key = "catalog-row",
                 name = "Trigo",
+                unit = "g",
                 catalogIngredientId = "ing-wheat",
             ),
+            category = "Postres",
         )
 
         composeRule.onNodeWithTag("editor_category").performClick()
+        composeRule.onNodeWithText("Sin categoría").assertIsDisplayed()
         composeRule.onNodeWithText("Arroces").assertIsDisplayed().performClick()
 
         composeRule.onNodeWithTag("ingredient_unit_catalog-row").performScrollTo().performClick()
+        composeRule.onNodeWithText("Sin unidad").assertIsDisplayed()
         composeRule.onNodeWithText("kg").assertIsDisplayed()
     }
 
@@ -63,11 +67,17 @@ class RecipeEditorIngredientIdentityUiTest {
         composeRule.onNodeWithText("Ingrediente personalizado").performScrollTo().assertIsDisplayed()
     }
 
-    private fun setScreen(ingredient: EditorIngredientItem) {
+    private fun setScreen(
+        ingredient: EditorIngredientItem,
+        category: String = "",
+    ) {
         composeRule.setContent {
             RecetasRaquelTheme {
                 RecipeEditorScreen(
-                    state = RecipeEditorUiState.forCreate().copy(ingredients = listOf(ingredient)),
+                    state = RecipeEditorUiState.forCreate().copy(
+                        category = category,
+                        ingredients = listOf(ingredient),
+                    ),
                     onNameChange = {},
                     onCategoryChange = {},
                     onDescriptionChange = {},

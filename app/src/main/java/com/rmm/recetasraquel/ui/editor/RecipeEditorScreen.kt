@@ -1,6 +1,7 @@
 package com.rmm.recetasraquel.ui.editor
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -92,6 +93,10 @@ fun RecipeEditorScreen(
     onDismissSaveError: () -> Unit,
     onDismissPhotoError: () -> Unit,
 ) {
+    BackHandler(enabled = !state.isSaving && !state.isDeleting) {
+        onNavigateBack()
+    }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val title = when (state.mode) {
         is EditorMode.Create -> "Nueva receta"
@@ -307,6 +312,7 @@ private fun EditorContent(
                 onSelect = onCategoryChange,
                 label = "Categoría",
                 placeholder = "Seleccionar categoría",
+                clearLabel = "Sin categoría",
                 modifier = Modifier.fillMaxWidth(),
                 testTag = "editor_category",
             )
@@ -511,6 +517,7 @@ private fun IngredientEditorRow(
                     onSelect = onUnitChange,
                     label = "Unidad",
                     placeholder = "Elegir",
+                    clearLabel = "Sin unidad",
                     modifier = Modifier.weight(0.45f),
                     testTag = "ingredient_unit_${item.key}",
                 )

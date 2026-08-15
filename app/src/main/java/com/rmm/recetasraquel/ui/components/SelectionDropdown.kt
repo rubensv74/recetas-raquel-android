@@ -25,6 +25,7 @@ fun SelectionDropdown(
     label: String,
     modifier: Modifier = Modifier,
     placeholder: String = "Seleccionar",
+    clearLabel: String? = null,
     testTag: String? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -58,6 +59,15 @@ fun SelectionDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
+            if (clearLabel != null && value.isNotBlank()) {
+                DropdownMenuItem(
+                    text = { Text(clearLabel) },
+                    onClick = {
+                        onSelect("")
+                        expanded = false
+                    },
+                )
+            }
             options.distinct().forEach { option ->
                 DropdownMenuItem(
                     text = { Text(option) },
