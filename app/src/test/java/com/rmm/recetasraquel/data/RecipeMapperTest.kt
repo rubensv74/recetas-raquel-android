@@ -15,9 +15,22 @@ import com.rmm.recetasraquel.util.TimeProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class RecipeMapperTest {
+    @Test
+    fun draftDoesNotSilentlyDiscardIncompleteIngredientRows() {
+        val draft = RecipeDraft(
+            name = "Receta",
+            ingredients = listOf(IngredientDraft(quantity = "2", name = " ")),
+        )
+
+        assertThrows(IllegalArgumentException::class.java) {
+            draft.toNewRecipe(IdGenerator { "id" }, TimeProvider { 1234L })
+        }
+    }
+
     @Test
     fun draftGeneratesDeterministicIdsTimestampsAndNonNumericQuantity() {
         val ids = ArrayDeque(listOf("recipe-id", "ingredient-id", "step-id"))
