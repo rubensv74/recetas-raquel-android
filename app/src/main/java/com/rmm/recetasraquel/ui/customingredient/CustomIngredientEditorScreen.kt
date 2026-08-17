@@ -1,7 +1,10 @@
 package com.rmm.recetasraquel.ui.customingredient
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,15 +14,21 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,16 +65,32 @@ fun CustomIngredientEditorScreen(
     onNavigateBack: () -> Unit,
 ) {
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Nuevo ingrediente personalizado") },
-                navigationIcon = { TextButton(onClick = onNavigateBack) { Text("Volver") } },
+                title = {
+                    Text(
+                        text = "Nuevo ingrediente personalizado",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                },
+                navigationIcon = {
+                    TextButton(onClick = onNavigateBack) {
+                        Text("Volver")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background,
+                ),
             )
         },
     ) { innerPadding ->
         if (state.isLoading) {
             Column(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
@@ -79,165 +104,184 @@ fun CustomIngredientEditorScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .testTag("custom_ingredient_form"),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
-                Text(
-                    text = "Crea una identidad local cuando el ingrediente no esté en la biblioteca o necesites registrar un producto concreto.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
+                IntroCard()
             }
 
             item {
-                OutlinedTextField(
-                    value = state.name,
-                    onValueChange = onNameChange,
-                    label = { Text("Nombre *") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("custom_name"),
-                )
-            }
-
-            item {
-                SectionTitle("Tipo")
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                PremiumSectionCard(
+                    eyebrow = "DATOS PRINCIPALES",
+                    title = "Identidad del ingrediente",
+                    supportingText = "Define cómo aparecerá este ingrediente en tus recetas y en la biblioteca local.",
                 ) {
-                    items(CustomIngredientType.values().toList()) { type ->
-                        FilterChip(
-                            selected = state.type == type,
-                            onClick = { onTypeChange(type) },
-                            label = { Text(type.displayName()) },
-                            modifier = Modifier.testTag("custom_type_${type.name}"),
-                        )
-                    }
-                }
-            }
+                    OutlinedTextField(
+                        value = state.name,
+                        onValueChange = onNameChange,
+                        label = { Text("Nombre *") },
+                        singleLine = true,
+                        colors = premiumTextFieldColors(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("custom_name"),
+                    )
 
-            item {
-                SectionTitle("Categoría")
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    item {
-                        FilterChip(
-                            selected = state.selectedCategoryId == null,
-                            onClick = { onCategoryChange(null) },
-                            label = { Text("Sin categoría") },
-                        )
+                    FieldLabel("Tipo")
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(CustomIngredientType.values().toList()) { type ->
+                            FilterChip(
+                                selected = state.type == type,
+                                onClick = { onTypeChange(type) },
+                                label = { Text(type.displayName()) },
+                                colors = premiumFilterChipColors(),
+                                shape = MaterialTheme.shapes.large,
+                                modifier = Modifier.testTag("custom_type_${type.name}"),
+                            )
+                        }
                     }
-                    items(state.categories, key = { it.id }) { category ->
-                        FilterChip(
-                            selected = state.selectedCategoryId == category.id,
-                            onClick = { onCategoryChange(category.id) },
-                            label = { Text(category.name) },
-                        )
-                    }
-                }
-            }
 
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
+                    FieldLabel("Categoría")
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        item {
+                            FilterChip(
+                                selected = state.selectedCategoryId == null,
+                                onClick = { onCategoryChange(null) },
+                                label = { Text("Sin categoría") },
+                                colors = premiumFilterChipColors(),
+                                shape = MaterialTheme.shapes.large,
+                            )
+                        }
+                        items(state.categories, key = { it.id }) { category ->
+                            FilterChip(
+                                selected = state.selectedCategoryId == category.id,
+                                onClick = { onCategoryChange(category.id) },
+                                label = { Text(category.name) },
+                                colors = premiumFilterChipColors(),
+                                shape = MaterialTheme.shapes.large,
+                            )
+                        }
+                    }
+
                     OutlinedTextField(
                         value = state.defaultUnit,
                         onValueChange = onDefaultUnitChange,
                         label = { Text("Unidad habitual") },
                         singleLine = true,
-                        modifier = Modifier.weight(1f),
+                        colors = premiumTextFieldColors(),
+                        modifier = Modifier.fillMaxWidth(),
                     )
+
                     OutlinedTextField(
                         value = state.aliasesText,
                         onValueChange = onAliasesChange,
                         label = { Text("Alias") },
                         supportingText = { Text("Separados por comas") },
-                        modifier = Modifier.weight(2f),
+                        colors = premiumTextFieldColors(),
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
 
             if (state.type == CustomIngredientType.COMMERCIAL_PRODUCT) {
                 item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    PremiumSectionCard(
+                        eyebrow = "PRODUCTO CONCRETO",
+                        title = "Datos comerciales",
+                        supportingText = "Registra la referencia exacta cuya etiqueta has consultado.",
                     ) {
                         OutlinedTextField(
                             value = state.brand,
                             onValueChange = onBrandChange,
                             label = { Text("Marca") },
-                            modifier = Modifier.weight(1f).testTag("custom_brand"),
+                            singleLine = true,
+                            colors = premiumTextFieldColors(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("custom_brand"),
                         )
                         OutlinedTextField(
                             value = state.tradeName,
                             onValueChange = onTradeNameChange,
                             label = { Text("Nombre comercial") },
-                            modifier = Modifier.weight(1f).testTag("custom_trade_name"),
+                            singleLine = true,
+                            colors = premiumTextFieldColors(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("custom_trade_name"),
+                        )
+                        OutlinedTextField(
+                            value = state.labelReadAt,
+                            onValueChange = onLabelReadAtChange,
+                            label = { Text("Fecha de lectura de etiqueta") },
+                            supportingText = { Text("Opcional · AAAA-MM-DD") },
+                            singleLine = true,
+                            colors = premiumTextFieldColors(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("custom_label_read_at"),
                         )
                     }
                 }
-                item {
-                    OutlinedTextField(
-                        value = state.labelReadAt,
-                        onValueChange = onLabelReadAtChange,
-                        label = { Text("Fecha de lectura de etiqueta") },
-                        supportingText = { Text("Opcional · AAAA-MM-DD") },
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .testTag("custom_label_read_at"),
-                    )
-                }
             }
 
             item {
-                SectionTitle("Composición *")
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                PremiumSectionCard(
+                    eyebrow = "COMPOSICIÓN",
+                    title = "Qué sabemos del producto",
+                    supportingText = "Este dato condiciona cómo debe interpretarse la información de seguridad.",
                 ) {
-                    FilterChip(
-                        selected = state.compositionKnown == true,
-                        onClick = { onCompositionKnownChange(true) },
-                        label = { Text("Conocida") },
-                        modifier = Modifier.testTag("composition_known"),
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        FilterChip(
+                            selected = state.compositionKnown == true,
+                            onClick = { onCompositionKnownChange(true) },
+                            label = { Text("Conocida") },
+                            colors = premiumFilterChipColors(),
+                            shape = MaterialTheme.shapes.large,
+                            modifier = Modifier.testTag("composition_known"),
+                        )
+                        FilterChip(
+                            selected = state.compositionKnown == false,
+                            onClick = { onCompositionKnownChange(false) },
+                            label = { Text("Desconocida") },
+                            colors = premiumFilterChipColors(),
+                            shape = MaterialTheme.shapes.large,
+                            modifier = Modifier.testTag("composition_unknown"),
+                        )
+                    }
+
+                    InformationNotice(
+                        text = "Si la composición es desconocida, la aplicación debe tratar la información disponible como incompleta.",
+                        emphasized = state.compositionKnown == false,
                     )
-                    FilterChip(
-                        selected = state.compositionKnown == false,
-                        onClick = { onCompositionKnownChange(false) },
-                        label = { Text("Desconocida") },
-                        modifier = Modifier.testTag("composition_unknown"),
+
+                    OutlinedTextField(
+                        value = state.notes,
+                        onValueChange = onNotesChange,
+                        label = { Text("Notas") },
+                        minLines = 2,
+                        maxLines = 5,
+                        colors = premiumTextFieldColors(),
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
-                Text(
-                    text = "Si la composición es desconocida, la aplicación debe tratar la información disponible como incompleta.",
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
             }
 
             item {
-                OutlinedTextField(
-                    value = state.notes,
-                    onValueChange = onNotesChange,
-                    label = { Text("Notas") },
-                    minLines = 2,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                )
-            }
-
-            item {
-                SectionTitle("Información de seguridad alimentaria")
-                Text(
-                    text = "Registra solo lo que conozcas. La ausencia de declaraciones no significa ausencia de alérgenos o riesgo. Comprueba siempre la etiqueta del producto cuando corresponda.",
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                SectionHeading(
+                    eyebrow = "RIESGO Y EVIDENCIA",
+                    title = "Seguridad alimentaria",
+                    supportingText = "Registra únicamente declaraciones que puedas justificar. No declarar un alérgeno no demuestra que esté ausente.",
                 )
             }
 
@@ -255,9 +299,12 @@ fun CustomIngredientEditorScreen(
             }
 
             item {
-                TextButton(
+                OutlinedButton(
                     onClick = onAddSafetyRow,
-                    modifier = Modifier.padding(horizontal = 16.dp).testTag("add_safety_declaration"),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("add_safety_declaration"),
+                    shape = MaterialTheme.shapes.large,
                 ) {
                     Text("Añadir declaración de seguridad")
                 }
@@ -265,18 +312,16 @@ fun CustomIngredientEditorScreen(
 
             state.validationMessage?.let { message ->
                 item {
-                    Text(
-                        text = message,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                    )
+                    ErrorNotice(message)
                 }
             }
+
             state.errorMessage?.let { message ->
                 item {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        Text(text = message, color = MaterialTheme.colorScheme.error)
-                        TextButton(onClick = onRetry) { Text("Recargar datos") }
+                    ErrorNotice(message) {
+                        TextButton(onClick = onRetry) {
+                            Text("Recargar datos")
+                        }
                     }
                 }
             }
@@ -285,12 +330,125 @@ fun CustomIngredientEditorScreen(
                 Button(
                     onClick = onSave,
                     enabled = !state.isSaving,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).testTag("save_custom_ingredient"),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 2.dp, bottom = 8.dp)
+                        .testTag("save_custom_ingredient"),
+                    shape = MaterialTheme.shapes.large,
                 ) {
-                    if (state.isSaving) Text("Guardando…") else Text("Guardar ingrediente")
+                    if (state.isSaving) {
+                        Text("Guardando…")
+                    } else {
+                        Text("Guardar ingrediente")
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun IntroCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(
+                text = "INGREDIENTE PERSONALIZADO",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = "Una identidad local, con contexto",
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            Text(
+                text = "Crea una identidad local cuando el ingrediente no esté en la biblioteca o necesites registrar un producto concreto.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
+    }
+}
+
+@Composable
+private fun PremiumSectionCard(
+    eyebrow: String,
+    title: String,
+    supportingText: String,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = eyebrow,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = supportingText,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            content()
+        }
+    }
+}
+
+@Composable
+private fun SectionHeading(
+    eyebrow: String,
+    title: String,
+    supportingText: String,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+    ) {
+        Text(
+            text = eyebrow,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Text(
+            text = supportingText,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -305,49 +463,80 @@ private fun SafetyDeclarationCard(
     onSourceDetailsChange: (String) -> Unit,
     onNotesChange: (String) -> Unit,
 ) {
-    Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
         Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Declaración", fontWeight = FontWeight.SemiBold)
-                TextButton(onClick = onRemove) { Text("Eliminar") }
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = "DECLARACIÓN",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = "Información de seguridad",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+                TextButton(onClick = onRemove) {
+                    Text(
+                        text = "Eliminar",
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
             }
 
-            Text("Grupo", style = MaterialTheme.typography.labelLarge)
+            FieldLabel("Grupo")
             LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 items(state.safetyGroups, key = { it.id }) { group ->
                     FilterChip(
                         selected = row.safetyGroupId == group.id,
                         onClick = { onGroupChange(group.id) },
                         label = { Text(group.displayName) },
+                        colors = premiumFilterChipColors(),
+                        shape = MaterialTheme.shapes.large,
                     )
                 }
             }
 
-            Text("Relación registrada", style = MaterialTheme.typography.labelLarge)
+            FieldLabel("Relación registrada")
             LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 items(CustomIngredientSafetyRelationType.values().toList()) { relationType ->
                     FilterChip(
                         selected = row.relationType == relationType,
                         onClick = { onRelationTypeChange(relationType) },
                         label = { Text(relationType.displayName()) },
+                        colors = premiumFilterChipColors(),
+                        shape = MaterialTheme.shapes.large,
                     )
                 }
             }
 
-            Text("Nivel de evidencia", style = MaterialTheme.typography.labelLarge)
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                CustomIngredientSafetyEvidence.values().forEach { evidence ->
+            FieldLabel("Nivel de evidencia")
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                items(CustomIngredientSafetyEvidence.values().toList()) { evidence ->
                     FilterChip(
                         selected = row.evidenceLevel == evidence,
                         onClick = { onEvidenceChange(evidence) },
                         label = { Text(evidence.displayName()) },
+                        colors = premiumFilterChipColors(),
+                        shape = MaterialTheme.shapes.large,
                     )
                 }
             }
@@ -357,12 +546,16 @@ private fun SafetyDeclarationCard(
                 onValueChange = onSourceDetailsChange,
                 label = { Text("Origen de la declaración") },
                 supportingText = { Text("Ej.: leído en la etiqueta del producto") },
+                colors = premiumTextFieldColors(),
                 modifier = Modifier.fillMaxWidth(),
             )
             OutlinedTextField(
                 value = row.notes,
                 onValueChange = onNotesChange,
                 label = { Text("Notas de seguridad") },
+                minLines = 2,
+                maxLines = 4,
+                colors = premiumTextFieldColors(),
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -370,14 +563,85 @@ private fun SafetyDeclarationCard(
 }
 
 @Composable
-private fun SectionTitle(text: String) {
+private fun FieldLabel(text: String) {
     Text(
         text = text,
-        style = MaterialTheme.typography.titleMedium,
+        style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(horizontal = 16.dp),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 }
+
+@Composable
+private fun InformationNotice(
+    text: String,
+    emphasized: Boolean = false,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = if (emphasized) {
+            MaterialTheme.colorScheme.secondaryContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        },
+        contentColor = if (emphasized) {
+            MaterialTheme.colorScheme.onSecondaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+        )
+    }
+}
+
+@Composable
+private fun ErrorNotice(
+    message: String,
+    action: (@Composable () -> Unit)? = null,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            action?.invoke()
+        }
+    }
+}
+
+@Composable
+private fun premiumFilterChipColors() = FilterChipDefaults.filterChipColors(
+    containerColor = MaterialTheme.colorScheme.surface,
+    labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+)
+
+@Composable
+private fun premiumTextFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedContainerColor = MaterialTheme.colorScheme.surface,
+    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+    errorContainerColor = MaterialTheme.colorScheme.surface,
+    focusedBorderColor = MaterialTheme.colorScheme.primary,
+    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+    focusedLabelColor = MaterialTheme.colorScheme.primary,
+    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+)
 
 private fun CustomIngredientType.displayName(): String = when (this) {
     CustomIngredientType.SIMPLE -> "Simple"

@@ -135,7 +135,7 @@ private fun RegulatoryExemptionBlock(
             Text(
                 text = exemption.effect.effectLabel(),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold,
             )
             Text("Condiciones: ${exemption.conditions}", style = MaterialTheme.typography.bodySmall)

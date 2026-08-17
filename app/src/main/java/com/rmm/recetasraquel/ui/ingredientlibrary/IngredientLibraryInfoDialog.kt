@@ -1,16 +1,21 @@
 package com.rmm.recetasraquel.ui.ingredientlibrary
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -27,6 +32,7 @@ import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogRelationDirectio
 import com.rmm.recetasraquel.domain.ingredient.IngredientLineageType
 import com.rmm.recetasraquel.domain.ingredient.RegulatoryEffect
 import com.rmm.recetasraquel.domain.ingredient.RegulatoryExemption
+import com.rmm.recetasraquel.ui.theme.RecetoriaTheme
 
 @Composable
 internal fun IngredientLibraryInfoDialog(
@@ -37,12 +43,22 @@ internal fun IngredientLibraryInfoDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Información del ingrediente")
+            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Text(
+                    text = "INFORMACIÓN DEL INGREDIENTE",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
+                )
                 Text(
                     text = state.ingredient.canonicalName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = state.ingredient.categoryName,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         },
@@ -50,7 +66,7 @@ internal fun IngredientLibraryInfoDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 520.dp)
+                    .heightIn(max = 560.dp)
                     .verticalScroll(rememberScrollState())
                     .testTag("ingredient_library_info_dialog")
                     .semantics {
@@ -63,16 +79,28 @@ internal fun IngredientLibraryInfoDialog(
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.CenterHorizontally),
                         )
-                        Text("Cargando información registrada…")
+                        Text(
+                            text = "Cargando información registrada…",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
 
                     state.errorMessage != null -> {
-                        Text(state.errorMessage)
-                        TextButton(
-                            onClick = onRetry,
-                            modifier = Modifier.testTag("ingredient_library_info_retry"),
+                        InfoSectionCard(
+                            title = "No se pudo cargar la información",
+                            titleColor = MaterialTheme.colorScheme.error,
                         ) {
-                            Text("Reintentar")
+                            Text(
+                                text = state.errorMessage,
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                            TextButton(
+                                onClick = onRetry,
+                                modifier = Modifier.testTag("ingredient_library_info_retry"),
+                            ) {
+                                Text("Reintentar")
+                            }
                         }
                     }
 
@@ -93,131 +121,264 @@ internal fun IngredientLibraryInfoDialog(
 
 @Composable
 private fun IngredientInformationContent(state: IngredientLibraryInfoUiState) {
-    Text(
-        text = state.ingredient.categoryName,
-        style = MaterialTheme.typography.bodyMedium,
-    )
-
-    state.catalogDetail.description?.takeIf(String::isNotBlank)?.let { description ->
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.testTag("ingredient_library_description"),
-        )
-    }
-
-    if (state.catalogDetail.aliases.isNotEmpty()) {
-        Column(
-            modifier = Modifier.testTag("ingredient_library_aliases"),
-            verticalArrangement = Arrangement.spacedBy(3.dp),
+    if (
+        !state.catalogDetail.description.isNullOrBlank() ||
+        state.catalogDetail.aliases.isNotEmpty()
+    ) {
+        InfoSectionCard(
+            title = "Identidad culinaria",
+            eyebrow = "CATÁLOGO",
         ) {
-            Text(
-                text = "También puede aparecer como",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                text = state.catalogDetail.aliases.joinToString(separator = " · "),
-                style = MaterialTheme.typography.bodySmall,
-            )
+            state.catalogDetail.description?.takeIf(String::isNotBlank)?.let { description ->
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.testTag("ingredient_library_description"),
+                )
+            }
+
+            if (state.catalogDetail.aliases.isNotEmpty()) {
+                Column(
+                    modifier = Modifier.testTag("ingredient_library_aliases"),
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
+                ) {
+                    Text(
+                        text = "También puede aparecer como",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = state.catalogDetail.aliases.joinToString(separator = " · "),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
         }
     }
 
     if (state.catalogDetail.relatedPresentations.isNotEmpty()) {
-        HorizontalDivider()
-        Text(
-            text = "Presentaciones relacionadas",
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold,
-        )
-        state.catalogDetail.relatedPresentations.forEach { related ->
-            Text(
-                text = "${related.relationshipLabel()}: ${related.canonicalName}",
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.testTag("ingredient_library_related_${related.ingredientId}"),
+        InfoSectionCard(
+            title = "Presentaciones relacionadas",
+            eyebrow = "RELACIÓN CULINARIA",
+        ) {
+            state.catalogDetail.relatedPresentations.forEach { related ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("ingredient_library_related_${related.ingredientId}"),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Text(
+                        text = related.relationshipLabel(),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(0.42f),
+                    )
+                    Text(
+                        text = related.canonicalName,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(0.58f),
+                    )
+                }
+            }
+            ContextNotice(
+                text = "Estas relaciones describen identidad culinaria. No heredan ni generan información de seguridad alimentaria.",
+                modifier = Modifier.testTag("ingredient_library_lineage_disclaimer"),
             )
         }
-        Text(
-            text = "Estas relaciones describen identidad culinaria. No heredan ni generan información de seguridad alimentaria.",
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.testTag("ingredient_library_lineage_disclaimer"),
-        )
     }
 
-    HorizontalDivider()
-    Text(
-        text = "Información de seguridad alimentaria",
-        style = MaterialTheme.typography.titleSmall,
-        fontWeight = FontWeight.SemiBold,
-    )
-
-    if (state.safetyRelations.isEmpty()) {
-        Text(
-            text = "No hay una relación directa de seguridad registrada para este ingrediente. Esto no demuestra ausencia de alérgenos ni ausencia de riesgo.",
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.testTag("ingredient_library_no_direct_safety"),
-        )
-    } else {
-        state.safetyRelations.forEach { record ->
-            SafetyRecordBlock(record)
-        }
-    }
+    SafetySection(state)
 
     if (state.regulatoryExemptions.isNotEmpty()) {
-        HorizontalDivider()
-        Text(
-            text = "Información regulatoria de etiquetado",
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold,
-        )
-        Text(
-            text = "Estas reglas describen obligaciones legales bajo condiciones concretas; no sustituyen la información de seguridad alimentaria.",
-            style = MaterialTheme.typography.bodySmall,
-        )
-        state.regulatoryExemptions.forEach { exemption ->
-            RegulatoryRecordBlock(exemption)
-        }
-        Text(
-            text = "Una excepción regulatoria no significa ausencia del alérgeno, ausencia de riesgo ni aptitud para una persona alérgica o intolerante.",
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.testTag("ingredient_library_regulatory_disclaimer"),
-        )
+        RegulatorySection(state)
     }
 
-    HorizontalDivider()
-    Text(
+    ContextNotice(
+        title = "Antes de decidir",
         text = "La información mostrada procede del catálogo documentado de la aplicación. Ante una alergia o intolerancia, revisa el etiquetado actual del producto y sigue las indicaciones sanitarias aplicables a la persona.",
-        style = MaterialTheme.typography.bodySmall,
+        emphasized = true,
     )
 }
 
 @Composable
+private fun SafetySection(state: IngredientLibraryInfoUiState) {
+    InfoSectionCard(
+        title = "Seguridad alimentaria",
+        eyebrow = "RIESGO Y EVIDENCIA",
+        borderColor = when {
+            state.safetyRelations.isEmpty() -> RecetoriaTheme.safety.mayContain
+            state.safetyRelations.any { it.relationType == "UNKNOWN" } -> RecetoriaTheme.safety.critical
+            state.safetyRelations.any {
+                it.relationType == "DECLARED_MAY_CONTAIN" ||
+                    it.relationType == "POSSIBLE_CROSS_REACTIVITY"
+            } -> RecetoriaTheme.safety.mayContain
+            else -> RecetoriaTheme.safety.confirmed
+        },
+    ) {
+        if (state.safetyRelations.isEmpty()) {
+            ContextNotice(
+                title = "Información directa no registrada",
+                text = "No hay una relación directa de seguridad registrada para este ingrediente. Esto no demuestra ausencia de alérgenos ni ausencia de riesgo.",
+                modifier = Modifier.testTag("ingredient_library_no_direct_safety"),
+                emphasized = true,
+            )
+        } else {
+            state.safetyRelations.forEachIndexed { index, record ->
+                if (index > 0) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                }
+                SafetyRecordBlock(record)
+            }
+        }
+    }
+}
+
+@Composable
+private fun RegulatorySection(state: IngredientLibraryInfoUiState) {
+    InfoSectionCard(
+        title = "Información regulatoria de etiquetado",
+        eyebrow = "OBLIGACIÓN LEGAL",
+        borderColor = MaterialTheme.colorScheme.secondary,
+    ) {
+        Text(
+            text = "Estas reglas describen obligaciones legales bajo condiciones concretas; no sustituyen la información de seguridad alimentaria.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        state.regulatoryExemptions.forEachIndexed { index, exemption ->
+            if (index > 0) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+            RegulatoryRecordBlock(exemption)
+        }
+        ContextNotice(
+            title = "Importante",
+            text = "Una excepción regulatoria no significa ausencia del alérgeno, ausencia de riesgo ni aptitud para una persona alérgica o intolerante.",
+            modifier = Modifier.testTag("ingredient_library_regulatory_disclaimer"),
+            emphasized = true,
+        )
+    }
+}
+
+@Composable
+private fun InfoSectionCard(
+    title: String,
+    eyebrow: String? = null,
+    titleColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
+    borderColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.outlineVariant,
+    content: @Composable () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        border = BorderStroke(1.dp, borderColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            eyebrow?.let { label ->
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = titleColor,
+            )
+            content()
+        }
+    }
+}
+
+@Composable
+private fun ContextNotice(
+    text: String,
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    emphasized: Boolean = false,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = if (emphasized) {
+            MaterialTheme.colorScheme.surfaceContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        },
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 11.dp, vertical = 9.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
+            title?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+}
+
+@Composable
 private fun SafetyRecordBlock(record: CatalogIngredientSafetyRecord) {
+    val semanticColor = safetyRecordColor(record.relationType)
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 2.dp)
             .testTag("ingredient_library_safety_${record.safetyGroupId}"),
-        verticalArrangement = Arrangement.spacedBy(3.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         Text(
             text = record.safetyGroupName,
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
+            color = semanticColor,
         )
-        Text("Relación: ${record.relationType.relationTypeLabel()}", style = MaterialTheme.typography.bodySmall)
-        Text("Evidencia: ${record.evidenceLevel.evidenceLabel()}", style = MaterialTheme.typography.bodySmall)
-        Text("Ámbito: ${record.jurisdiction.jurisdictionLabel()}", style = MaterialTheme.typography.bodySmall)
-        Text(
-            "Fuente: ${record.sourceDetails ?: record.sourceId}",
-            style = MaterialTheme.typography.bodySmall,
-        )
-        Text("Revisado: ${record.reviewedAt}", style = MaterialTheme.typography.bodySmall)
+        RecordDetail("Relación", record.relationType.relationTypeLabel())
+        RecordDetail("Evidencia", record.evidenceLevel.evidenceLabel())
+        RecordDetail("Ámbito", record.jurisdiction.jurisdictionLabel())
+        RecordDetail("Fuente", record.sourceDetails ?: record.sourceId)
+        RecordDetail("Revisado", record.reviewedAt)
         record.notes?.takeIf(String::isNotBlank)?.let { notes ->
-            Text(notes, style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = notes,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
+}
+
+@Composable
+private fun safetyRecordColor(relationType: String) = when (relationType) {
+    "DECLARED_MAY_CONTAIN", "POSSIBLE_CROSS_REACTIVITY" -> RecetoriaTheme.safety.mayContain
+    "UNKNOWN" -> RecetoriaTheme.safety.critical
+    else -> RecetoriaTheme.safety.confirmed
 }
 
 @Composable
@@ -227,23 +388,51 @@ private fun RegulatoryRecordBlock(exemption: RegulatoryExemption) {
             .fillMaxWidth()
             .padding(vertical = 2.dp)
             .testTag("ingredient_library_regulatory_${exemption.id}"),
-        verticalArrangement = Arrangement.spacedBy(3.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         Text(
             text = exemption.effect.effectLabel(),
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.secondary,
         )
-        Text("Condiciones: ${exemption.conditions}", style = MaterialTheme.typography.bodySmall)
-        Text("Ámbito: ${exemption.jurisdiction.jurisdictionLabel()}", style = MaterialTheme.typography.bodySmall)
-        Text("Fuente: ${exemption.sourceId.regulatorySourceLabel()}", style = MaterialTheme.typography.bodySmall)
+        RecordDetail("Condiciones", exemption.conditions)
+        RecordDetail("Ámbito", exemption.jurisdiction.jurisdictionLabel())
+        RecordDetail("Fuente", exemption.sourceId.regulatorySourceLabel())
         if (exemption.effectiveFrom != null || exemption.effectiveTo != null) {
-            Text(exemption.validityLabel(), style = MaterialTheme.typography.bodySmall)
+            RecordDetail("Vigencia", exemption.validityLabel().removePrefix("Vigencia: "))
         }
-        Text("Revisado: ${exemption.reviewedAt}", style = MaterialTheme.typography.bodySmall)
+        RecordDetail("Revisado", exemption.reviewedAt)
         exemption.notes?.takeIf(String::isNotBlank)?.let { notes ->
-            Text(notes, style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = notes,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
+    }
+}
+
+@Composable
+private fun RecordDetail(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.30f),
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(0.70f),
+        )
     }
 }
 

@@ -11,16 +11,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -87,19 +89,26 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
+            ExtendedFloatingActionButton(
                 onClick = onCreateRecipe,
                 modifier = Modifier.semantics { contentDescription = "Nueva receta" },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = MaterialTheme.shapes.large,
-            ) {
-                Text(
-                    text = "+",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Normal,
-                )
-            }
+                icon = {
+                    Text(
+                        text = "+",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Normal,
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Nueva receta",
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                },
+            )
         },
     ) { padding ->
         Column(
@@ -115,17 +124,12 @@ fun HomeScreen(
                 onValueChange = onQueryChange,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp)
+                    .padding(top = 14.dp)
                     .testTag("catalog_search"),
-                label = { Text("Buscar por receta o ingrediente") },
+                label = { Text("Buscar receta o ingrediente") },
                 singleLine = true,
                 shape = MaterialTheme.shapes.large,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                ),
+                colors = premiumSearchFieldColors(),
                 trailingIcon = if (state.filter.query.isNotEmpty()) {
                     {
                         IconButton(
@@ -162,24 +166,46 @@ fun HomeScreen(
 
 @Composable
 private fun CatalogIntro(state: CatalogUiState) {
-    Column(
-        modifier = Modifier.padding(top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Text(
-            text = "Mi recetario",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Text(
-            text = if (state.hasAnyRecipes) {
-                "Todo lo que te gusta cocinar, organizado y siempre a mano."
-            } else {
-                "Tu colección de recetas empieza aquí."
-            },
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(
+                text = "MI RECETARIO",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = if (state.hasAnyRecipes) {
+                    "Cocina que merece volver a hacerse"
+                } else {
+                    "Tu recetario empieza aquí"
+                },
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+            Text(
+                text = if (state.hasAnyRecipes) {
+                    "Tus recetas, ingredientes y favoritos reunidos para encontrarlos cuando los necesitas."
+                } else {
+                    "Guarda tus primeras recetas y construye una colección hecha a tu manera."
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.82f),
+            )
+        }
     }
 }
 
@@ -189,31 +215,39 @@ private fun CatalogFilters(
     onToggleFavorites: () -> Unit,
     onSelectCategory: (String?) -> Unit,
 ) {
-    Row(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
-        FilterChip(
-            selected = state.filter.favoritesOnly,
-            onClick = onToggleFavorites,
-            label = { Text("Favoritas") },
-            modifier = Modifier.testTag("filter_favorites"),
-            shape = MaterialTheme.shapes.large,
-            colors = premiumFilterChipColors(),
-        )
-        SelectionDropdown(
-            value = state.filter.category ?: "Todas",
-            options = listOf("Todas") + state.categories,
-            onSelect = { category ->
-                onSelectCategory(category.takeUnless { it == "Todas" })
-            },
-            label = "Categoría",
-            modifier = Modifier.weight(1f),
-            testTag = "filter_category",
-        )
+        Row(
+            modifier = Modifier.padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            FilterChip(
+                selected = state.filter.favoritesOnly,
+                onClick = onToggleFavorites,
+                label = { Text("Favoritas") },
+                modifier = Modifier.testTag("filter_favorites"),
+                shape = MaterialTheme.shapes.large,
+                colors = premiumFilterChipColors(),
+            )
+            SelectionDropdown(
+                value = state.filter.category ?: "Todas",
+                options = listOf("Todas") + state.categories,
+                onSelect = { category ->
+                    onSelectCategory(category.takeUnless { it == "Todas" })
+                },
+                label = "Categoría",
+                modifier = Modifier.weight(1f),
+                testTag = "filter_category",
+            )
+        }
     }
 }
 
@@ -221,8 +255,20 @@ private fun CatalogFilters(
 private fun premiumFilterChipColors() = FilterChipDefaults.filterChipColors(
     containerColor = MaterialTheme.colorScheme.surface,
     labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+)
+
+@Composable
+private fun premiumSearchFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedContainerColor = MaterialTheme.colorScheme.surface,
+    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+    errorContainerColor = MaterialTheme.colorScheme.surface,
+    focusedBorderColor = MaterialTheme.colorScheme.primary,
+    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+    focusedLabelColor = MaterialTheme.colorScheme.primary,
+    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
 )
 
 @Composable
@@ -241,19 +287,24 @@ private fun CatalogContent(
             CircularProgressIndicator(Modifier.testTag("catalog_loading"))
         }
 
-        state.errorMessage != null -> CatalogMessage(state.errorMessage) {
+        state.errorMessage != null -> CatalogMessage(
+            eyebrow = "NO SE PUDO CARGAR",
+            message = state.errorMessage,
+        ) {
             Button(onClick = onRetry) {
                 Text("Reintentar")
             }
         }
 
         !state.hasAnyRecipes -> CatalogMessage(
+            eyebrow = "TU COLECCIÓN",
             message = "Todavía no hay recetas guardadas.",
-            supportingText = "Añade tu primera receta y empieza a construir una colección a tu medida.",
+            supportingText = "Pulsa «Nueva receta» y empieza a construir un recetario que realmente uses.",
         )
 
         state.recipes.isEmpty() -> CatalogMessage(
-            message = "No se encontraron recetas con estos filtros.",
+            eyebrow = "SIN RESULTADOS",
+            message = "No encontramos recetas con estos filtros.",
             supportingText = "Prueba con otra búsqueda o recupera toda la colección.",
         ) {
             Button(
@@ -270,43 +321,13 @@ private fun CatalogContent(
                     .fillMaxSize()
                     .testTag("catalog_list"),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(bottom = 96.dp),
+                contentPadding = PaddingValues(bottom = 108.dp),
             ) {
                 item {
-                    Column(
-                        modifier = Modifier.padding(top = 2.dp, bottom = 2.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = "Recetas",
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onBackground,
-                            )
-                            Text(
-                                text = "${state.recipes.size} resultados",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        state.actionMessage?.let { message ->
-                            Surface(
-                                shape = MaterialTheme.shapes.medium,
-                                color = MaterialTheme.colorScheme.errorContainer,
-                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                            ) {
-                                Text(
-                                    text = message,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
-                            }
-                        }
-                    }
+                    CatalogResultsHeader(
+                        resultCount = state.recipes.size,
+                        actionMessage = state.actionMessage,
+                    )
                 }
 
                 items(
@@ -325,7 +346,57 @@ private fun CatalogContent(
 }
 
 @Composable
+private fun CatalogResultsHeader(
+    resultCount: Int,
+    actionMessage: String?,
+) {
+    Column(
+        modifier = Modifier.padding(top = 2.dp, bottom = 2.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = "Recetas",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+                Text(
+                    text = "Tu colección, lista para cocinar.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text(
+                text = "$resultCount ${if (resultCount == 1) "resultado" else "resultados"}",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        actionMessage?.let { message ->
+            Surface(
+                shape = MaterialTheme.shapes.medium,
+                color = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+            ) {
+                Text(
+                    text = message,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun CatalogMessage(
+    eyebrow: String,
     message: String,
     supportingText: String? = null,
     action: (@Composable () -> Unit)? = null,
@@ -334,36 +405,46 @@ private fun CatalogMessage(
         modifier = Modifier
             .fillMaxSize()
             .testTag("catalog_message")
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+        verticalArrangement = Arrangement.Center,
     ) {
-        Surface(
-            modifier = Modifier.size(56.dp),
-            shape = MaterialTheme.shapes.large,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.extraLarge,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+            ),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         ) {
-            Box(contentAlignment = Alignment.Center) {
+            Column(
+                modifier = Modifier.padding(22.dp),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.spacedBy(9.dp),
+            ) {
                 Text(
-                    text = "R",
-                    style = MaterialTheme.typography.titleLarge,
+                    text = eyebrow,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
                 )
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                supportingText?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                action?.invoke()
             }
         }
-        Text(
-            text = message,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        supportingText?.let {
-            Text(
-                text = it,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        action?.invoke()
     }
 }
 
@@ -380,19 +461,19 @@ private fun RecipeCard(
             .testTag("recipe_${recipe.id}"),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+            color = MaterialTheme.colorScheme.outlineVariant,
         ),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
@@ -400,13 +481,14 @@ private fun RecipeCard(
 
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(5.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 recipe.category?.takeIf(String::isNotBlank)?.let { category ->
                     Text(
                         text = category.uppercase(),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
                     )
                 }
                 Text(
@@ -429,22 +511,59 @@ private fun RecipeCard(
                 }
             }
 
-            IconButton(
+            FavoriteButton(
+                isFavorite = recipe.isFavorite,
                 onClick = onFavorite,
-                modifier = Modifier
-                    .semantics {
-                        contentDescription = if (recipe.isFavorite) {
-                            "Quitar de favoritas"
-                        } else {
-                            "Marcar como favorita"
-                        }
-                    }
-                    .testTag("favorite_${recipe.id}"),
-            ) {
+                testTag = "favorite_${recipe.id}",
+            )
+        }
+    }
+}
+
+@Composable
+private fun FavoriteButton(
+    isFavorite: Boolean,
+    onClick: () -> Unit,
+    testTag: String,
+) {
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier
+            .semantics {
+                contentDescription = if (isFavorite) {
+                    "Quitar de favoritas"
+                } else {
+                    "Marcar como favorita"
+                }
+            }
+            .testTag(testTag),
+    ) {
+        Surface(
+            modifier = Modifier.size(34.dp),
+            shape = CircleShape,
+            color = if (isFavorite) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                MaterialTheme.colorScheme.surface
+            },
+            contentColor = if (isFavorite) {
+                MaterialTheme.colorScheme.onSecondaryContainer
+            } else {
+                MaterialTheme.colorScheme.primary
+            },
+            border = BorderStroke(
+                1.dp,
+                if (isFavorite) {
+                    MaterialTheme.colorScheme.secondary.copy(alpha = 0.55f)
+                } else {
+                    MaterialTheme.colorScheme.outlineVariant
+                },
+            ),
+        ) {
+            Box(contentAlignment = Alignment.Center) {
                 Text(
-                    text = if (recipe.isFavorite) "★" else "☆",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.titleLarge,
+                    text = if (isFavorite) "★" else "☆",
+                    style = MaterialTheme.typography.titleMedium,
                 )
             }
         }
@@ -458,21 +577,32 @@ private fun RecipeThumbnail(recipe: RecipeSummary) {
             model = recipe.coverPhotoPath,
             contentDescription = recipe.name,
             modifier = Modifier
-                .size(104.dp)
+                .width(116.dp)
+                .height(112.dp)
                 .clip(MaterialTheme.shapes.medium),
             contentScale = ContentScale.Crop,
         )
     } else {
         Surface(
-            modifier = Modifier.size(104.dp),
+            modifier = Modifier
+                .width(116.dp)
+                .height(112.dp),
             shape = MaterialTheme.shapes.medium,
             color = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ) {
-            Box(contentAlignment = Alignment.Center) {
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.Bottom,
+            ) {
                 Text(
                     text = recipe.name.take(1).uppercase(),
                     style = MaterialTheme.typography.headlineMedium,
+                )
+                Text(
+                    text = "RECETORIA",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.72f),
                 )
             }
         }

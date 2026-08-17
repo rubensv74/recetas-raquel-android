@@ -1,0 +1,25 @@
+{
+  "brand": "Recetoria",
+  "tagline": "Tus recetas, con confianza",
+  "colors": {
+    "espressoInk": "#211B16",
+    "toastedBronze": "#9E621C",
+    "antiqueGold": "#C58A2A",
+    "softIvory": "#FAF7F2",
+    "warmStone": "#E8E0D6",
+    "confirmedPresence": "#A95010",
+    "mayContain": "#33709F",
+    "criticalRisk": "#B5473C"
+  },
+  "typography": {
+    "preferredFamily": "Manrope",
+    "androidFallback": "sans-serif",
+    "wordmarkWeight": 700,
+    "bodyWeight": 400
+  },
+  "minimumSizePx": {
+    "symbol": 24,
+    "horizontalLogoWidth": 140,
+    "taglineLogoWidth": 240
+  }
+}

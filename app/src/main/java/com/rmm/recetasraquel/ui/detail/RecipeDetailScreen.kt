@@ -51,6 +51,7 @@ import com.rmm.recetasraquel.domain.model.Recipe
 import com.rmm.recetasraquel.ui.components.SafetyGroupPictogram
 import com.rmm.recetasraquel.ui.components.formatIngredient
 import com.rmm.recetasraquel.ui.components.formatTotalTime
+import com.rmm.recetasraquel.ui.theme.RecetoriaTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,11 +104,27 @@ fun RecipeDetailScreen(
                                 }
                                 .testTag("detail_favorite"),
                         ) {
-                            Text(
-                                text = if (it.isFavorite) "★" else "☆",
-                                color = MaterialTheme.colorScheme.primary,
-                                style = MaterialTheme.typography.titleLarge,
-                            )
+                            if (it.isFavorite) {
+                                Surface(
+                                    modifier = Modifier.size(32.dp),
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    contentColor = MaterialTheme.colorScheme.onSecondary,
+                                ) {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center,
+                                    ) {
+                                        Text("★", style = MaterialTheme.typography.titleMedium)
+                                    }
+                                }
+                            } else {
+                                Text(
+                                    text = "☆",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.titleLarge,
+                                )
+                            }
                         }
                     }
                 },
@@ -312,7 +329,8 @@ private fun RecipeContent(
                     SectionTitle("Notas")
                     Surface(
                         shape = MaterialTheme.shapes.medium,
-                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                     ) {
                         Text(
                             text = notes,
@@ -335,7 +353,7 @@ private fun RecipeHero(recipe: Recipe) {
             contentDescription = recipe.name,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(252.dp)
+                .height(280.dp)
                 .clip(MaterialTheme.shapes.extraLarge)
                 .testTag("detail_cover_photo"),
             contentScale = ContentScale.Crop,
@@ -373,8 +391,8 @@ private fun RecipeEditorialHeader(recipe: Recipe) {
         recipe.category?.takeIf(String::isNotBlank)?.let { category ->
             Surface(
                 shape = MaterialTheme.shapes.small,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
             ) {
                 Text(
                     text = category.uppercase(),
@@ -414,8 +432,9 @@ private fun RecipeMetadataStrip(recipe: Recipe) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceVariant,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
         contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Row(
             modifier = Modifier
@@ -460,9 +479,14 @@ private fun RecipeMetadataStrip(recipe: Recipe) {
 private fun SafetyGroupSummaryRow(groups: List<RecipeSafetyGroupSummary>) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(
-            text = "Alérgenos presentes",
+            text = "Información de alérgenos",
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
+        )
+        Text(
+            text = "Presencia, derivados, trazas declaradas y señales que requieren revisión.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         LazyRow(
@@ -479,7 +503,7 @@ private fun SafetyGroupSummaryRow(groups: List<RecipeSafetyGroupSummary>) {
                     contentColor = MaterialTheme.colorScheme.onSurface,
                     border = BorderStroke(
                         1.dp,
-                        MaterialTheme.colorScheme.outline.copy(alpha = 0.65f),
+                        presentationStateColor(group.presentationState).copy(alpha = 0.72f),
                     ),
                 ) {
                     Row(
@@ -515,10 +539,11 @@ private fun RecipeSafetyPanel(
             .semantics { contentDescription = "Información sobre seguridad alimentaria" },
         shape = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(
             modifier = Modifier.padding(18.dp),
@@ -531,15 +556,15 @@ private fun RecipeSafetyPanel(
                 Surface(
                     modifier = Modifier.size(36.dp),
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
                     ) {
                         Text(
-                            text = "!",
+                            text = "i",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                         )
@@ -608,13 +633,8 @@ private fun RecipeSafetyPanel(
                 }
             }
 
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f),
-            )
-            Text(
+            SafetyGuidanceNotice(
                 text = "La información disponible puede ser incompleta. Comprueba las etiquetas y la información del fabricante cuando corresponda.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -622,34 +642,40 @@ private fun RecipeSafetyPanel(
 
 @Composable
 private fun SafetyGroupBlock(group: RecipeSafetyGroupSummary) {
-    Row(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("recipe_safety_group_${group.safetyGroupId}"),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.Top,
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        border = BorderStroke(
+            1.dp,
+            presentationStateColor(group.presentationState).copy(alpha = 0.72f),
+        ),
     ) {
-        SafetyGroupPictogram(
-            safetyGroupId = group.safetyGroupId,
-            safetyGroupName = group.safetyGroupName,
-        )
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(5.dp),
+        Row(
+            modifier = Modifier.padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.Top,
         ) {
-            Text(
-                text = group.safetyGroupName,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
+            SafetyGroupPictogram(
+                safetyGroupId = group.safetyGroupId,
+                safetyGroupName = group.safetyGroupName,
             )
-            Text(
-                text = group.presentationState.presentationLabel(),
-                style = MaterialTheme.typography.bodyMedium,
-                color = presentationStateColor(group.presentationState),
-                fontWeight = FontWeight.SemiBold,
-            )
-            group.observations.forEach { observation ->
-                SafetyObservationLine(observation)
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+            ) {
+                Text(
+                    text = group.safetyGroupName,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                SafetyStateBadge(group.presentationState)
+                group.observations.forEach { observation ->
+                    SafetyObservationLine(observation)
+                }
             }
         }
     }
@@ -688,12 +714,67 @@ private fun SafetyObservationLine(observation: RecipeSafetyObservation) {
 }
 
 @Composable
+private fun SafetyStateBadge(state: RecipeSafetyPresentationState) {
+    Surface(
+        shape = MaterialTheme.shapes.small,
+        color = presentationStateContainerColor(state),
+        contentColor = presentationStateColor(state),
+        border = BorderStroke(
+            1.dp,
+            presentationStateColor(state).copy(alpha = 0.45f),
+        ),
+    ) {
+        Text(
+            text = state.presentationLabel(),
+            modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp),
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+    }
+}
+
+@Composable
+private fun SafetyGuidanceNotice(text: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
+            Text(
+                text = "Comprueba antes de consumir",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+}
+
+@Composable
 private fun presentationStateColor(state: RecipeSafetyPresentationState) = when (state) {
-    RecipeSafetyPresentationState.PRESENCIA_IDENTIFICADA -> MaterialTheme.colorScheme.primary
-    RecipeSafetyPresentationState.DERIVADO_IDENTIFICADO -> MaterialTheme.colorScheme.tertiary
-    RecipeSafetyPresentationState.PUEDE_CONTENER_DECLARADO -> MaterialTheme.colorScheme.secondary
-    RecipeSafetyPresentationState.POSIBLE_REACTIVIDAD_CRUZADA -> MaterialTheme.colorScheme.secondary
-    RecipeSafetyPresentationState.REQUIERE_REVISION -> MaterialTheme.colorScheme.error
+    RecipeSafetyPresentationState.PRESENCIA_IDENTIFICADA -> RecetoriaTheme.safety.confirmed
+    RecipeSafetyPresentationState.DERIVADO_IDENTIFICADO -> RecetoriaTheme.safety.confirmed
+    RecipeSafetyPresentationState.PUEDE_CONTENER_DECLARADO -> RecetoriaTheme.safety.mayContain
+    RecipeSafetyPresentationState.POSIBLE_REACTIVIDAD_CRUZADA -> RecetoriaTheme.safety.mayContain
+    RecipeSafetyPresentationState.REQUIERE_REVISION -> RecetoriaTheme.safety.critical
+}
+
+@Composable
+private fun presentationStateContainerColor(state: RecipeSafetyPresentationState) = when (state) {
+    RecipeSafetyPresentationState.PRESENCIA_IDENTIFICADA -> RecetoriaTheme.safety.confirmedContainer
+    RecipeSafetyPresentationState.DERIVADO_IDENTIFICADO -> RecetoriaTheme.safety.confirmedContainer
+    RecipeSafetyPresentationState.PUEDE_CONTENER_DECLARADO -> RecetoriaTheme.safety.mayContainContainer
+    RecipeSafetyPresentationState.POSIBLE_REACTIVIDAD_CRUZADA -> RecetoriaTheme.safety.mayContainContainer
+    RecipeSafetyPresentationState.REQUIERE_REVISION -> RecetoriaTheme.safety.criticalContainer
 }
 
 private fun RecipeSafetyPresentationState.presentationLabel(): String = when (this) {

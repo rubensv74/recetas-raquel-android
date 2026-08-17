@@ -7,11 +7,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 /**
- * Editorial hierarchy for Recetoria.
+ * Golden Editorial hierarchy for Recetoria.
  *
  * Display and headline roles use the platform serif family to give recipes a
- * cookbook character without adding a network or font-file dependency. UI
- * controls and dense content remain sans-serif for clarity.
+ * modern editorial character without adding a network or font-file dependency.
+ * The v2 package does not include Manrope binaries, so controls and safety
+ * information use the documented Android sans-serif fallback.
  */
 val RecetasTypography = Typography(
     displayLarge = TextStyle(

@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -134,21 +132,21 @@ fun IngredientLibraryScreen(
                     .testTag("ingredient_library_search"),
             )
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 4.dp),
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                FilterChip(
-                    selected = state.selectedCategoryId == null,
-                    onClick = { onSelectCategory(null) },
-                    label = { Text("Todas") },
-                    shape = MaterialTheme.shapes.large,
-                    colors = libraryFilterChipColors(),
-                )
-                state.categories.forEach { category ->
+                item {
+                    FilterChip(
+                        selected = state.selectedCategoryId == null,
+                        onClick = { onSelectCategory(null) },
+                        label = { Text("Todas") },
+                        shape = MaterialTheme.shapes.large,
+                        colors = libraryFilterChipColors(),
+                    )
+                }
+                items(state.categories, key = { it.id }) { category ->
                     FilterChip(
                         selected = state.selectedCategoryId == category.id,
                         onClick = { onSelectCategory(category.id) },
@@ -277,6 +275,9 @@ fun IngredientLibraryScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     contentPadding = PaddingValues(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 28.dp),
                 ) {
+                    item {
+                        LibraryResultsHeader(resultCount = state.results.size)
+                    }
                     items(state.results, key = { it.id }) { ingredient ->
                         IngredientCatalogRow(
                             ingredient = ingredient,
@@ -302,8 +303,8 @@ fun IngredientLibraryScreen(
 private fun libraryFilterChipColors() = FilterChipDefaults.filterChipColors(
     containerColor = MaterialTheme.colorScheme.surface,
     labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
 )
 
 @Composable
@@ -336,12 +337,41 @@ private fun LibraryStateBadge(text: String) {
 }
 
 @Composable
+private fun LibraryResultsHeader(resultCount: Int) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        Text(
+            text = "Resultados",
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Text(
+            text = "$resultCount ${if (resultCount == 1) "ingrediente" else "ingredientes"}",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
 private fun IngredientCatalogRow(
     ingredient: IngredientCatalogEntry,
     usageText: String? = null,
     onClick: () -> Unit,
     onShowInfo: () -> Unit,
 ) {
+    val metadata = listOfNotNull(
+        ingredient.defaultUnit
+            ?.takeIf { it.isNotBlank() }
+            ?.let { unit -> "Unidad habitual: $unit" },
+        usageText,
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -349,18 +379,18 @@ private fun IngredientCatalogRow(
             .testTag("ingredient_result_${ingredient.id}"),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+            color = MaterialTheme.colorScheme.outlineVariant,
         ),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(7.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Text(
                 text = ingredient.canonicalName,
@@ -373,28 +403,25 @@ private fun IngredientCatalogRow(
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold,
             )
-            usageText?.let { text ->
+            if (metadata.isNotEmpty()) {
                 Text(
-                    text = text,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            ingredient.defaultUnit?.takeIf { it.isNotBlank() }?.let { unit ->
-                Text(
-                    text = "Unidad habitual: $unit",
+                    text = metadata.joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             IngredientInformationStatus(ingredient)
-            TextButton(
-                onClick = onShowInfo,
-                modifier = Modifier.testTag("ingredient_info_${ingredient.id}"),
-                contentPadding = PaddingValues(horizontal = 0.dp, vertical = 4.dp),
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.CenterEnd,
             ) {
-                Text("Ver información")
+                TextButton(
+                    onClick = onShowInfo,
+                    modifier = Modifier.testTag("ingredient_info_${ingredient.id}"),
+                    contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+                ) {
+                    Text("Ver información")
+                }
             }
         }
     }
@@ -412,7 +439,7 @@ private fun IngredientInformationStatus(ingredient: IngredientCatalogEntry) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(7.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
         ) {
             Text(
                 text = status.statusSymbol(),

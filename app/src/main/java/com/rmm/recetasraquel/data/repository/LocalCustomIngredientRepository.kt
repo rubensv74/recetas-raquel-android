@@ -22,6 +22,24 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 
+private const val RECIPE_FREE_TEXT_COMPAT_TYPE = "RECIPE_FREE_TEXT_COMPAT"
+
+/**
+ * Proyecta tipos persistidos a tipos de dominio sin exponer el registro histórico
+ * RECIPE_FREE_TEXT_COMPAT como una opción seleccionable para nuevos ingredientes.
+ *
+ * Los ingredientes de compatibilidad proceden de recetas antiguas o texto libre.
+ * Se representan como SIMPLE únicamente a efectos de modelo; compositionKnown=false
+ * permanece intacto y obliga al motor de seguridad a tratarlos como información
+ * incompleta que requiere revisión.
+ *
+ * Cualquier otro valor desconocido sigue fallando de forma explícita: no se inventa
+ * una clasificación silenciosa para datos persistidos incompatibles.
+ */
+internal fun persistedCustomIngredientType(value: String): CustomIngredientType = when (value) {
+    RECIPE_FREE_TEXT_COMPAT_TYPE -> CustomIngredientType.SIMPLE
+    else -> CustomIngredientType.valueOf(value)
+}
 class LocalCustomIngredientRepository(
     private val dao: CustomIngredientDao,
     private val idGenerator: IdGenerator,
@@ -204,7 +222,7 @@ class LocalCustomIngredientRepository(
         name = ingredient.name,
         categoryId = ingredient.categoryId,
         defaultUnit = ingredient.defaultUnit,
-        type = CustomIngredientType.valueOf(ingredient.ingredientType),
+        type = persistedCustomIngredientType(ingredient.ingredientType),
         aliases = aliases.map { it.alias },
         brand = ingredient.brand,
         tradeName = ingredient.tradeName,

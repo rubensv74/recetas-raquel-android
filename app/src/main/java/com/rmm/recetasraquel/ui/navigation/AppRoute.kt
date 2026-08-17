@@ -3,6 +3,7 @@ package com.rmm.recetasraquel.ui.navigation
 object AppRoute {
     const val CATALOG = "catalog"
     const val SETTINGS = "settings"
+    const val ABOUT = "about"
     const val RECIPE_ID = "recipeId"
     const val RECIPE = "recipe/{$RECIPE_ID}"
     const val NEW_RECIPE = "recipe/new"
