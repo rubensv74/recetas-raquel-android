@@ -1,5 +1,9 @@
 # Premium Experience Foundation
 
+> La dirección cromática de este documento queda sustituida por
+> `docs/brand/RECETORIA_GOLDEN_EDITORIAL_SYSTEM.md`. Se conserva como registro
+> histórico de las decisiones de estructura y experiencia.
+
 **Estado:** base de diseño y calidad para implementación incremental  
 **Fecha:** 2026-08-11  
 **Ámbito:** experiencia completa de Recetoria, con la pantalla de detalle de receta como primer patrón de referencia.

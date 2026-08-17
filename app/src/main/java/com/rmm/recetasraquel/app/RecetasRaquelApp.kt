@@ -32,6 +32,7 @@ import com.rmm.recetasraquel.ui.home.RecipeCatalogViewModel
 import com.rmm.recetasraquel.ui.ingredientlibrary.IngredientLibraryScreen
 import com.rmm.recetasraquel.ui.ingredientlibrary.IngredientLibraryViewModel
 import com.rmm.recetasraquel.ui.navigation.AppRoute
+import com.rmm.recetasraquel.ui.settings.AboutScreen
 import com.rmm.recetasraquel.ui.settings.SettingsScreen
 import com.rmm.recetasraquel.ui.settings.SettingsViewModel
 import com.rmm.recetasraquel.util.IdGenerator
@@ -231,8 +232,14 @@ fun RecetasRaquelApp(
                 state = settingsViewModel.uiState.collectAsStateWithLifecycle().value,
                 showDevelopmentTools = settingsViewModel.hasDevelopmentTools,
                 onNavigateBack = { navController.popBackStack() },
+                onOpenAbout = { navController.navigate(AppRoute.ABOUT) { launchSingleTop = true } },
                 onLoadDemoData = settingsViewModel::loadDemoData,
                 onRemoveDemoData = settingsViewModel::removeDemoData,
+            )
+        }
+        composable(AppRoute.ABOUT) {
+            AboutScreen(
+                onNavigateBack = { navController.popBackStack() },
             )
         }
     }

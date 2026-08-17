@@ -2,32 +2,39 @@ package com.rmm.recetasraquel.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Core editorial palette. Names describe visual intent, not safety meaning.
-val Ivory = Color(0xFFFFFBF5)
-val WarmIvory = Color(0xFFF8F1E7)
-val Porcelain = Color(0xFFFFFDF9)
-val Espresso = Color(0xFF2E241E)
-val SoftInk = Color(0xFF5B4E45)
-val Copper = Color(0xFF9B5D3A)
-val CopperDeep = Color(0xFF754029)
-val CopperSoft = Color(0xFFF0DDD0)
-val Olive = Color(0xFF5F6F52)
-val OliveSoft = Color(0xFFDDE4D6)
-val Sand = Color(0xFFE6D7C5)
-val Linen = Color(0xFFF3E9DC)
-val OutlineWarm = Color(0xFFD7C7B8)
+// Golden Editorial v2 — exact source tokens.
+val EspressoInk = Color(0xFF211B16)
+val ToastedBronze = Color(0xFF9E621C)
+val AntiqueGold = Color(0xFFC58A2A)
+val SoftIvory = Color(0xFFFAF7F2)
+val WarmStone = Color(0xFFE8E0D6)
+val ConfirmedPresence = Color(0xFFA95010)
+val MayContain = Color(0xFF33709F)
+val CriticalRisk = Color(0xFFB5473C)
 
-// Dark theme keeps the same brand character while preserving contrast.
-val NightEspresso = Color(0xFF1A1512)
-val NightSurface = Color(0xFF241D19)
-val NightSurfaceRaised = Color(0xFF302621)
-val NightIvory = Color(0xFFF4E9DC)
-val NightSoftInk = Color(0xFFD6C7BA)
-val CopperLight = Color(0xFFD9A17F)
-val OliveLight = Color(0xFFB7C8A7)
+// Accessible supporting surfaces derived from the official palette.
+val IvorySurface = Color(0xFFFFFCF8)
+val BronzeContainer = Color(0xFFF4DFC5)
+val GoldContainer = Color(0xFFF7E6C2)
+val AmberContainer = Color(0xFFFFE0C5)
+val BlueContainer = Color(0xFFD7EAF7)
+val RedContainer = Color(0xFFFFDAD6)
+val SecondaryInk = Color(0xFF5B5048)
+val WarmOutline = Color(0xFF81766D)
 
-// Compatibility aliases retained while the existing UI migrates to semantic tokens.
-val HerbGreen = Olive
-val WarmCream = Ivory
-val DarkHerbGreen = OliveLight
-val DarkSurface = NightEspresso
+// Warm dark scheme; black is deliberately avoided.
+val NightBackground = Color(0xFF181411)
+val NightSurface = Color(0xFF211B16)
+val NightSurfaceRaised = Color(0xFF302821)
+val NightText = Color(0xFFFAF7F2)
+val NightTextSecondary = Color(0xFFD8CEC4)
+val BronzeLight = Color(0xFFE7B36F)
+val GoldLight = Color(0xFFF2C66D)
+val AmberLight = Color(0xFFFFB77A)
+val BlueLight = Color(0xFF9CCCF0)
+val RedLight = Color(0xFFFFB4AC)
+val BronzeDarkContainer = Color(0xFF633C13)
+val GoldDarkContainer = Color(0xFF5A431C)
+val BlueDarkContainer = Color(0xFF183F5B)
+val RedDarkContainer = Color(0xFF6F2924)
+val NightOutline = Color(0xFF9D9187)

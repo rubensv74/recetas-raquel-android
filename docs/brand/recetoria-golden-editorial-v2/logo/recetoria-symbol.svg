@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Símbolo de Recetoria</title>
+  <desc id="desc">Una R geométrica formada por una ficha digital plegada.</desc>
+  <path fill="#9E621C" d="M80 60h224c72 0 128 50 128 120 0 52-31 91-78 109l78 123v40H302l-79-135h-31v135H80z"/>
+  <path fill="#C58A2A" d="M80 60h224c72 0 128 50 128 120 0 70-56 121-128 121h-80l78 151h130v-40l-78-123c47-18 78-57 78-109 0-70-56-120-128-120zM192 152h104c27 0 48 18 48 43s-21 43-48 43H192z"/>
+  <path fill="#FAF7F2" d="M192 270h44l82 142h114v40H294z"/>
+</svg>

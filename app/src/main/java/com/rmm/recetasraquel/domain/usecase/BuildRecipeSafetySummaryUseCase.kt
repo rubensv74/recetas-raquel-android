@@ -33,14 +33,19 @@ class BuildRecipeSafetySummaryUseCase(
     private val regulatoryJurisdiction: String = DEFAULT_REGULATORY_JURISDICTION,
     private val regulatoryTimeZoneId: String = DEFAULT_REGULATORY_TIME_ZONE_ID,
 ) : RecipeSafetySummaryResolver {
-    override suspend fun resolve(recipe: Recipe): Result<RecipeSafetySummary> = runCatching {
-        catalogRepository.ensureCatalogImported().getOrThrow()
-        val safetyGroups = customIngredientRepository.getSafetyGroups().getOrThrow().associateBy { it.id }
-        val regulatoryAsOfDate = currentRegulatoryDateIso()
 
+    override suspend fun resolve(recipe: Recipe): Result<RecipeSafetySummary> = runCatching {
+        // Global gate: without an available catalog, no recipe-level safety conclusion is reliable.
+        catalogRepository.ensureCatalogImported().getOrThrow()
+
+        val regulatoryAsOfDate = currentRegulatoryDateIso()
         val observations = mutableListOf<RecipeSafetyObservation>()
         val reviewNotices = mutableListOf<RecipeReviewNotice>()
         val regulatoryExemptions = mutableListOf<RegulatoryExemption>()
+
+        // Custom safety-group metadata is not a global dependency. Load it only if a recipe
+        // actually contains a resolvable custom ingredient, and degrade conservatively if it fails.
+        val safetyGroupLookup = loadSafetyGroupsIfNeeded(recipe)
 
         recipe.ingredients.sortedBy { it.sortOrder }.forEach { ingredient ->
             val catalogIngredientId = ingredient.catalogIngredientId
@@ -66,7 +71,8 @@ class BuildRecipeSafetySummaryUseCase(
                 customIngredientId != null -> appendCustomEvidence(
                     recipeIngredient = ingredient,
                     customIngredientId = customIngredientId,
-                    safetyGroups = safetyGroups,
+                    safetyGroups = safetyGroupLookup.groups,
+                    safetyGroupMetadataAvailable = safetyGroupLookup.available,
                     observations = observations,
                     reviewNotices = reviewNotices,
                 )
@@ -87,6 +93,25 @@ class BuildRecipeSafetySummaryUseCase(
         )
     }
 
+    private suspend fun loadSafetyGroupsIfNeeded(recipe: Recipe): SafetyGroupLookup {
+        val requiresCustomMetadata = recipe.ingredients.any { ingredient ->
+            ingredient.customIngredientId != null && ingredient.catalogIngredientId == null
+        }
+        if (!requiresCustomMetadata) {
+            return SafetyGroupLookup(groups = emptyMap(), available = true)
+        }
+
+        val result = customIngredientRepository.getSafetyGroups()
+        return if (result.isSuccess) {
+            SafetyGroupLookup(
+                groups = result.getOrThrow().associateBy { it.id },
+                available = true,
+            )
+        } else {
+            SafetyGroupLookup(groups = emptyMap(), available = false)
+        }
+    }
+
     private suspend fun appendCatalogEvidence(
         recipeIngredient: Ingredient,
         catalogIngredientId: String,
@@ -95,7 +120,16 @@ class BuildRecipeSafetySummaryUseCase(
         reviewNotices: MutableList<RecipeReviewNotice>,
         regulatoryExemptions: MutableList<RegulatoryExemption>,
     ) {
-        val catalogIngredient = catalogRepository.getIngredient(catalogIngredientId).getOrThrow()
+        val catalogIngredientResult = catalogRepository.getIngredient(catalogIngredientId)
+        if (catalogIngredientResult.isFailure) {
+            reviewNotices += recipeIngredient.reviewNotice(
+                code = "CATALOG_INGREDIENT_LOOKUP_FAILED",
+                message = "No se ha podido verificar la identidad de catálogo de este ingrediente. La información disponible puede ser incompleta. Requiere revisión.",
+            )
+            return
+        }
+
+        val catalogIngredient = catalogIngredientResult.getOrNull()
         if (catalogIngredient == null) {
             reviewNotices += recipeIngredient.reviewNotice(
                 code = "CATALOG_INGREDIENT_NOT_AVAILABLE",
@@ -122,13 +156,19 @@ class BuildRecipeSafetySummaryUseCase(
             reviewNotices = reviewNotices,
         )
 
-        regulatoryExemptions += catalogRepository
-            .getApplicableRegulatoryExemptions(
-                ingredientId = catalogIngredientId,
-                jurisdiction = regulatoryJurisdiction,
-                asOfDate = regulatoryAsOfDate,
+        val exemptionsResult = catalogRepository.getApplicableRegulatoryExemptions(
+            ingredientId = catalogIngredientId,
+            jurisdiction = regulatoryJurisdiction,
+            asOfDate = regulatoryAsOfDate,
+        )
+        if (exemptionsResult.isSuccess) {
+            regulatoryExemptions += exemptionsResult.getOrThrow()
+        } else {
+            reviewNotices += recipeIngredient.reviewNotice(
+                code = "REGULATORY_EXEMPTIONS_UNAVAILABLE",
+                message = "No se ha podido verificar la información regulatoria aplicable a este ingrediente. La evidencia de seguridad disponible se mantiene, pero la situación regulatoria requiere revisión.",
             )
-            .getOrThrow()
+        }
     }
 
     private suspend fun appendDirectCatalogSafety(
@@ -137,7 +177,16 @@ class BuildRecipeSafetySummaryUseCase(
         observations: MutableList<RecipeSafetyObservation>,
         reviewNotices: MutableList<RecipeReviewNotice>,
     ) {
-        catalogRepository.getSafetyRelations(catalogIngredientId).getOrThrow().forEach { relation ->
+        val relationsResult = catalogRepository.getSafetyRelations(catalogIngredientId)
+        if (relationsResult.isFailure) {
+            reviewNotices += recipeIngredient.reviewNotice(
+                code = "CATALOG_SAFETY_RELATIONS_UNAVAILABLE",
+                message = "No se han podido consultar las relaciones directas de seguridad de este ingrediente. Se conservará cualquier otra evidencia verificable y el ingrediente requiere revisión.",
+            )
+            return
+        }
+
+        relationsResult.getOrThrow().forEach { relation ->
             val relationType = relation.relationType.toRecipeRelationTypeOrNull()
             if (relationType == null) {
                 reviewNotices += recipeIngredient.reviewNotice(
@@ -171,7 +220,16 @@ class BuildRecipeSafetySummaryUseCase(
             return
         }
 
-        val composition = catalogRepository.getComposition(parentIngredientId).getOrThrow()
+        val compositionResult = catalogRepository.getComposition(parentIngredientId)
+        if (compositionResult.isFailure) {
+            reviewNotices += recipeIngredient.reviewNotice(
+                code = "STRUCTURED_COMPOSITION_UNAVAILABLE",
+                message = "No se ha podido verificar la composición estructurada de ${path.last()}. Se conservará la evidencia ya disponible y este ingrediente requiere revisión.",
+            )
+            return
+        }
+
+        val composition = compositionResult.getOrThrow()
         if (composition.coverage == IngredientCompositionCoverage.NONE) return
 
         if (composition.coverage == IngredientCompositionCoverage.PARTIAL) {
@@ -190,7 +248,16 @@ class BuildRecipeSafetySummaryUseCase(
                 return@forEach
             }
 
-            val componentIngredient = catalogRepository.getIngredient(component.componentIngredientId).getOrThrow()
+            val componentIngredientResult = catalogRepository.getIngredient(component.componentIngredientId)
+            if (componentIngredientResult.isFailure) {
+                reviewNotices += recipeIngredient.reviewNotice(
+                    code = "COMPONENT_INGREDIENT_LOOKUP_FAILED",
+                    message = "No se ha podido verificar uno de los componentes de ${path.last()}. La información disponible puede ser incompleta. Requiere revisión.",
+                )
+                return@forEach
+            }
+
+            val componentIngredient = componentIngredientResult.getOrNull()
             if (componentIngredient == null) {
                 reviewNotices += recipeIngredient.reviewNotice(
                     code = "COMPONENT_INGREDIENT_NOT_AVAILABLE",
@@ -209,24 +276,32 @@ class BuildRecipeSafetySummaryUseCase(
                 )
             }
 
-            catalogRepository.getSafetyRelations(component.componentIngredientId).getOrThrow().forEach { relation ->
-                val originalType = relation.relationType.toRecipeRelationTypeOrNull()
-                if (originalType == null) {
-                    reviewNotices += recipeIngredient.reviewNotice(
-                        code = "UNSUPPORTED_COMPONENT_SAFETY_RELATION",
-                        message = "Existe información de seguridad de un componente cuyo tipo no puede interpretarse. Requiere revisión.",
+            val componentRelationsResult = catalogRepository.getSafetyRelations(component.componentIngredientId)
+            if (componentRelationsResult.isSuccess) {
+                componentRelationsResult.getOrThrow().forEach { relation ->
+                    val originalType = relation.relationType.toRecipeRelationTypeOrNull()
+                    if (originalType == null) {
+                        reviewNotices += recipeIngredient.reviewNotice(
+                            code = "UNSUPPORTED_COMPONENT_SAFETY_RELATION",
+                            message = "Existe información de seguridad de un componente cuyo tipo no puede interpretarse. Requiere revisión.",
+                        )
+                        return@forEach
+                    }
+                    val aggregatedType = if (isPossible) {
+                        RecipeSafetyRelationType.UNKNOWN
+                    } else {
+                        originalType.asContainedComponentRelation()
+                    }
+                    observations += relation.toObservation(
+                        recipeIngredient = recipeIngredient,
+                        relationType = aggregatedType,
+                        compositionPath = componentPath,
                     )
-                    return@forEach
                 }
-                val aggregatedType = if (isPossible) {
-                    RecipeSafetyRelationType.UNKNOWN
-                } else {
-                    originalType.asContainedComponentRelation()
-                }
-                observations += relation.toObservation(
-                    recipeIngredient = recipeIngredient,
-                    relationType = aggregatedType,
-                    compositionPath = componentPath,
+            } else {
+                reviewNotices += recipeIngredient.reviewNotice(
+                    code = "COMPONENT_SAFETY_RELATIONS_UNAVAILABLE",
+                    message = "No se han podido consultar las relaciones de seguridad de ${componentIngredient.canonicalName}. Se continuará con el resto de la composición y requiere revisión.",
                 )
             }
 
@@ -247,16 +322,33 @@ class BuildRecipeSafetySummaryUseCase(
         recipeIngredient: Ingredient,
         customIngredientId: String,
         safetyGroups: Map<String, FoodSafetyGroupOption>,
+        safetyGroupMetadataAvailable: Boolean,
         observations: MutableList<RecipeSafetyObservation>,
         reviewNotices: MutableList<RecipeReviewNotice>,
     ) {
-        val customIngredient = customIngredientRepository.getIngredient(customIngredientId).getOrThrow()
+        val customIngredientResult = customIngredientRepository.getIngredient(customIngredientId)
+        if (customIngredientResult.isFailure) {
+            reviewNotices += recipeIngredient.reviewNotice(
+                code = "CUSTOM_INGREDIENT_LOOKUP_FAILED",
+                message = "No se ha podido consultar el ingrediente personalizado. La información disponible puede ser incompleta. Requiere revisión.",
+            )
+            return
+        }
+
+        val customIngredient = customIngredientResult.getOrNull()
         if (customIngredient == null) {
             reviewNotices += recipeIngredient.reviewNotice(
                 code = "CUSTOM_INGREDIENT_NOT_AVAILABLE",
                 message = "El ingrediente personalizado ya no está disponible. La información disponible puede ser incompleta. Requiere revisión.",
             )
             return
+        }
+
+        if (!safetyGroupMetadataAvailable) {
+            reviewNotices += recipeIngredient.reviewNotice(
+                code = "SAFETY_GROUP_METADATA_UNAVAILABLE",
+                message = "No se han podido consultar los metadatos de los grupos de seguridad. Se conservarán las declaraciones disponibles, pero requieren revisión.",
+            )
         }
 
         if (!customIngredient.compositionKnown) {
@@ -268,7 +360,7 @@ class BuildRecipeSafetySummaryUseCase(
 
         customIngredient.safetyRelations.forEach { relation ->
             val safetyGroup = safetyGroups[relation.safetyGroupId]
-            if (safetyGroup == null) {
+            if (safetyGroupMetadataAvailable && safetyGroup == null) {
                 reviewNotices += recipeIngredient.reviewNotice(
                     code = "SAFETY_GROUP_METADATA_NOT_AVAILABLE",
                     message = "Una declaración de seguridad no dispone de metadatos activos del grupo. Requiere revisión.",
@@ -335,6 +427,11 @@ class BuildRecipeSafetySummaryUseCase(
 
     private fun String.toRecipeRelationTypeOrNull(): RecipeSafetyRelationType? =
         runCatching { RecipeSafetyRelationType.valueOf(this) }.getOrNull()
+
+    private data class SafetyGroupLookup(
+        val groups: Map<String, FoodSafetyGroupOption>,
+        val available: Boolean,
+    )
 
     companion object {
         private const val DATE_PATTERN = "yyyy-MM-dd"

@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,6 +22,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -28,12 +30,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -129,7 +133,15 @@ fun RecipeEditorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(title) },
+                title = {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                ),
                 navigationIcon = {
                     TextButton(
                         onClick = onNavigateBack,
@@ -154,6 +166,7 @@ fun RecipeEditorScreen(
                 },
             )
         },
+        containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         when {
@@ -276,8 +289,8 @@ private fun EditorContent(
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize().padding(horizontal = 20.dp).testTag("editor_content"),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 20.dp),
     ) {
         item { SectionTitle("Fotografía de la receta") }
 
@@ -300,6 +313,7 @@ private fun EditorContent(
                 isError = state.nameError != null,
                 supportingText = state.nameError?.let { error -> { Text(error) } },
                 singleLine = true,
+                colors = editorTextFieldColors(),
             )
         }
 
@@ -328,36 +342,19 @@ private fun EditorContent(
                 label = { Text("Descripción") },
                 minLines = 2,
                 maxLines = 5,
+                colors = editorTextFieldColors(),
             )
         }
 
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
-                    value = state.servings,
-                    onValueChange = onServingsChange,
-                    modifier = Modifier.weight(1f).testTag("editor_servings"),
-                    label = { Text("Raciones") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                )
-                OutlinedTextField(
-                    value = state.preparationMinutes,
-                    onValueChange = onPreparationMinutesChange,
-                    modifier = Modifier.weight(1f).testTag("editor_prep_time"),
-                    label = { Text("Preparación (min)") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                )
-                OutlinedTextField(
-                    value = state.cookingMinutes,
-                    onValueChange = onCookingMinutesChange,
-                    modifier = Modifier.weight(1f).testTag("editor_cook_time"),
-                    label = { Text("Cocción (min)") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                )
-            }
+            EditorMetricsRow(
+                servings = state.servings,
+                preparationMinutes = state.preparationMinutes,
+                cookingMinutes = state.cookingMinutes,
+                onServingsChange = onServingsChange,
+                onPreparationMinutesChange = onPreparationMinutesChange,
+                onCookingMinutesChange = onCookingMinutesChange,
+            )
         }
 
         item {
@@ -368,6 +365,7 @@ private fun EditorContent(
                 label = { Text("Notas") },
                 minLines = 2,
                 maxLines = 5,
+                colors = editorTextFieldColors(),
             )
         }
 
@@ -438,7 +436,12 @@ private fun CoverPhotoSection(
     onSelect: () -> Unit,
     onRemove: () -> Unit,
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             when (photoState) {
                 is EditorPhotoState.None, is EditorPhotoState.Removed -> {
@@ -501,7 +504,12 @@ private fun IngredientEditorRow(
         else -> null
     }
 
-    Card(modifier = modifier.fillMaxWidth()) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
@@ -516,6 +524,7 @@ private fun IngredientEditorRow(
                     } else {
                         null
                     },
+                    colors = editorTextFieldColors(),
                 )
                 SelectionDropdown(
                     value = item.unit,
@@ -547,6 +556,7 @@ private fun IngredientEditorRow(
                     else -> null
                 },
                 singleLine = true,
+                colors = editorTextFieldColors(),
             )
             OutlinedTextField(
                 value = item.notes,
@@ -554,6 +564,7 @@ private fun IngredientEditorRow(
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Observaciones") },
                 singleLine = true,
+                colors = editorTextFieldColors(),
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(
@@ -588,7 +599,12 @@ private fun StepEditorRow(
     onRemovePhoto: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(modifier = modifier.fillMaxWidth()) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("${index + 1}.", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
@@ -607,6 +623,7 @@ private fun StepEditorRow(
                 supportingText = error?.let { e -> { Text(e) } },
                 minLines = 2,
                 maxLines = 8,
+                colors = editorTextFieldColors(),
             )
             OutlinedTextField(
                 value = item.timerMinutes,
@@ -615,6 +632,7 @@ private fun StepEditorRow(
                 label = { Text("Tiempo (min)") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                colors = editorTextFieldColors(),
             )
             StepPhotoSection(
                 photoState = photoState,
@@ -686,9 +704,95 @@ private fun AddItemButton(text: String, onClick: () -> Unit, modifier: Modifier 
 }
 
 @Composable
+private fun EditorMetricsRow(
+    servings: String,
+    preparationMinutes: String,
+    cookingMinutes: String,
+    onServingsChange: (String) -> Unit,
+    onPreparationMinutesChange: (String) -> Unit,
+    onCookingMinutesChange: (String) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        EditorMetricField(
+            value = servings,
+            onValueChange = onServingsChange,
+            label = "Raciones",
+            modifier = Modifier.weight(1f),
+            testTag = "editor_servings",
+        )
+        EditorMetricField(
+            value = preparationMinutes,
+            onValueChange = onPreparationMinutesChange,
+            label = "Preparación",
+            suffix = "min",
+            modifier = Modifier.weight(1f),
+            testTag = "editor_prep_time",
+        )
+        EditorMetricField(
+            value = cookingMinutes,
+            onValueChange = onCookingMinutesChange,
+            label = "Cocción",
+            suffix = "min",
+            modifier = Modifier.weight(1f),
+            testTag = "editor_cook_time",
+        )
+    }
+}
+
+@Composable
+private fun EditorMetricField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    suffix: String? = null,
+    testTag: String,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+        )
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth().testTag(testTag),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            suffix = suffix?.let { unit -> { Text(unit, style = MaterialTheme.typography.labelSmall) } },
+            colors = editorTextFieldColors(),
+        )
+    }
+}
+
+@Composable
+private fun editorTextFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedContainerColor = MaterialTheme.colorScheme.surface,
+    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+    errorContainerColor = MaterialTheme.colorScheme.surface,
+    focusedBorderColor = MaterialTheme.colorScheme.primary,
+    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+    focusedLabelColor = MaterialTheme.colorScheme.primary,
+    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+)
+
+@Composable
 private fun SectionTitle(text: String) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        HorizontalDivider()
-        Text(text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
 }
