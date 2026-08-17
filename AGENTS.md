@@ -30,7 +30,10 @@ No crear archivos o capas vacías para anticipar trabajo futuro.
 - Añadir o actualizar pruebas relevantes para cada cambio.
 - Antes de entregar, ejecutar localmente `./gradlew assembleDebug`, `./gradlew testDebugUnitTest` y `./gradlew lintDebug`.
 - Cuando un incremento afecte UI, persistencia, navegación, integración Android o comportamiento dependiente de dispositivo/emulador, ejecutar también localmente las pruebas instrumentadas relevantes antes de considerar el incremento validado.
-- No hacer commit, push, merge ni publicar APK sin autorización expresa.
+- Crear un commit local de checkpoint siempre que exista un estado coherente, compilable y razonablemente validado; no acumular varios gates o incrementos cerrados sin commit.
+- La autorización permanente del proyecto permite crear esos commits locales de checkpoint sin pedir confirmación en cada ocasión.
+- Los problemas de infraestructura externa (por ejemplo, AVD offline o dispositivo desconectado) no bloquean un checkpoint si el código compila y las validaciones locales razonablemente ejecutables pasan; la validación pendiente debe quedar documentada y ejecutarse en cuanto la infraestructura vuelva a estar disponible.
+- `push`, `merge`, `tag`, publicación de APK/release y operaciones Git destructivas siguen requiriendo autorización expresa.
 - Actualizar la documentación y los ADR cuando cambie una decisión estructural.
 
 ## GitHub Actions — Local First / Remote Gate
