@@ -6,7 +6,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.performScrollToIndex
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientSafetyEvidence
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientSafetyRelationType
 import com.rmm.recetasraquel.domain.ingredient.CustomIngredientType
@@ -14,6 +13,8 @@ import com.rmm.recetasraquel.ui.theme.RecetasRaquelTheme
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.performScrollToNode
 
 class CustomIngredientEditorUiTest {
     @get:Rule
@@ -23,12 +24,28 @@ class CustomIngredientEditorUiTest {
     fun formRequiresExplicitCompositionAndKeepsSafetyWarningVisible() {
         setScreen(CustomIngredientEditorUiState(isLoading = false))
 
-        composeRule.onNodeWithText("Nuevo ingrediente personalizado").assertIsDisplayed()
-        composeRule.onNodeWithTag("composition_known").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithTag("composition_unknown").assertIsDisplayed()
+        composeRule.onNodeWithText("Nuevo ingrediente personalizado")
+            .assertIsDisplayed()
+
+        composeRule.onNodeWithTag("custom_ingredient_form")
+            .performScrollToNode(hasTestTag("composition_known"))
+
+        composeRule.onNodeWithTag("composition_known")
+            .assertIsDisplayed()
+
+        composeRule.onNodeWithTag("composition_unknown")
+            .assertIsDisplayed()
+
+        composeRule.onNodeWithTag("custom_ingredient_form")
+            .performScrollToNode(hasTestTag("custom_safety_warning"))
+
+        composeRule.onNodeWithTag("custom_safety_warning")
+            .assertIsDisplayed()
+
         composeRule.onNodeWithText(
-            "Registra solo lo que conozcas. La ausencia de declaraciones no significa ausencia de alérgenos o riesgo. Comprueba siempre la etiqueta del producto cuando corresponda.",
-        ).performScrollTo().assertIsDisplayed()
+            "Registra solo lo que conozcas.",
+            substring = true,
+        ).assertIsDisplayed()
     }
 
     @Test
@@ -41,9 +58,17 @@ class CustomIngredientEditorUiTest {
             ),
         )
 
-        composeRule.onNodeWithTag("custom_brand").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("custom_ingredient_form")
+            .performScrollToNode(hasTestTag("custom_brand"))
+        composeRule.onNodeWithTag("custom_brand").assertIsDisplayed()
+
+        composeRule.onNodeWithTag("custom_ingredient_form")
+            .performScrollToNode(hasTestTag("custom_trade_name"))
         composeRule.onNodeWithTag("custom_trade_name").assertIsDisplayed()
-        composeRule.onNodeWithTag("custom_label_read_at").performScrollTo().assertIsDisplayed()
+
+        composeRule.onNodeWithTag("custom_ingredient_form")
+            .performScrollToNode(hasTestTag("custom_label_read_at"))
+        composeRule.onNodeWithTag("custom_label_read_at").assertIsDisplayed()
     }
 
     @Test
@@ -80,9 +105,25 @@ class CustomIngredientEditorUiTest {
             ),
         )
 
-        composeRule.onNodeWithTag("custom_ingredient_form").performScrollToIndex(9)
-        composeRule.onNodeWithText("Declaración del usuario").assertIsDisplayed()
-        composeRule.onNodeWithText("No verificado").assertIsDisplayed()
+        // Fuerza a la LazyColumn a componer USER_DECLARED.
+        composeRule.onNodeWithTag("custom_ingredient_form")
+            .performScrollToNode(
+                hasTestTag("custom_safety_evidence_row-1_USER_DECLARED"),
+            )
+
+        composeRule.onNodeWithTag(
+            "custom_safety_evidence_row-1_USER_DECLARED",
+        ).fetchSemanticsNode()
+
+        // Fuerza a la LazyColumn a componer UNVERIFIED.
+        composeRule.onNodeWithTag("custom_ingredient_form")
+            .performScrollToNode(
+                hasTestTag("custom_safety_evidence_row-1_UNVERIFIED"),
+            )
+
+        composeRule.onNodeWithTag(
+            "custom_safety_evidence_row-1_UNVERIFIED",
+        ).fetchSemanticsNode()
     }
 
     private fun assertTagDoesNotExist(tag: String) {

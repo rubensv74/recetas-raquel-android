@@ -165,26 +165,14 @@ private fun IngredientInformationContent(state: IngredientLibraryInfoUiState) {
             eyebrow = "RELACIÓN CULINARIA",
         ) {
             state.catalogDetail.relatedPresentations.forEach { related ->
-                Row(
+                Text(
+                    text = "${related.relationshipLabel()}: ${related.canonicalName}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("ingredient_library_related_${related.ingredientId}"),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    Text(
-                        text = related.relationshipLabel(),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(0.42f),
-                    )
-                    Text(
-                        text = related.canonicalName,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(0.58f),
-                    )
-                }
+                )
             }
             ContextNotice(
                 text = "Estas relaciones describen identidad culinaria. No heredan ni generan información de seguridad alimentaria.",
@@ -209,7 +197,7 @@ private fun IngredientInformationContent(state: IngredientLibraryInfoUiState) {
 @Composable
 private fun SafetySection(state: IngredientLibraryInfoUiState) {
     InfoSectionCard(
-        title = "Seguridad alimentaria",
+        title = "Información de seguridad alimentaria",
         eyebrow = "RIESGO Y EVIDENCIA",
         borderColor = when {
             state.safetyRelations.isEmpty() -> RecetoriaTheme.safety.mayContain
@@ -415,25 +403,12 @@ private fun RegulatoryRecordBlock(exemption: RegulatoryExemption) {
 
 @Composable
 private fun RecordDetail(label: String, value: String) {
-    Row(
+    Text(
+        text = "$label: $value",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.Top,
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.30f),
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(0.70f),
-        )
-    }
+    )
 }
 
 private fun IngredientCatalogRelatedPresentation.relationshipLabel(): String = when (direction) {
