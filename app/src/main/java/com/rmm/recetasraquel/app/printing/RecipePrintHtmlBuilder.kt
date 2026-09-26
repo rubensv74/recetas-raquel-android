@@ -478,7 +478,7 @@ internal object RecipePrintHtmlBuilder {
                 '<' -> append("&lt;")
                 '>' -> append("&gt;")
                 '"' -> append("&quot;")
-                '\\'' -> append("&#39;")
+                39.toChar() -> append("&#39;")
                 else -> append(char)
             }
         }
