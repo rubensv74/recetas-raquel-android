@@ -78,7 +78,7 @@ jobs:
 
   full-validation:
     name: Manual gate — release and instrumented tests
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || github.head_ref == 'feature/recipe-print-pdf'
     needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 35
