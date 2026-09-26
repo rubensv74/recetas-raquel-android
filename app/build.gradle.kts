@@ -1,9 +1,32 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
 }
+
+val releaseKeystoreProperties = Properties()
+val releaseKeystorePropertiesFile = rootProject.file("keystore.properties")
+if (releaseKeystorePropertiesFile.exists()) {
+    releaseKeystorePropertiesFile.inputStream().use(releaseKeystoreProperties::load)
+}
+
+val releaseStoreFile = releaseKeystoreProperties.getProperty("storeFile")
+    ?: System.getenv("RECETORIA_KEYSTORE_FILE")
+val releaseStorePassword = releaseKeystoreProperties.getProperty("storePassword")
+    ?: System.getenv("RECETORIA_KEYSTORE_PASSWORD")
+val releaseKeyAlias = releaseKeystoreProperties.getProperty("keyAlias")
+    ?: System.getenv("RECETORIA_KEY_ALIAS")
+val releaseKeyPassword = releaseKeystoreProperties.getProperty("keyPassword")
+    ?: System.getenv("RECETORIA_KEY_PASSWORD")
+val hasReleaseSigning = listOf(
+    releaseStoreFile,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword
+).all { !it.isNullOrBlank() }
 
 android {
     namespace = "com.rmm.recetasraquel"
@@ -23,9 +46,23 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = rootProject.file(requireNotNull(releaseStoreFile))
+                storePassword = requireNotNull(releaseStorePassword)
+                keyAlias = requireNotNull(releaseKeyAlias)
+                keyPassword = requireNotNull(releaseKeyPassword)
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
