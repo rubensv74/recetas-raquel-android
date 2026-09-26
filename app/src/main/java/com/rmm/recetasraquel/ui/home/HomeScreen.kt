@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -63,6 +64,8 @@ fun HomeScreen(
     onOpenSettings: () -> Unit,
     onCreateRecipe: () -> Unit,
 ) {
+    val focusManager = LocalFocusManager.current
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
@@ -155,7 +158,10 @@ fun HomeScreen(
 
             CatalogContent(
                 state = state,
-                onClearFilters = onClearFilters,
+                onClearFilters = {
+                    focusManager.clearFocus()
+                    onClearFilters()
+                },
                 onRetry = onRetry,
                 onToggleFavorite = onToggleFavorite,
                 onOpenRecipe = onOpenRecipe,

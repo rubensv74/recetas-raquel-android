@@ -2,11 +2,13 @@ package com.rmm.recetasraquel.ui.ingredientlibrary
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import com.rmm.recetasraquel.domain.ingredient.CatalogIngredientSafetyRecord
 import com.rmm.recetasraquel.domain.ingredient.FrequentIngredientCatalogEntry
 import com.rmm.recetasraquel.domain.ingredient.IngredientCatalogCategory
@@ -40,11 +42,13 @@ class IngredientLibraryUiTest {
     @Test
     fun frequentStateUsesExistingRecipeHistoryAndKeepsSelectionExplicit() {
         var selectedId: String? = null
+
         val wheat = entry(
             id = "ing-wheat",
             name = "Trigo",
             status = IngredientCatalogInformationStatus.SAFETY_RELATIONS_RECORDED,
         )
+
         setScreen(
             state = IngredientLibraryUiState(
                 categories = sampleCategories(),
@@ -59,11 +63,24 @@ class IngredientLibraryUiTest {
             onSelectIngredient = { selectedId = it.id },
         )
 
-        composeRule.onNodeWithTag("ingredient_library_frequent").assertIsDisplayed()
-        composeRule.onNodeWithText("Frecuentes").assertIsDisplayed()
-        composeRule.onNodeWithText("Usado en 3 recetas").assertIsDisplayed()
-        composeRule.onNodeWithTag("ingredient_result_ing-wheat").performClick()
-        composeRule.runOnIdle { assertEquals("ing-wheat", selectedId) }
+        composeRule.onNodeWithTag("ingredient_library_frequent")
+            .assertIsDisplayed()
+
+        composeRule.onNodeWithText("Frecuentes")
+            .assertIsDisplayed()
+
+        composeRule.onNodeWithTag("ingredient_library_frequent")
+            .performScrollToNode(hasText("Usado en 3 recetas", substring = true))
+
+        composeRule.onNodeWithText("Usado en 3 recetas", substring = true)
+            .assertIsDisplayed()
+
+        composeRule.onNodeWithTag("ingredient_result_ing-wheat")
+            .performClick()
+
+        composeRule.runOnIdle {
+            assertEquals("ing-wheat", selectedId)
+        }
     }
 
     @Test
