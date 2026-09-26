@@ -74,7 +74,7 @@ class RecipeSafetyPanelUiTest {
                 hasAnyAncestor(hasTestTag("recipe_safety_group_sg-eu-cereals-gluten")),
         ).assertIsDisplayed()
         composeRule.onNodeWithText("Presencia identificada").assertIsDisplayed()
-        composeRule.onNodeWithText("Requiere revisión").assertIsDisplayed()
+        composeRule.onNodeWithText("Requiere revisión").performScrollTo().assertIsDisplayed()
     }
 
     @Test
