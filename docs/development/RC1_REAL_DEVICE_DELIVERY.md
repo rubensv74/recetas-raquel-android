@@ -52,7 +52,13 @@ The release branch includes:
 .\tools\release\verify-rc1.ps1
 ```
 
-Run it from the repository root while checked out on `release/recetoria-rc1`.
+On Windows, prefer the execution-policy-safe launcher:
+
+```powershell
+.\tools\release\verify-rc1.cmd
+```
+
+It invokes the PowerShell verifier with `-ExecutionPolicy Bypass` only for that process. Run it from the repository root while checked out on `release/recetoria-rc1`.
 
 The script:
 
@@ -155,3 +161,14 @@ The following remain intentionally outside automated repository validation:
 7. Freeze/tag the accepted commit.
 
 These steps are release-identity and physical-device gates, not unresolved application-code defects.
+
+
+## One-command Windows device installation
+
+After the verifier reports `RC1 RELEASE VERIFICATION: PASS`, install the exact APK with:
+
+```powershell
+.\tools\release\install-rc1.cmd
+```
+
+The launcher resolves `adb.exe` from the standard Android SDK path, checks that a signed RC1 APK exists, verifies that an authorized Android device is connected and then runs `adb install -r`.
