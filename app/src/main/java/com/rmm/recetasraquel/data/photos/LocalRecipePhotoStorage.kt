@@ -28,6 +28,8 @@ class LocalRecipePhotoStorage(
         withContext(Dispatchers.IO) {
             try {
                 val sourceUri = android.net.Uri.parse(sourceUriString)
+                val isCameraCapture = sourceUri.authority == "\${context.packageName}.fileprovider" &&
+                    sourceUri.path?.contains("recipe_camera_captures") == true
                 val inputStream = context.contentResolver.openInputStream(sourceUri)
                     ?: return@withContext Result.failure(IllegalArgumentException("No se pudo leer la fotografía"))
 
