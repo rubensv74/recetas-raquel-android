@@ -2,6 +2,7 @@ package com.rmm.recetasraquel.app
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
@@ -11,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.rmm.recetasraquel.app.printing.RecipePrintManager
 import com.rmm.recetasraquel.domain.photos.RecipePhotoStorage
 import com.rmm.recetasraquel.domain.repository.CustomIngredientRepository
 import com.rmm.recetasraquel.domain.repository.DemoDataController
@@ -74,12 +76,22 @@ fun RecetasRaquelApp(
             val detailViewModel: RecipeDetailViewModel = viewModel(
                 factory = RecipeDetailViewModel.factory(repository, recipeSafetySummaryResolver),
             )
+            val detailState = detailViewModel.uiState.collectAsStateWithLifecycle().value
+            val context = LocalContext.current
             RecipeDetailScreen(
-                state = detailViewModel.uiState.collectAsStateWithLifecycle().value,
+                state = detailState,
                 onNavigateBack = { navController.popBackStack() },
                 onToggleFavorite = detailViewModel::toggleFavorite,
                 onEditRecipe = { id -> navController.navigate(AppRoute.editRecipe(id)) { launchSingleTop = true } },
                 onStartCooking = { id -> navController.navigate(AppRoute.cookRecipe(id)) { launchSingleTop = true } },
+                onPrintRecipe = { recipe, safetySummary, safetyMessage ->
+                    RecipePrintManager.print(
+                        context = context,
+                        recipe = recipe,
+                        safetySummary = safetySummary,
+                        safetyMessage = safetyMessage,
+                    )
+                },
             )
         }
         composable(
