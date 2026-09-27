@@ -99,3 +99,36 @@ RC1 is closed only when:
 - the accepted commit is frozen/tagged for traceability.
 
 Backup/Restore remains a separate product-v1 closure gate unless explicitly promoted into RC1.
+
+
+## Exact candidate automated validation — 2026-09-27
+
+RC1 was reconciled with `master` after PRINT-01 was integrated. The release branch now contains the validated recipe print/PDF capability and is **0 commits behind** `master`.
+
+A dedicated temporary workflow validated the combined candidate:
+
+- workflow: `RC1 Exact Candidate Validation`;
+- run: `1`;
+- run ID: `36309423106`;
+- Android: API 36 / Pixel 6 emulator;
+- `assembleRelease`: PASS;
+- full `connectedDebugAndroidTest`: PASS;
+- Room schema guard after emulator: PASS.
+
+The temporary workflow is removed after collecting this evidence and is not part of the release product.
+
+This automated gate validates the application code and release build path. It does **not** claim that the produced CI APK is the permanent delivery artifact, because CI does not hold the private Recetoria signing identity.
+
+## Remaining RC1 gates
+
+The following remain intentionally outside automated repository validation:
+
+1. Create or confirm the permanent private Recetoria signing identity.
+2. Back up the keystore and credentials securely outside Git.
+3. Produce a release APK signed with that identity.
+4. Verify APK signer and package identity locally.
+5. Install that signed APK on Raquel's physical Android phone.
+6. Complete the real-device acceptance walkthrough.
+7. Freeze/tag the accepted commit.
+
+These steps are release-identity and physical-device gates, not unresolved application-code defects.
