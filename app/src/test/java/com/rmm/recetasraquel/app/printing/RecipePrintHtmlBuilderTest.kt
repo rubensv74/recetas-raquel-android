@@ -58,6 +58,40 @@ class RecipePrintHtmlBuilderTest {
     }
 
     @Test
+    fun stepPhotosAreEmbeddedInPreparation() {
+        val recipe = sampleRecipe().copy(
+            steps = listOf(
+                RecipeStep(
+                    id = "step-1",
+                    recipeId = "recipe-1",
+                    instruction = "Amasar.",
+                    timerMinutes = 10,
+                    photoPath = "recipe_photos/recipe-1/steps/step-1.jpg",
+                    sortOrder = 0,
+                ),
+            ),
+        )
+
+        val html = RecipePrintHtmlBuilder.build(
+            recipe = recipe,
+            safetySummary = RecipeSafetySummary(
+                groups = emptyList(),
+                reviewNotices = emptyList(),
+                regulatoryExemptions = emptyList(),
+            ),
+            safetyMessage = null,
+            stepPhotoDataUris = mapOf(
+                "step-1" to "data:image/jpeg;base64,STEP_IMAGE",
+            ),
+        )
+
+        assertTrue(html.contains("""class="step-photo""""))
+        assertTrue(html.contains("data:image/jpeg;base64,STEP_IMAGE"))
+        assertTrue(html.contains("""alt="Paso 1""""))
+        assertTrue(html.indexOf("Amasar.") < html.indexOf("STEP_IMAGE"))
+    }
+
+    @Test
     fun unresolvedSafetyNeverPrintsAFalseSafeClaim() {
         val html = RecipePrintHtmlBuilder.build(
             recipe = sampleRecipe(),
