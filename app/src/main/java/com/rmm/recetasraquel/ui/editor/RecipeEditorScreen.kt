@@ -285,7 +285,6 @@ fun RecipeEditorScreen(
             },
         )
     }
-}
 
     val activePhotoSourceTarget = photoSourceTarget
     if (activePhotoSourceTarget != null) {
@@ -351,7 +350,7 @@ fun RecipeEditorScreen(
             },
         )
     }
-
+}
 
 @Composable
 private fun EditorContent(
