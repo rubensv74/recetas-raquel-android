@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: cam01-direct-camera
+  cancel-in-progress: true
+
 jobs:
   validate:
     name: CAM-01 — Android 36 full gate
