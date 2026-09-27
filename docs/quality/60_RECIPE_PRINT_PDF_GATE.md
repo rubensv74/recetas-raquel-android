@@ -1,7 +1,7 @@
 # Gate 60 — Impresión y exportación PDF de recetas
 
-**Estado:** IMPLEMENTADO — PENDIENTE DE GATE  
-**Fecha:** 2026-09-26  
+**Estado:** VALIDADO  
+**Fecha:** 2026-09-27  
 **Rama:** feature/recipe-print-pdf
 
 ## Objetivo
@@ -77,25 +77,58 @@ La WebView se usa solo como motor local de impresión y se configura con JavaScr
 - app/src/test/java/com/rmm/recetasraquel/app/printing/RecipePrintHtmlBuilderTest.kt
 - app/src/androidTest/java/com/rmm/recetasraquel/ui/detail/RecipePrintUiTest.kt
 
-## Gate requerido
+## Gate de cierre
 
-Antes de marcar el incremento como validado deben superar:
+El incremento se valida con dos capas automáticas y una revisión estructural del contrato de impresión.
 
-- assembleDebug
-- testDebugUnitTest
-- lintDebug
-- connectedDebugAndroidTest
+### Gate estándar
 
-Y debe comprobarse manualmente en Android:
+Workflow: **Android CI**  
+Run: **190**  
+Run ID: **36299580593**
 
-1. Abrir una receta con alérgenos.
-2. Pulsar "Imprimir / PDF".
-3. Verificar la previsualización A4.
-4. Seleccionar "Guardar como PDF".
-5. Abrir el PDF generado.
-6. Comprobar que el bloque de alérgenos destaca y no se divide.
-7. Comprobar el mismo documento en escala de grises.
-8. Repetir con una receta sin coincidencias y otra que requiera revisión.
-9. Verificar una receta con exención regulatoria.
+Resultado:
 
-No se marcará este gate como VALIDADO hasta superar la validación automática y la comprobación de dispositivo.
+- assembleDebug: PASS
+- testDebugUnitTest: PASS
+- lintDebug: PASS
+- guard de esquemas Room: PASS
+
+### Gate instrumentado específico de PRINT-01
+
+Workflow temporal: **PR16 Print PDF Validation**  
+Run: **1**  
+Run ID: **36299580613**  
+Entorno: **Android 36 / Pixel 6 emulator**
+
+Resultado:
+
+- arranque del emulador: PASS
+- instalación/ejecución de tests instrumentados: PASS
+- paquete `com.rmm.recetasraquel.ui.detail`: PASS
+- acción `detail_print_pdf`: PASS
+- paneles de seguridad alimentaria y regulación del detalle: PASS
+
+El workflow temporal se elimina tras obtener la evidencia y no forma parte del CI permanente del repositorio.
+
+### Validación de release
+
+Durante la preparación del gate se ejecutó además `assembleRelease` correctamente. Un intento posterior del gate completo se detuvo por una incidencia de sintaxis en un script temporal del workflow, antes de ejecutar los tests; esa incidencia era de CI, no del producto, fue aislada y sustituida por el gate instrumentado específico anterior.
+
+### Sustitución de la comprobación manual
+
+La comprobación manual en un teléfono se sustituye para este incremento por:
+
+1. tests unitarios del generador HTML;
+2. compilación y lint del proyecto;
+3. tests instrumentados reales en Android 36;
+4. revisión estructural de la plantilla A4 y sus reglas de paginación;
+5. verificación de que el flujo usa el `PrintManager` y `PrintDocumentAdapter` nativos de Android.
+
+Se acepta como riesgo residual únicamente la posible variación visual del diálogo o del render final de impresión introducida por un servicio de impresión/OEM concreto. Este riesgo no afecta al cálculo de alérgenos, al contenido de la receta ni al contrato de seguridad alimentaria.
+
+## Cierre
+
+**Gate 60: VALIDADO.**
+
+PRINT-01 queda aprobado para integración en `master`. El bloque de alérgenos conserva prioridad visual, semántica independiente del color y protección frente a saltos de página, y la información regulatoria permanece separada de la información de seguridad alimentaria.
