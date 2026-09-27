@@ -24,6 +24,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -61,6 +62,7 @@ fun RecipeDetailScreen(
     onToggleFavorite: () -> Unit,
     onEditRecipe: (String) -> Unit = {},
     onStartCooking: (String) -> Unit = {},
+    onPrintRecipe: (Recipe, RecipeSafetySummary?, String?) -> Unit = { _, _, _ -> },
 ) {
     val recipe = (state as? DetailUiState.Content)?.recipe
 
@@ -168,6 +170,7 @@ fun RecipeDetailScreen(
                 safetyMessage = state.safetyMessage,
                 actionMessage = state.actionMessage,
                 onStartCooking = onStartCooking,
+                onPrintRecipe = onPrintRecipe,
                 modifier = Modifier.padding(padding),
             )
         }
@@ -181,6 +184,7 @@ private fun RecipeContent(
     safetyMessage: String?,
     actionMessage: String?,
     onStartCooking: (String) -> Unit,
+    onPrintRecipe: (Recipe, RecipeSafetySummary?, String?) -> Unit,
     modifier: Modifier,
 ) {
     val regulatoryExemptions = safetySummary?.regulatoryExemptions.orEmpty()
@@ -250,6 +254,24 @@ private fun RecipeContent(
                         style = MaterialTheme.typography.titleMedium,
                     )
                 }
+            }
+        }
+
+        item {
+            OutlinedButton(
+                onClick = { onPrintRecipe(recipe, safetySummary, safetyMessage) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 52.dp)
+                    .testTag("detail_print_pdf")
+                    .semantics { contentDescription = "Imprimir receta o guardar como PDF" },
+                shape = MaterialTheme.shapes.large,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+            ) {
+                Text(
+                    text = "Imprimir / PDF",
+                    style = MaterialTheme.typography.titleSmall,
+                )
             }
         }
 
