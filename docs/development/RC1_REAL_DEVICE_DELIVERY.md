@@ -44,6 +44,29 @@ keytool -genkeypair \
 
 Do not paste the passwords into issues, pull requests, commits, chat logs, or repository files.
 
+## One-command local signing verification
+
+The release branch includes:
+
+```powershell
+.\tools\release\verify-rc1.ps1
+```
+
+Run it from the repository root while checked out on `release/recetoria-rc1`.
+
+The script:
+
+- requires the RC1 branch;
+- requires local `keystore.properties` and the configured keystore;
+- never prints signing passwords;
+- runs `clean assembleRelease`;
+- fails if Gradle produces only `app-release-unsigned.apk`;
+- verifies the resulting APK with Android `apksigner`;
+- checks with `aapt` that the package is `com.rmm.recetasraquel`;
+- checks `versionCode = 1` and `versionName = 1.0.0-rc1`.
+
+A PASS from this script closes the local signing/build identity gate. Physical installation and acceptance remain separate.
+
 ## Candidate build
 
 With the signing configuration available locally:
