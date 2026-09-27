@@ -48,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -102,12 +103,17 @@ fun RecipeEditorScreen(
     }
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
     val title = when (state.mode) {
         is EditorMode.Create -> "Nueva receta"
         is EditorMode.Edit -> "Editar receta"
     }
 
     var pendingStepKey by remember { mutableStateOf<String?>(null) }
+    var photoSourceTarget by remember { mutableStateOf<PhotoSourceTarget?>(null) }
+    var pendingCameraCapture by remember { mutableStateOf<PendingCameraCapture?>(null) }
+    var pendingCameraTarget by remember { mutableStateOf<PhotoSourceTarget?>(null) }
+    var cameraError by remember { mutableStateOf<String?>(null) }
 
     val coverPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -123,10 +129,35 @@ fun RecipeEditorScreen(
         pendingStepKey = null
     }
 
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+    ) { success ->
+        val capture = pendingCameraCapture
+        val target = pendingCameraTarget
+        pendingCameraCapture = null
+        pendingCameraTarget = null
+
+        if (success && capture != null && target != null) {
+            when (target) {
+                PhotoSourceTarget.Cover -> onCoverPhotoSelected(capture.uri)
+                is PhotoSourceTarget.Step -> onStepPhotoSelected(target.stepKey, capture.uri)
+            }
+        } else {
+            RecipeCameraCapture.discard(capture)
+        }
+    }
+
     LaunchedEffect(state.saveError) {
         state.saveError?.let {
             snackbarHostState.showSnackbar(it)
             onDismissSaveError()
+        }
+    }
+
+    LaunchedEffect(cameraError) {
+        cameraError?.let {
+            snackbarHostState.showSnackbar(it)
+            cameraError = null
         }
     }
 
@@ -208,11 +239,10 @@ fun RecipeEditorScreen(
                 onRemoveStep = onRemoveStep,
                 onMoveStepUp = onMoveStepUp,
                 onMoveStepDown = onMoveStepDown,
-                onCoverPhotoSelected = { coverPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                onCoverPhotoSelected = { photoSourceTarget = PhotoSourceTarget.Cover },
                 onRemoveCoverPhoto = onRemoveCoverPhoto,
                 onStepPhotoSelected = { stepKey ->
-                    pendingStepKey = stepKey
-                    stepPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    photoSourceTarget = PhotoSourceTarget.Step(stepKey)
                 },
                 onRemoveStepPhoto = onRemoveStepPhoto,
                 modifier = Modifier.padding(padding),
@@ -256,6 +286,72 @@ fun RecipeEditorScreen(
         )
     }
 }
+
+    val activePhotoSourceTarget = photoSourceTarget
+    if (activePhotoSourceTarget != null) {
+        AlertDialog(
+            onDismissRequest = { photoSourceTarget = null },
+            title = { Text("Añadir fotografía") },
+            text = {
+                Text(
+                    when (activePhotoSourceTarget) {
+                        PhotoSourceTarget.Cover -> "Haz una foto ahora o elige una imagen que ya esté en el móvil."
+                        is PhotoSourceTarget.Step -> "Haz una foto de este paso o elige una imagen que ya esté en el móvil."
+                    },
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        photoSourceTarget = null
+                        val capture = runCatching { RecipeCameraCapture.create(context) }
+                            .getOrElse {
+                                cameraError = "No se pudo preparar la cámara."
+                                return@TextButton
+                            }
+
+                        pendingCameraCapture = capture
+                        pendingCameraTarget = activePhotoSourceTarget
+
+                        runCatching { cameraLauncher.launch(capture.uri) }
+                            .onFailure {
+                                RecipeCameraCapture.discard(capture)
+                                pendingCameraCapture = null
+                                pendingCameraTarget = null
+                                cameraError = "No se pudo abrir la cámara del dispositivo."
+                            }
+                    },
+                    modifier = Modifier.testTag("photo_source_camera"),
+                ) {
+                    Text("Hacer foto")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        photoSourceTarget = null
+                        when (activePhotoSourceTarget) {
+                            PhotoSourceTarget.Cover -> {
+                                coverPickerLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                                )
+                            }
+                            is PhotoSourceTarget.Step -> {
+                                pendingStepKey = activePhotoSourceTarget.stepKey
+                                stepPickerLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                                )
+                            }
+                        }
+                    },
+                    modifier = Modifier.testTag("photo_source_gallery"),
+                ) {
+                    Text("Elegir de galería")
+                }
+            },
+        )
+    }
+
 
 @Composable
 private fun EditorContent(
@@ -795,4 +891,10 @@ private fun SectionTitle(text: String) {
         )
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
+}
+
+
+private sealed interface PhotoSourceTarget {
+    data object Cover : PhotoSourceTarget
+    data class Step(val stepKey: String) : PhotoSourceTarget
 }
