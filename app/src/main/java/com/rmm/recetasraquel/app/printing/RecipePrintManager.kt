@@ -29,11 +29,19 @@ object RecipePrintManager {
     ) {
         val printManager = context.getSystemService(Context.PRINT_SERVICE) as? PrintManager ?: return
         val coverDataUri = recipe.coverPhotoPath?.let { resolvePhotoDataUri(context, it) }
+        val stepPhotoDataUris = recipe.steps
+            .mapNotNull { step ->
+                step.photoPath?.let { relativePath ->
+                    resolvePhotoDataUri(context, relativePath)?.let { step.id to it }
+                }
+            }
+            .toMap()
         val html = RecipePrintHtmlBuilder.build(
             recipe = recipe,
             safetySummary = safetySummary,
             safetyMessage = safetyMessage,
             coverPhotoDataUri = coverDataUri,
+            stepPhotoDataUris = stepPhotoDataUris,
         )
 
         val webView = WebView(context).apply {

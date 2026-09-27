@@ -15,3 +15,8 @@
 local.properties
 
 /.idea/deviceManager.xml
+
+# Recetoria release signing — never commit private keys or credentials
+keystore.properties
+*.jks
+*.keystore

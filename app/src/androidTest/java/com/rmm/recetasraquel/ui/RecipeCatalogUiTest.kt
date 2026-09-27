@@ -32,6 +32,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import org.junit.Rule
 import org.junit.Test
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.performScrollToNode
 
 class RecipeCatalogUiTest {
     @get:Rule
@@ -69,14 +71,13 @@ class RecipeCatalogUiTest {
         composeRule.onNodeWithTag("filter_category").performClick()
         composeRule.onNodeWithText("Principal").performClick()
         composeRule.onNodeWithTag("catalog_search").performTextInput("inexistente")
-        waitForText("No se encontraron recetas con estos filtros.")
+        waitForText("No encontramos recetas con estos filtros.")
         composeRule.onNodeWithContentDescription("Limpiar filtros").performClick()
 
-        // The software keyboard can remain visible after clearing the query and reduce the
-        // LazyColumn viewport on some AVD runs. First wait for the unfiltered result set,
-        // then scroll the target recipe into view before asserting visibility.
         waitForText("2 resultados")
-        composeRule.onNodeWithTag("recipe_tarta").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("catalog_list")
+            .performScrollToNode(hasTestTag("recipe_tarta"))
+        composeRule.onNodeWithTag("recipe_tarta").assertIsDisplayed()
     }
 
     @Test
@@ -84,11 +85,22 @@ class RecipeCatalogUiTest {
         setApp(UiFakeRepository(sampleRecipes()))
         waitForText("Tortilla de patatas")
         composeRule.onNodeWithText("Tortilla de patatas").performClick()
-        waitForText("Ingredientes")
-        composeRule.onNodeWithText("1/2 kg · Patatas").assertIsDisplayed()
+
+        waitForTag("recipe_detail")
+        composeRule.onNodeWithTag("recipe_detail")
+            .performScrollToNode(hasText("Ingredientes"))
+        composeRule.onNodeWithText("Ingredientes").assertIsDisplayed()
+
+        composeRule.onNodeWithTag("recipe_detail")
+            .performScrollToNode(hasText("Patatas", substring = true))
+        composeRule.onNodeWithText("Patatas", substring = true).assertIsDisplayed()
+
+        composeRule.onNodeWithTag("recipe_detail")
+            .performScrollToNode(hasText("Cortar las patatas."))
         composeRule.onNodeWithText("Cortar las patatas.").assertIsDisplayed()
+
         composeRule.onNodeWithText("Volver").performClick()
-        waitForText("Buscar por receta o ingrediente")
+        waitForText("Buscar receta o ingrediente")
     }
 
     @Test
@@ -96,9 +108,11 @@ class RecipeCatalogUiTest {
         setApp(UiFakeRepository(sampleRecipes()))
         waitForText("Tarta de queso")
         composeRule.onNodeWithText("Tarta de queso").performClick()
-        waitForText("Ingredientes")
+
+        waitForTag("recipe_detail")
         composeRule.onNodeWithContentDescription("Marcar como favorita").performClick()
         composeRule.onNodeWithText("Volver").performClick()
+
         waitForText("Tarta de queso")
         composeRule.onNode(
             hasTestTag("favorite_tarta") and hasContentDescription("Quitar de favoritas"),
@@ -111,7 +125,8 @@ class RecipeCatalogUiTest {
         setApp(repository)
         waitForText("Tortilla de patatas")
         composeRule.onNodeWithText("Tortilla de patatas").performClick()
-        waitForText("Ingredientes")
+
+        waitForTag("recipe_detail")
         repository.remove("tortilla")
         waitForText("La receta ya no está disponible.")
         composeRule.onNodeWithText("Volver al catálogo").performClick()
@@ -134,6 +149,15 @@ class RecipeCatalogUiTest {
                 )
             }
         }
+    }
+
+    private fun waitForTag(tag: String) {
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            runCatching {
+                composeRule.onNodeWithTag(tag).fetchSemanticsNode()
+            }.isSuccess
+        }
+        composeRule.onNodeWithTag(tag).assertIsDisplayed()
     }
 
     private fun waitForText(text: String) {

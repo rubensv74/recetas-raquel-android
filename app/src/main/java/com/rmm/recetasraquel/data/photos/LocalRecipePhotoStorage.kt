@@ -28,6 +28,8 @@ class LocalRecipePhotoStorage(
         withContext(Dispatchers.IO) {
             try {
                 val sourceUri = android.net.Uri.parse(sourceUriString)
+                val isCameraCapture = sourceUri.authority == "${context.packageName}.fileprovider" &&
+                    sourceUri.path?.contains("recipe_camera_captures") == true
                 val inputStream = context.contentResolver.openInputStream(sourceUri)
                     ?: return@withContext Result.failure(IllegalArgumentException("No se pudo leer la fotografía"))
 
@@ -50,8 +52,18 @@ class LocalRecipePhotoStorage(
                 resized.recycle()
 
                 val relativePath = "$RECIPE_PHOTOS_DIR/${STAGE_PREFIX}${photoId}.jpg"
+                if (isCameraCapture) {
+                    runCatching { context.contentResolver.delete(sourceUri, null, null) }
+                }
                 Result.success(StagedPhoto(stagedFile = stagedFile, relativePath = relativePath))
             } catch (e: Exception) {
+                val sourceUri = runCatching { android.net.Uri.parse(sourceUriString) }.getOrNull()
+                if (
+                    sourceUri?.authority == "${context.packageName}.fileprovider" &&
+                    sourceUri.path?.contains("recipe_camera_captures") == true
+                ) {
+                    runCatching { context.contentResolver.delete(sourceUri, null, null) }
+                }
                 Result.failure(IllegalArgumentException("No se pudo procesar la fotografía: ${e.message}"))
             }
         }

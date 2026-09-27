@@ -285,6 +285,14 @@ fun CustomIngredientEditorScreen(
                 )
             }
 
+            item {
+                InformationNotice(
+                    text = "Registra solo lo que conozcas. La ausencia de declaraciones no significa ausencia de alérgenos o riesgo. Comprueba siempre la etiqueta del producto cuando corresponda.",
+                    emphasized = true,
+                    modifier = Modifier.testTag("custom_safety_warning"),
+                )
+            }
+
             items(state.safetyRows, key = { it.key }) { row ->
                 SafetyDeclarationCard(
                     row = row,
@@ -464,7 +472,9 @@ private fun SafetyDeclarationCard(
     onNotesChange: (String) -> Unit,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("safety_row_${row.key}"),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -529,7 +539,10 @@ private fun SafetyDeclarationCard(
             }
 
             FieldLabel("Nivel de evidencia")
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            LazyRow(
+                modifier = Modifier.testTag("custom_safety_evidence_${row.key}"),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
                 items(CustomIngredientSafetyEvidence.values().toList()) { evidence ->
                     FilterChip(
                         selected = row.evidenceLevel == evidence,
@@ -537,6 +550,7 @@ private fun SafetyDeclarationCard(
                         label = { Text(evidence.displayName()) },
                         colors = premiumFilterChipColors(),
                         shape = MaterialTheme.shapes.large,
+                        modifier = Modifier.testTag("custom_safety_evidence_${row.key}_${evidence.name}"),
                     )
                 }
             }
@@ -576,9 +590,10 @@ private fun FieldLabel(text: String) {
 private fun InformationNotice(
     text: String,
     emphasized: Boolean = false,
+    modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         color = if (emphasized) {
             MaterialTheme.colorScheme.secondaryContainer

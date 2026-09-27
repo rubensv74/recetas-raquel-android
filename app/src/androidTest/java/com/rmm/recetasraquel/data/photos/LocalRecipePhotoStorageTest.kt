@@ -7,6 +7,7 @@ import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.rmm.recetasraquel.domain.photos.PhotoDestination
+import com.rmm.recetasraquel.ui.editor.RecipeCameraCapture
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -30,6 +31,7 @@ class LocalRecipePhotoStorageTest {
         storage = LocalRecipePhotoStorage(context)
         File(context.filesDir, "recipe_photos").deleteRecursively()
         File(context.cacheDir, "recipe_photo_staging").deleteRecursively()
+        File(context.cacheDir, "recipe_camera_captures").deleteRecursively()
     }
 
     private fun createTestImage(): Uri {
@@ -40,6 +42,22 @@ class LocalRecipePhotoStorageTest {
         file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
         bitmap.recycle()
         return Uri.fromFile(file)
+    }
+
+    @Test
+    fun cameraCaptureIsStagedAndTemporarySourceIsDeleted() = runTest {
+        val capture = RecipeCameraCapture.create(context)
+        val bitmap = Bitmap.createBitmap(120, 80, Bitmap.Config.ARGB_8888)
+        Canvas(bitmap).drawColor(android.graphics.Color.YELLOW)
+        capture.file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
+        bitmap.recycle()
+
+        assertTrue(capture.file.exists())
+
+        val staged = storage.stagePhoto(capture.uri.toString()).getOrThrow()
+
+        assertTrue(staged.stagedFile.exists())
+        assertFalse(capture.file.exists())
     }
 
     @Test

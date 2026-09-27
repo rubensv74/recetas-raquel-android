@@ -4,6 +4,8 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -43,6 +45,18 @@ class RecipeEditorPhotoUiTest {
         setApp()
         composeRule.onNodeWithTag("editor_content").assertIsDisplayed()
         composeRule.onNodeWithTag("select_cover_photo").assertIsDisplayed()
+    }
+
+    @Test
+    fun photoButtonOffersCameraAndGallery() {
+        setApp()
+
+        composeRule.onNodeWithTag("select_cover_photo").performClick()
+
+        composeRule.onNodeWithTag("photo_source_camera").assertIsDisplayed()
+        composeRule.onNodeWithText("Hacer foto").assertIsDisplayed()
+        composeRule.onNodeWithTag("photo_source_gallery").assertIsDisplayed()
+        composeRule.onNodeWithText("Elegir de galería").assertIsDisplayed()
     }
 
     private fun setApp() {
