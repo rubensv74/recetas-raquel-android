@@ -128,7 +128,7 @@ jobs:
           disable-animations: true
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: |
-            if [[ "${GITHUB_EVENT_NAME}" == "pull_request" && "${GITHUB_HEAD_REF}" == "feature/recipe-print-pdf" ]]; then
+            if [ "${GITHUB_EVENT_NAME}" = "pull_request" ] && [ "${GITHUB_HEAD_REF}" = "feature/recipe-print-pdf" ]; then
               ./gradlew --no-daemon connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.package=com.rmm.recetasraquel.ui.detail
             else
               ./gradlew --no-daemon connectedDebugAndroidTest
