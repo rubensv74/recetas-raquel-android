@@ -18,14 +18,14 @@ internal object RecipeCameraCapture {
         val captureDir = File(context.cacheDir, CAPTURE_DIR).also { it.mkdirs() }
         cleanupStaleFiles(captureDir)
 
-        val file = File(captureDir, "capture_\${UUID.randomUUID()}.jpg")
+        val file = File(captureDir, "capture_${UUID.randomUUID()}.jpg")
         if (!file.createNewFile()) {
             error("No se pudo preparar el archivo temporal de cámara")
         }
 
         val uri = FileProvider.getUriForFile(
             context,
-            "\${context.packageName}.fileprovider",
+            "${context.packageName}.fileprovider",
             file,
         )
         return PendingCameraCapture(uri = uri, file = file)
