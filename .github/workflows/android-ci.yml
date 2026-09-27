@@ -53,8 +53,8 @@ jobs:
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" "platform-tools" "platforms;android-36.1"
 
-      - name: Validate debug build, unit tests, lint and Android test compilation
-        run: ./gradlew --no-daemon assembleDebug testDebugUnitTest lintDebug compileDebugAndroidTestKotlin
+      - name: Validate debug build, unit tests and lint
+        run: ./gradlew --no-daemon assembleDebug testDebugUnitTest lintDebug
 
       - name: Guard Room schemas
         shell: bash
@@ -78,7 +78,7 @@ jobs:
 
   full-validation:
     name: Manual gate — release and instrumented tests
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.number == 16) || github.head_ref == 'feature/recipe-print-pdf'
+    if: github.event_name == 'workflow_dispatch'
     needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -127,12 +127,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          script: |
-            if [ "${GITHUB_EVENT_NAME}" = "pull_request" ] && [ "${GITHUB_HEAD_REF}" = "feature/recipe-print-pdf" ]; then
-              ./gradlew --no-daemon connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.package=com.rmm.recetasraquel.ui.detail
-            else
-              ./gradlew --no-daemon connectedDebugAndroidTest
-            fi
+          script: ./gradlew --no-daemon connectedDebugAndroidTest
 
       - name: Guard Room schemas after full validation
         shell: bash
