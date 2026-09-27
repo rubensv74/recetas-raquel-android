@@ -14,6 +14,7 @@ internal object RecipePrintHtmlBuilder {
         safetySummary: RecipeSafetySummary?,
         safetyMessage: String?,
         coverPhotoDataUri: String? = null,
+        stepPhotoDataUris: Map<String, String> = emptyMap(),
     ): String {
         val ingredientSafety = buildIngredientSafetyIndex(safetySummary)
         val ingredientReview = safetySummary
@@ -173,6 +174,16 @@ internal object RecipePrintHtmlBuilder {
                       background: #FAF7F2;
                     }
                     .step-number { font-weight: 900; }
+                    .step-photo {
+                      display: block;
+                      max-width: 100%;
+                      max-height: 72mm;
+                      width: auto;
+                      height: auto;
+                      margin: 8px auto 0;
+                      border-radius: 7px;
+                      object-fit: contain;
+                    }
                     .timer { margin-top: 3px; color: #9E621C; font-size: 9pt; font-weight: 800; }
                     .note-card {
                       padding: 10px 12px;
@@ -255,6 +266,9 @@ internal object RecipePrintHtmlBuilder {
                     append("""<div><span class="step-number">${index + 1}.</span> ${step.instruction.htmlEscape()}</div>""")
                     step.timerMinutes?.let {
                         append("""<div class="timer">Temporizador: $it min</div>""")
+                    }
+                    stepPhotoDataUris[step.id]?.let { photoDataUri ->
+                        append("""<img class="step-photo" src="$photoDataUri" alt="Paso ${index + 1}">""")
                     }
                     append("</div>")
                 }
