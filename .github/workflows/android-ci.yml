@@ -4,47 +4,69 @@ on:
   pull_request:
     branches:
       - master
-    paths:
-      - "app/**"
-      - "gradle/**"
-      - "*.gradle.kts"
-      - "gradle.properties"
-      - ".github/workflows/android-ci.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: android-ci-${{ github.ref }}
+  group: android-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
   GRADLE_USER_HOME: ${{ github.workspace }}/.gradle-ci
 
 jobs:
-  quality:
-    name: PR gate — build, unit tests, lint and Room guard
+  pr-gate:
+    name: PR gate
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 0
+
+      - name: Detect Android-impacting changes
+        id: changes
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+
+          echo "Changed files:"
+          printf '%s\n' "$changed"
+
+          if printf '%s\n' "$changed" | grep -Eq '^(app/|gradle/|gradlew$|gradlew\.bat$|gradle\.properties$|[^/]+\.gradle\.kts$|\.github/workflows/android-ci\.yml$)'; then
+            echo "android=true" >> "$GITHUB_OUTPUT"
+            echo "Android-impacting change detected; running build, unit tests, lint and Room guard."
+          else
+            echo "android=false" >> "$GITHUB_OUTPUT"
+            echo "No Android-impacting files changed; expensive Android validation is not required."
+          fi
 
       - name: Make Gradle wrapper executable
+        if: steps.changes.outputs.android == 'true'
         run: chmod +x gradlew
 
       - name: Set up JDK 21
+        if: steps.changes.outputs.android == 'true'
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with:
           distribution: temurin
           java-version: "21"
 
       - name: Set up Gradle
+        if: steps.changes.outputs.android == 'true'
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
 
       - name: Install Android 36.1 platform
+        if: steps.changes.outputs.android == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -54,9 +76,11 @@ jobs:
           "$SDKMANAGER" "platform-tools" "platforms;android-36.1"
 
       - name: Validate debug build, unit tests and lint
+        if: steps.changes.outputs.android == 'true'
         run: ./gradlew --no-daemon assembleDebug testDebugUnitTest lintDebug
 
       - name: Guard Room schemas
+        if: steps.changes.outputs.android == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -76,12 +100,15 @@ jobs:
             exit 1
           fi
 
+      - name: Confirm lightweight gate
+        if: steps.changes.outputs.android != 'true'
+        run: echo "PR gate passed without Android build because only non-impacting files changed."
+
   full-validation:
-    name: Manual gate — release and instrumented tests
+    name: Manual gate — full Android validation
     if: github.event_name == 'workflow_dispatch'
-    needs: quality
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
 
     steps:
       - name: Checkout
@@ -108,8 +135,8 @@ jobs:
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" "platform-tools" "platforms;android-36.1"
 
-      - name: Assemble release
-        run: ./gradlew --no-daemon assembleRelease
+      - name: Validate debug and release builds, unit tests and lint
+        run: ./gradlew --no-daemon assembleDebug testDebugUnitTest lintDebug assembleRelease
 
       - name: Enable KVM access
         shell: bash
